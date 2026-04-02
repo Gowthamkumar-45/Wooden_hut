@@ -1,0 +1,457 @@
+.furniture-making-page {
+    background: #fdfdfd;
+}
+
+/* FULL WIDTH SLIDER HERO */
+.making-slider-hero {
+    position: relative;
+    width: 100%;
+    height: 90vh;
+    overflow: hidden;
+    background: #1a202c;
+}
+
+.slide-item {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1), transform 1.5s ease;
+    transform: scale(1.05);
+}
+
+.slide-item.active {
+    opacity: 1;
+    z-index: 10;
+    transform: scale(1);
+}
+
+.slide-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.2) 60%, transparent 100%);
+    display: flex;
+    align-items: center;
+    padding-left: 80px;
+}
+
+.slide-content {
+    max-width: 700px;
+}
+
+.slide-badge {
+    color: var(--gold);
+    font-size: 14px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    font-weight: 600;
+    margin-bottom: 24px;
+    display: block;
+}
+
+.slide-label {
+    font-family: 'Jost', sans-serif;
+    color: var(--white);
+    font-size: 18px;
+    margin-bottom: 12px;
+    opacity: 0.9;
+}
+
+.slide-title {
+    font-size: 64px;
+    line-height: 1.1;
+    color: var(--white);
+    font-weight: 700;
+    font-family: 'Jost', sans-serif;
+}
+
+.slider-dots {
+    position: absolute;
+    bottom: 40px;
+    right: 80px;
+    display: flex;
+    gap: 12px;
+    z-index: 50;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dot.active {
+    background: var(--white);
+    transform: scale(1.3);
+}
+
+/* TREE STRUCTURE SECTION - MINIMALIST REDESIGN */
+.making-steps-section {
+    padding: 40px 20px;
+    background: var(--white);
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+.tree-container {
+    position: relative;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 0;
+}
+
+.tree-line {
+    position: absolute;
+    left: 50%;
+    top: 0;
+    width: 1px;
+    height: 100%;
+    background: rgba(196, 149, 58, 0.4);
+    transform: translateX(-50%);
+}
+
+.step-row {
+    position: relative;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 120px;
+}
+
+.steps-header {
+    text-align: center;
+    margin-bottom: 100px;
+    position: relative;
+    padding: 0 40px;
+}
+
+
+
+.process-label {
+    display: block;
+    font-size: 14px;
+    text-transform: uppercase;
+    letter-spacing: 4px;
+    color: var(--gold);
+    font-weight: 600;
+    margin-bottom: 12px;
+    text-align: center;
+}
+
+.process-main-title {
+    font-family: 'Jost', sans-serif;
+    font-size: 54px;
+    font-weight: 500;
+    color: var(--brown-deep);
+    line-height: 1.2;
+    text-align: center;
+    margin-top: 12px;
+    margin-bottom: 100px;
+}
+
+.process-main-title em {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-weight: 700;
+    color: var(--gold);
+}
+
+/* BASE HIDDEN STATES - DIRECTIONAL SLIDE */
+.step-header-info,
+.step-visual,
+.step-details,
+.tree-dot {
+    opacity: 0;
+    transition: all 1s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* INDEPENDENT DIRECTIONAL ANIMATIONS */
+/* Images always slide from the outside in */
+/* Left side: Image is on Left, so it slides from Left (-X) */
+.step-row.left .step-visual {
+    transform: translateX(-80px);
+}
+
+.step-row.left .step-details {
+    transform: translateX(80px);
+}
+
+.step-row.left .step-header-info {
+    transform: translateX(-40px);
+}
+
+/* Right side: Image is on Right, so it slides from Right (+X) */
+.step-row.right .step-visual {
+    transform: translateX(80px);
+}
+
+.step-row.right .step-details {
+    transform: translateX(-80px);
+}
+
+.step-row.right .step-header-info {
+    transform: translateX(40px);
+}
+
+/* BASE CLAMP FOR DOTS */
+.tree-dot {
+    transform: translate(-50%, 20px);
+}
+
+/* ANIMATED VISIBLE STATES */
+.step-row.visible .step-header-info,
+.step-row.visible .step-visual,
+.step-row.visible .step-details {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.step-row.visible .step-header-info {
+    transition-delay: 0.2s;
+}
+
+.step-row.visible .step-visual {
+    transition-delay: 0.4s;
+}
+
+.step-row.visible .step-details {
+    transition-delay: 0.6s;
+}
+
+.step-row.visible .tree-dot {
+    opacity: 1;
+    transform: translate(-50%, 0);
+    transition-delay: 0.8s;
+}
+
+/* HEADER INFO (ID + TITLE) ABOVE IMAGE ROW */
+.step-header-info {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    margin-bottom: 40px;
+    text-align: center;
+    padding: 0%;
+    justify-content: center;
+}
+
+.step-row.left .step-header-info {
+    width: calc(50% - 70px);
+    justify-content: center;
+    padding: 0;
+}
+
+.step-row.right .step-header-info {
+    width: calc(50% - 70px);
+    margin-left: calc(50% + 70px);
+    justify-content: center;
+    padding: 0;
+}
+
+.step-number {
+    font-size: 64px;
+    font-family: 'Cormorant Garamond', serif;
+    color: rgba(196, 149, 58, 0.2);
+    font-weight: 400;
+}
+
+.step-main-title {
+    font-size: 32px;
+    font-weight: 500;
+    color: var(--brown-deep);
+    align-content: center;
+
+    padding: 0%;
+
+}
+
+/* IMAGE + DESC ROW */
+.step-body {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* EQUAL WIDTHS */
+    gap: 140px; /* EXTRA CORRIDOR SPACE FOR LINE */
+    width: 100%;
+}
+
+.step-row.left .step-body {
+    direction: ltr;
+}
+
+.step-row.right .step-body {
+    direction: ltr;
+    /* Keeping grid order standard, will swap content visually or in JSX if needed */
+}
+
+.step-visual {
+    width: 100%;
+    height: 380px;
+    overflow: hidden;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.06);
+}
+
+.step-visual img {
+    width: 100%;
+    height: 100%;
+    /* ENSURE FULL COVER */
+    object-fit: cover;
+    display: block;
+}
+
+.step-details {
+    width: 100%;
+    height: 380px;
+    display: flex;
+    align-items: center;
+    font-size: 17px;
+    line-height: 2.1;
+    color: #444;
+}
+
+/* ODD STEP CASE (LEFT ROW, DETAILS ON RIGHT) */
+.step-row.left .step-details {
+    padding-left: 60px; /* PUSH AWAY FROM LINE ON ITS LEFT */
+    padding-right: 0;
+    text-align: left;
+}
+
+/* STEP 06 CASE (RIGHT ROW, DETAILS ON LEFT) */
+.step-row.right .step-details {
+    padding-left: 0; 
+    padding-right: 60px; /* PUSH AWAY FROM LINE ON ITS RIGHT */
+    text-align: right;
+}
+
+.step-details p {
+    margin: 0;
+    width: 100%;
+}
+
+/* THE CENTER DOT */
+.tree-dot {
+    position: absolute;
+    top: 25px; /* ALIGN WITH TITLE MIDLINE */
+    left: 50%;
+    width: 22px;
+    height: 22px;
+    background: var(--gold);
+    border: 5px solid var(--white);
+    border-radius: 50%;
+    transform: translate(-50%, 0);
+    box-shadow: 0 0 0 10px rgba(196, 149, 58, 0.05);
+    z-index: 20;
+}
+
+.step-row.visible .tree-dot { 
+    opacity: 1; 
+    transform: translate(-50%, 0); 
+    transition-delay: 0.8s;
+}
+
+/* VIDEO SECTION ENHANCEMENTS */
+.process-section { 
+    padding: 80px 40px 120px 40px; 
+    max-width: 1300px; 
+    margin: 0 auto; 
+}
+
+.process-grid { 
+    display: grid; 
+    grid-template-columns: repeat(2, 1fr); 
+    gap: 40px; 
+}
+
+.process-card {
+    background: #fff;
+    transition: transform 0.3s ease;
+}
+
+.video-wrap {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 4px;
+}
+
+.video-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+}
+
+.video-wrap:hover img { transform: scale(1.05); }
+
+.video-overlay {
+    position: absolute;
+    top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+
+.video-wrap:hover .video-overlay { background: rgba(0,0,0,0.5); opacity: 1; }
+
+.watch-yt {
+    color: #fff;
+    font-size: 14px;
+    background: rgba(255,0,0,0.8);
+    padding: 8px 16px;
+    border-radius: 4px;
+    transform: translateY(10px);
+    opacity: 0;
+    transition: all 0.3s ease;
+}
+
+.video-wrap:hover .watch-yt { transform: translateY(0); opacity: 1; }
+
+.duration-tag {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: rgba(0,0,0,0.7);
+    color: #fff;
+    padding: 2px 8px;
+    font-size: 12px;
+    border-radius: 2px;
+}
+
+.process-info {
+    padding: 24px 0;
+}
+
+.process-video-title {
+    font-size: 22px;
+    color: var(--brown-deep);
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.process-video-desc {
+    font-size: 15px;
+    color: #666;
+    line-height: 1.6;
+}
+
+@media (max-width: 1000px) {
+    .step-body { flex-direction: column !important; grid-template-columns: 1fr; gap: 40px; }
+    .step-visual, .step-details { width: 100%; text-align: center; height: auto; min-height: 250px; }
+    .step-header-info { width: 100% !important; margin: 0 0 40px 0 !important; justify-content: center !important; }
+    .tree-line, .tree-dot { display: none; }
+    .process-grid { grid-template-columns: 1fr; }
+}

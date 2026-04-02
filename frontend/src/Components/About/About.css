@@ -1,0 +1,243 @@
+.about-page-container {
+    padding-top: 0;
+    min-height: 100vh;
+}
+
+/* HERO SECTION */
+.about-hero {
+    position: relative;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.about-hero-bg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.about-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, rgba(44,26,14,0.85) 0%, rgba(44,26,14,0.4) 60%);
+    z-index: 1;
+}
+
+.about-hero-content {
+    position: relative;
+    z-index: 2;
+    text-align: center;
+    padding: 0 20px;
+    margin-top: 60px; /* Offset for header */
+}
+
+.about-hero-eyebrow {
+    font-size: 13px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+}
+
+.about-hero-eyebrow::before,
+.about-hero-eyebrow::after {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 1px;
+    background: var(--gold);
+}
+
+.about-hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 6vw, 92px);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--white);
+    margin: 0;
+}
+
+.about-hero-title em {
+    font-style: italic;
+    color: var(--gold-light);
+}
+
+/* TALE SECTION */
+.tale-section {
+    padding: 120px 80px;
+    background-color: var(--white);
+    display: flex;
+    justify-content: center;
+}
+
+.tale-container {
+    max-width: 1300px;
+    width: 100%;
+    display: flex;
+    gap: 80px;
+    align-items: flex-start;
+}
+
+.tale-container.row-reverse {
+    flex-direction: row-reverse;
+}
+
+.tale-content {
+    flex: 1;
+}
+
+.tale-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(36px, 4vw, 56px);
+    font-weight: 500;
+    color: var(--gold);
+    margin-bottom: 40px;
+    line-height: 1.1;
+}
+
+.tale-text {
+    font-size: 16px;
+    line-height: 2;
+    color: var(--brown-deep);
+    text-align: justify;
+    font-family: 'Jost', sans-serif;
+}
+
+.tale-text p {
+    margin-bottom: 28px;
+}
+
+.tale-text p:last-child {
+    margin-bottom: 0;
+}
+
+.tale-image-wrapper {
+    flex: 0 0 45%;
+    position: relative;
+}
+
+.tale-image {
+    width: 100%;
+    height: auto;
+    display: block;
+    object-fit: cover;
+    box-shadow: 0 20px 40px rgba(44,26,14,0.15);
+}
+
+/* Adding a vintage photo frame effect */
+.tale-image-wrapper::after {
+    content: '';
+    position: absolute;
+    inset: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    pointer-events: none;
+}
+
+.tale-image-caption {
+    margin-top: 16px;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 16px;
+    color: var(--text-muted);
+    text-align: center;
+}
+
+/* RESPONSIVE */
+@media screen and (max-width: 1024px) {
+    .tale-container {
+        flex-direction: column;
+        gap: 60px;
+    }
+    
+    .tale-image-wrapper {
+        flex: 1;
+        width: 100%;
+    }
+    
+    .tale-section {
+        padding: 90px 40px;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .tale-section {
+        padding: 60px 20px;
+    }
+
+    .tale-title {
+        font-size: 38px;
+        margin-bottom: 24px;
+    }
+
+    .tale-text {
+        font-size: 15px;
+        text-align: left;
+    }
+}
+
+.fade-up {
+    animation: fadeUp 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes fadeUp {
+    from {
+        opacity: 0;
+        transform: translateY(40px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ANIMATIONS */
+.animate-on-scroll {
+    opacity: 0;
+    transition: all 3s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* Base starting states */
+.fade-in-left {
+    transform: translateX(-60px);
+}
+
+.fade-in-right {
+    transform: translateX(60px);
+}
+
+/* Final states when visible */
+.is-visible.fade-in-left {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+.is-visible.fade-in-right {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Handle animations gracefully on mobile */
+@media screen and (max-width: 1024px) {
+    .fade-in-left, .fade-in-right {
+        transform: translateY(40px); /* fade up instead on mobile */
+    }
+    
+    .is-visible.fade-in-left, 
+    .is-visible.fade-in-right {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+

@@ -1,0 +1,239 @@
+:root {
+    --gold: #C4953A;
+    --brown-deep: #2C1A0E;
+    --white: #FDFAF5;
+    --cream: #F5F0E8;
+}
+
+.media-page {
+    background: var(--cream);
+    min-height: 100vh;
+}
+
+/* VIDEO HERO SECTION */
+.media-hero {
+    position: relative;
+    height: 100vh;
+    width: 100%;
+    overflow: hidden;
+    background: #000; /* SOLID BASE FOR VIDEO */
+}
+
+.video-hero-container {
+    height: 100%;
+    width: 100%;
+    position: relative;
+    background: transparent;
+    z-index: 1; /* ENSURE CHILDREN LIKE VIDEO ARE VISIBLE */
+}
+
+.background-video {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1; /* POSITIONED ABOVE CONTAINER BASE */
+}
+
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4); /* CINEMATIC DIMMING */
+    z-index: 2;
+}
+
+.hero-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    z-index: 3;
+    width: 80%;
+    max-width: 900px;
+}
+
+.hero-subtitle {
+    display: block;
+    font-size: 14px;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    margin-bottom: 24px;
+    opacity: 0.9;
+}
+
+.hero-title {
+    font-family: 'Jost', sans-serif;
+    font-size: 68px;
+    font-weight: 300;
+    margin-bottom: 30px;
+    line-height: 1.1;
+}
+
+.hero-title em {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+}
+
+.hero-desc {
+    font-size: 18px;
+    max-width: 600px;
+    margin: 0 auto;
+    font-weight: 300;
+    line-height: 1.6;
+}
+
+/* GALLERY SECTION */
+.gallery-section {
+    padding: 120px 40px;
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.gallery-header {
+    margin-bottom: 80px;
+    text-align: center;
+}
+
+.section-title {
+    font-family: 'Jost', sans-serif;
+    font-size: 48px;
+    color: var(--brown-deep);
+    margin-bottom: 40px;
+}
+
+.section-title em {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: var(--gold);
+}
+
+.filter-controls {
+    display: flex;
+    justify-content: center;
+    gap: 30px;
+}
+
+.filter-controls button {
+    background: transparent;
+    border: none;
+    font-size: 14px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--brown-deep);
+    cursor: pointer;
+    padding: 10px 20px;
+    position: relative;
+    transition: all 0.3s ease;
+    opacity: 0.6;
+}
+
+.filter-controls button.active {
+    opacity: 1;
+}
+
+.filter-controls button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20px;
+    right: 20px;
+    height: 1px;
+    background: var(--gold);
+}
+
+.filter-controls button:hover {
+    opacity: 1;
+}
+
+/* MEDIA GRID Masonry-like */
+.media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 30px;
+}
+
+.media-item {
+    position: relative;
+    border-radius: 4px;
+    overflow: hidden;
+    background: var(--white);
+    aspect-ratio: 4 / 5;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.media-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.media-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.6s ease;
+}
+
+.media-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.4);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    opacity: 0;
+    transition: all 0.4s ease;
+    color: #fff;
+    padding: 30px;
+}
+
+.media-wrap:hover .media-overlay {
+    opacity: 1;
+}
+
+.media-wrap:hover img {
+    transform: scale(1.1);
+}
+
+.play-icon {
+    width: 50px;
+    height: 50px;
+    background: var(--gold);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 15px;
+    box-shadow: 0 4px 15px rgba(196, 149, 58, 0.4);
+}
+
+.media-title {
+    font-size: 20px;
+    font-weight: 500;
+    letter-spacing: 1px;
+}
+
+.duration {
+    font-size: 12px;
+    margin-top: 8px;
+    opacity: 0.8;
+}
+
+@media (max-width: 768px) {
+    .hero-title { font-size: 42px; }
+    .gallery-section { padding: 80px 20px; }
+    .media-grid { grid-template-columns: 1fr; }
+}
