@@ -55,7 +55,7 @@ const FurnitureMaking = () => {
             id: "05", 
             title: "Polish to embrace the teak", 
             desc: "Bringing out the inner glow. Multiple layers of hand-rubbed polish protect the surface while celebrating the deep, natural warmth of the teak grain.",
-            img: "https://images.unsplash.com/photo-1621319011735-99d29729851a?w=800&q=80" 
+            img: "https://images.unsplash.com/photo-1595113316349-9fa4eb24f884?w=800&q=80" 
         },
         { 
             id: "06", 
@@ -65,12 +65,20 @@ const FurnitureMaking = () => {
         }
     ];
 
-    const processes = [
-        { id: 1, title: "Raw Teak Selection", time: "02:45", thumb: "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=800&q=80" },
-        { id: 2, title: "Precision Cutting", time: "01:30", thumb: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=800&q=80" },
-        { id: 3, title: "Hand Carving Detail", time: "04:15", thumb: "https://images.unsplash.com/photo-1543332164-6e82f355badc?w=800&q=80" },
-        { id: 4, title: "Traditional Polishing", time: "03:10", thumb: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80" }
-    ];
+    const [publishedVideos, setPublishedVideos] = useState([]);
+
+    useEffect(() => {
+        const saved = localStorage.getItem('making_videos');
+        if (saved) {
+            setPublishedVideos(JSON.parse(saved));
+        } else {
+            // Default samples if nothing in storage
+            setPublishedVideos([
+                { id: 1, title: "Raw Teak Selection", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", thumb: "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=800&q=80" },
+                { id: 2, title: "Precision Cutting", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", thumb: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=800&q=80" }
+            ]);
+        }
+    }, []);
 
     useEffect(() => {
         const timer = setInterval(() => {
@@ -179,18 +187,21 @@ const FurnitureMaking = () => {
                     <h2 className="process-main-title">Our Making <em>Process Videos</em></h2>
                 </div>
                 <div className="process-grid">
-                    {processes.map(p => (
-                        <div key={p.id} className="process-card">
+                    {publishedVideos.map(p => (
+                        <div key={p.id} className="process-card" onClick={() => {
+                            const videoId = p.url?.split('v=')[1]?.split('&')[0] || p.url?.split('/').pop();
+                            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+                        }}>
                             <div className="video-wrap">
-                                <img src={p.thumb} alt={p.title} />
+                                <img src={p.thumbnail || p.thumb} alt={p.title} />
                                 <div className="video-overlay">
                                     <span className="watch-yt">Watch on <strong>YouTube</strong></span>
                                 </div>
-                                <span className="duration-tag">{p.time}</span>
+                                <span className="duration-tag">{p.time || 'Process Video'}</span>
                             </div>
                             <div className="process-info">
                                 <h3 className="process-video-title">{p.title}</h3>
-                                <p className="process-video-desc">Experience our traditional {p.title.toLowerCase()} process in high definition detail.</p>
+                                <p className="process-video-desc">{p.description || `Experience our traditional ${p.title.toLowerCase()} process in high definition detail.`}</p>
                             </div>
                         </div>
                     ))}

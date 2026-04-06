@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './Components/Header/Header';
 import Home from './Components/Home/Home';
 import CategoryPage from './Components/CategoryPage/CategoryPage';
@@ -11,11 +11,22 @@ import Contact from './Components/Contact/Contact';
 import Footer from './Components/Footer/Footer';
 
 import About from './Components/About/About';
+import Login from './Components/Login/Login';
+import AddProduct from './Components/Admin/AddProduct';
+import ProductList from './Components/Admin/ProductList';
+import EditProduct from './Components/Admin/EditProduct';
+import ContactLogs from './Components/Admin/ContactLogs';
+import TrackOrders from './Components/Admin/TrackOrders';
+import MakingVideos from './Components/Admin/MakingVideos';
+import MediaManager from './Components/Admin/MediaManager';
 
-function App() {
+function AppContent() {
+  const location = useLocation();
+  const isLoginPage = location.pathname === '/login';
+
   return (
-    <Router>
-      <Header />
+    <>
+      {!isLoginPage && <Header />}
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
@@ -25,8 +36,24 @@ function App() {
         <Route path="/media" element={<Media />} />
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/login" element={<Login />} />
+        <Route path="/admin/add-product" element={<AddProduct />} />
+        <Route path="/admin/products" element={<ProductList />} />
+        <Route path="/admin/edit-product/:productId" element={<EditProduct />} />
+        <Route path="/admin/whatsapp-contacts" element={<ContactLogs />} />
+        <Route path="/admin/track-orders" element={<TrackOrders />} />
+        <Route path="/admin/making-videos" element={<MakingVideos />} />
+        <Route path="/admin/media" element={<MediaManager />} />
       </Routes>
-      <Footer />
+      {!isLoginPage && <Footer />}
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <AppContent />
     </Router>
   );
 }

@@ -181,11 +181,12 @@
 .main-contact-form .ant-input,
 .main-contact-form .ant-input-affix-wrapper,
 .main-contact-form .ant-input-textarea-show-count > .ant-input {
-    border-radius: 2px !important;
-    border: 1px solid rgba(0,0,0,0.1) !important;
-    padding: 12px 15px !important;
+    border-radius: 4px !important;
+    border: 1px solid rgba(196, 149, 58, 0.25) !important;
+    padding: 14px 18px !important;
     font-family: inherit !important;
     background: #fff !important;
+    font-size: 15px !important;
 }
 
 .main-contact-form .ant-input:focus,

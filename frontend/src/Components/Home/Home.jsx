@@ -37,10 +37,24 @@ const Home = () => {
         }
     });
 
-    const onSubmit = (data) => {
-        console.log("Home Enquiry Data:", data);
-        antMessage.success("Enquiry sent successfully! We will contact you soon.");
-        reset();
+    const onSubmit = async (data) => {
+        try {
+            const response = await fetch(`${SITE_CONTENT.api.base}/api/enquiries/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                antMessage.success("Enquiry sent successfully! We will contact you soon.");
+                reset();
+            } else {
+                antMessage.error("Failed to send enquiry. Please try again.");
+            }
+        } catch (error) {
+            console.error("Home Enquiry Error:", error);
+            antMessage.error("Something went wrong. Please check your connection.");
+        }
     };
 
     return (

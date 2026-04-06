@@ -11,6 +11,10 @@ export const SITE_CONTENT = {
         projectsLine: "1200+ Projects Delivered",
         promise: "100% Solid Wood Promise"
     },
+    api: {
+        base: "http://localhost:8000",
+        media: "http://localhost:8000"
+    },
     contact: {
         email: "marutham@gmail.com",
         phone: "+91 90034 61125",

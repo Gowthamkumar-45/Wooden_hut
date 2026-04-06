@@ -4,16 +4,28 @@ import './Media.css';
 const Media = () => {
     const [filter, setFilter] = useState('all');
 
-    const galleryData = [
-        { id: 1, type: 'photo', src: 'https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80', title: 'Precision Cutting' },
-        { id: 2, type: 'video', src: 'https://images.unsplash.com/photo-1540518614846-7eded433c457?w=800&q=80', title: 'Luxury Polishing', duration: '2:45' },
-        { id: 3, type: 'photo', src: 'https://images.unsplash.com/photo-1603380353725-f8a4d39cc41e?w=800&q=80', title: 'Handmade Joints' },
-        { id: 4, type: 'photo', src: 'https://images.unsplash.com/photo-1549497538-301288c8545b?w=800&q=80', title: 'Custom Bedroom' },
-        { id: 5, type: 'video', src: 'https://images.unsplash.com/photo-1542621334-a254cf47733d?w=800&q=80', title: 'Carving Art', duration: '4:12' },
-        { id: 6, type: 'photo', src: 'https://images.unsplash.com/photo-1503602642458-232111445657?w=800&q=80', title: 'Living Room Sets' },
-        { id: 7, type: 'video', src: 'https://images.unsplash.com/photo-1506806732259-39c2d7168935?w=800&q=80', title: 'Teak Selection', duration: '1:30' },
-        { id: 8, type: 'photo', src: 'https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=800&q=80', title: 'Dining Collection' }
-    ];
+    const [galleryData, setGalleryData] = useState([]);
+
+    useEffect(() => {
+        const savedPhotos = JSON.parse(localStorage.getItem('admin_media_photos') || '[]');
+        const savedVideos = JSON.parse(localStorage.getItem('admin_media_videos') || '[]');
+        
+        // Map common fields
+        const formattedPhotos = savedPhotos.map(p => ({ ...p, src: p.url }));
+        const formattedVideos = savedVideos.map(v => ({ ...v, src: v.thumbnail || v.thumb }));
+        
+        const combined = [...formattedPhotos, ...formattedVideos].sort((a, b) => b.id - a.id);
+        
+        if (combined.length > 0) {
+            setGalleryData(combined);
+        } else {
+            // Default sample data
+            setGalleryData([
+                { id: 1, type: 'photo', src: 'https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80', title: 'Precision Cutting' },
+                { id: 2, type: 'video', src: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', title: 'Luxury Polishing', duration: '2:45', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+            ]);
+        }
+    }, []);
 
     const filteredData = filter === 'all' ? galleryData : galleryData.filter(item => item.type === filter);
 
@@ -59,7 +71,14 @@ const Media = () => {
 
                 <div className="media-grid">
                     {filteredData.map(item => (
-                        <div key={item.id} className="media-item">
+                        <div key={item.id} className="media-item" onClick={() => {
+                            if (item.type === 'video') {
+                                const videoId = item.url?.split('v=')[1]?.split('&')[0] || item.url?.split('/').pop();
+                                window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
+                            } else {
+                                window.open(item.src, '_blank');
+                            }
+                        }} style={{ cursor: 'pointer' }}>
                             <div className="media-wrap">
                                 <img src={item.src} alt={item.title} />
                                 <div className="media-overlay">
@@ -71,7 +90,7 @@ const Media = () => {
                                         </div>
                                     )}
                                     <h3 className="media-title">{item.title}</h3>
-                                    {item.type === 'video' && <span className="duration">{item.duration}</span>}
+                                    {item.type === 'video' && <span className="duration">{item.duration || 'Play Video'}</span>}
                                 </div>
                             </div>
                         </div>

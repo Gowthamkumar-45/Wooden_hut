@@ -40,10 +40,24 @@ const Contact = () => {
         window.scrollTo(0, 0);
     }, []);
 
-    const onSubmit = (data) => {
-        console.log("Enquiry Data:", data);
-        message.success("Thank you! Your enquiry has been sent successfully.");
-        reset();
+    const onSubmit = async (data) => {
+        try {
+            const response = await fetch(`${SITE_CONTENT.api.base}/api/enquiries/`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                message.success("Thank you! Your enquiry has been sent successfully.");
+                reset();
+            } else {
+                message.error("Failed to send enquiry. Please try again later.");
+            }
+        } catch (error) {
+            console.error("Enquiry Error:", error);
+            message.error("Something went wrong. Please check your connection.");
+        }
     };
 
     const showroomGallery = [
@@ -55,7 +69,7 @@ const Contact = () => {
 
     const factoryGallery = [
         "https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80",
-        "https://images.unsplash.com/photo-1504148455328-497c2718219c?w=800&q=80",
+        "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=800&q=80",
         "https://images.unsplash.com/photo-1510674485131-dc88d96369b4?w=800&q=80",
         "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"
     ];
