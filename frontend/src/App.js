@@ -12,13 +12,14 @@ import Footer from './Components/Footer/Footer';
 
 import About from './Components/About/About';
 import Login from './Components/Login/Login';
-import AddProduct from './Components/Admin/AddProduct';
-import ProductList from './Components/Admin/ProductList';
-import EditProduct from './Components/Admin/EditProduct';
-import ContactLogs from './Components/Admin/ContactLogs';
-import TrackOrders from './Components/Admin/TrackOrders';
-import MakingVideos from './Components/Admin/MakingVideos';
-import MediaManager from './Components/Admin/MediaManager';
+import AddProduct from './Components/Admin/AddProducts/AddProduct';
+import ProductList from './Components/Admin/ProductList/ProductList';
+import EditProduct from './Components/Admin/EditProduct/EditProduct';
+import ContactLogs from './Components/Admin/ContactLogs/ContactLogs';
+import TrackOrders from './Components/Admin/TrackOrders/TrackOrders';
+import MakingVideos from './Components/Admin/MakingVideos/MakingVideos';
+import MediaManager from './Components/Admin/MediaManager/MediaManager';
+import ReviewManagement from './Components/Admin/ReviewManagement/ReviewManagement';
 
 function AppContent() {
   const location = useLocation();
@@ -31,7 +32,7 @@ function AppContent() {
         <Route path="/" element={<Home />} />
         <Route path="/about" element={<About />} />
         <Route path="/category/:categoryId" element={<CategoryPage />} />
-        <Route path="/product/:productId" element={<ProductDetail />} />
+        <Route path="/product/:productSlug" element={<ProductDetail />} />
         <Route path="/furniture-making" element={<FurnitureMaking />} />
         <Route path="/media" element={<Media />} />
         <Route path="/reviews" element={<Reviews />} />
@@ -44,6 +45,7 @@ function AppContent() {
         <Route path="/admin/track-orders" element={<TrackOrders />} />
         <Route path="/admin/making-videos" element={<MakingVideos />} />
         <Route path="/admin/media" element={<MediaManager />} />
+        <Route path="/admin/reviews" element={<ReviewManagement />} />
       </Routes>
       {!isLoginPage && <Footer />}
     </>

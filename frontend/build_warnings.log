@@ -1,0 +1,63 @@
+
+> frontend@0.1.0 build
+> react-scripts build
+
+Creating an optimized production build...
+
+Treating warnings as errors because process.env.CI = true.
+Most CI servers set it automatically.
+
+Failed to compile.
+
+[eslint] 
+src/Components/Admin/AddProducts/AddProduct.jsx
+  Line 5:56:  'Switch' is defined but never used                     no-unused-vars
+  Line 12:7:  'CATEGORY_MAPPING' is assigned a value but never used  no-unused-vars
+
+src/Components/Admin/ContactLogs/ContactLogs.jsx
+  Line 2:86:    'Switch' is defined but never used                  no-unused-vars
+  Line 3:72:    'UserOutlined' is defined but never used            no-unused-vars
+  Line 3:86:    'ShoppingCartOutlined' is defined but never used    no-unused-vars
+  Line 3:129:   'CloseSquareOutlined' is defined but never used     no-unused-vars
+  Line 403:11:  'confirmedList' is assigned a value but never used  no-unused-vars
+  Line 404:11:  'cancelledList' is assigned a value but never used  no-unused-vars
+
+src/Components/Admin/EditProduct/EditProduct.jsx
+  Line 5:62:   'Switch' is defined but never used             no-unused-vars
+  Line 33:50:  'setValue' is assigned a value but never used  no-unused-vars
+
+src/Components/Admin/MakingVideos/MakingVideos.jsx
+  Line 2:66:   'Upload' is defined but never used               no-unused-vars
+  Line 3:10:   'VideoCameraOutlined' is defined but never used  no-unused-vars
+  Line 3:95:   'UploadOutlined' is defined but never used       no-unused-vars
+  Line 27:70:  Unnecessary escape character: \&                 no-useless-escape
+  Line 27:79:  Unnecessary escape character: \&                 no-useless-escape
+  Line 27:81:  Unnecessary escape character: \?                 no-useless-escape
+
+src/Components/Admin/MediaManager/MediaManager.jsx
+  Line 2:72:   'Upload' is defined but never used          no-unused-vars
+  Line 3:10:   'CameraOutlined' is defined but never used  no-unused-vars
+  Line 3:128:  'UploadOutlined' is defined but never used  no-unused-vars
+  Line 39:70:  Unnecessary escape character: \&            no-useless-escape
+  Line 39:79:  Unnecessary escape character: \&            no-useless-escape
+  Line 39:81:  Unnecessary escape character: \?            no-useless-escape
+
+src/Components/Admin/TrackOrders/TrackOrders.jsx
+  Line 3:74:    'EditOutlined' is defined but never used            no-unused-vars
+  Line 153:11:  'pendingOrders' is assigned a value but never used  no-unused-vars
+
+src/Components/Contact/Contact.jsx
+  Line 21:12:  'form' is assigned a value but never used  no-unused-vars
+
+src/Components/Header/Header.jsx
+  Line 66:11:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/HEAD/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+
+src/Components/Login/Login.jsx
+  Line 122:29:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/HEAD/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+  Line 138:58:  The href attribute requires a valid value to be accessible. Provide a valid, navigable address as the href value. If you cannot provide a valid href, but still need the element to resemble a link, use a button and change it with appropriate styles. Learn more: https://github.com/jsx-eslint/eslint-plugin-jsx-a11y/blob/HEAD/docs/rules/anchor-is-valid.md  jsx-a11y/anchor-is-valid
+
+src/Components/ProductDetail/ProductDetail.jsx
+  Line 22:10:  'reviews' is assigned a value but never used                                                                               no-unused-vars
+  Line 70:6:   React Hook useEffect has a missing dependency: 'fetchProductAndReviews'. Either include it or remove the dependency array  react-hooks/exhaustive-deps
+
+

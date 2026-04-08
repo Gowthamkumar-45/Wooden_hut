@@ -47,9 +47,9 @@ const Login = () => {
 
             if (response.ok) {
                 message.success("Successfully logged in!");
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('token', result.token);
-                localStorage.setItem('user', JSON.stringify(result.user));
+                sessionStorage.setItem('isAuthenticated', 'true');
+                sessionStorage.setItem('token', result.token);
+                sessionStorage.setItem('user', JSON.stringify(result.user));
                 
                 // Small delay to ensure message is seen before redirect
                 setTimeout(() => {
@@ -119,7 +119,7 @@ const Login = () => {
                                     <Checkbox {...field} checked={field.value}>Remember me</Checkbox>
                                 )}
                             />
-                            <a href="#" className="login-link">Forgot Password?</a>
+                            <span className="login-link" style={{ cursor: 'pointer' }}>Forgot Password?</span>
                         </div>
 
                         <Form.Item>
@@ -135,7 +135,7 @@ const Login = () => {
                         </Form.Item>
                         
                         <div className="login-footer-links" style={{ justifyContent: 'center' }}>
-                            <span>Don't have an account? <a href="#" className="login-link" style={{ marginLeft: '5px' }}>Sign Up</a></span>
+                            <span>Don't have an account? <span className="login-link" style={{ marginLeft: '5px', cursor: 'pointer' }}>Sign Up</span></span>
                         </div>
                     </Form>
                 </div>

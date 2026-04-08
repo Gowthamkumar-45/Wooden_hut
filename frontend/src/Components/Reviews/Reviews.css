@@ -14,7 +14,7 @@
 .reviews-hero {
     background: var(--white);
     padding: 160px 80px 100px;
-    border-bottom: 1px solid rgba(0,0,0,0.05);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
 }
 
 .hero-wrapper {
@@ -35,7 +35,8 @@
     font-size: 13px;
     letter-spacing: 5px;
     text-transform: uppercase;
-    color: #C4953A; /* Explicit gold */
+    color: #C4953A;
+    /* Explicit gold */
     margin-bottom: 24px;
     font-weight: 600;
 }
@@ -44,7 +45,8 @@
     font-family: 'Jost', sans-serif;
     font-size: 68px;
     font-weight: 500;
-    color: #2C1A0E; /* Dark brown */
+    color: #2C1A0E;
+    /* Dark brown */
     line-height: 1.1;
     margin-bottom: 32px;
 }
@@ -52,13 +54,15 @@
 .hero-title em {
     font-family: 'Cormorant Garamond', serif;
     font-style: italic;
-    color: #C4953A; /* Explicit gold */
+    color: #C4953A;
+    /* Explicit gold */
     font-weight: 700;
 }
 
 .hero-desc {
     font-size: 18px;
-    color: #53402f !important; /* Darker brown-grey for readability */
+    color: #53402f !important;
+    /* Darker brown-grey for readability */
     max-width: 500px;
     line-height: 1.8;
     font-weight: 400;
@@ -162,9 +166,16 @@
     display: block;
     font-size: 13px;
     color: var(--gold);
-    margin-bottom: 30px;
+    margin-bottom: 5px;
     font-weight: 500;
     text-transform: uppercase;
+}
+
+.rev-subject {
+    font-size: 18px;
+    color: var(--brown-light);
+    margin-bottom: 20px;
+    font-weight: 600;
 }
 
 .rev-quotation {
@@ -179,9 +190,24 @@
 }
 
 @media (max-width: 900px) {
-    .reviews-grid { grid-template-columns: 1fr; }
-    .hero-wrapper { grid-template-columns: 1fr; gap: 40px; }
-    .hero-title { font-size: 42px; }
-    .reviews-hero { padding: 140px 20px 80px; }
-    .hero-visual { height: 350px; }
+    .reviews-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .hero-wrapper {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .hero-title {
+        font-size: 42px;
+    }
+
+    .reviews-hero {
+        padding: 140px 20px 80px;
+    }
+
+    .hero-visual {
+        height: 350px;
+    }
 }

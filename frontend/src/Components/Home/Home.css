@@ -1,3 +1,7 @@
+.home-container {
+  text-align: left;
+}
+
 .home-container .hero {
   min-height: 100vh;
   display: grid;
@@ -28,6 +32,7 @@
   height: 1px;
   background: var(--gold);
 }
+
 .home-container .hero-title {
   font-family: "Cormorant Garamond", serif;
   font-size: clamp(52px, 5.5vw, 86px);
@@ -35,6 +40,7 @@
   line-height: 1.05;
   color: var(--brown-deep);
   margin-bottom: 32px;
+  margin-left: 10px;
 }
 .home-container .hero-title em {
   font-style: italic;
@@ -46,6 +52,7 @@
   color: var(--text-muted);
   max-width: 380px;
   margin-bottom: 52px;
+  margin-left: 10px;
 }
 .home-container .hero-actions {
   display: flex;
@@ -183,13 +190,14 @@
   margin: 2px 0;
 }
 
-/* MARQUEE */
-.home-container .marquee-strip {
+.home-container .hero .marquee-strip {
+  grid-column: 1 / span 2;
   background: var(--brown-deep);
   padding: 18px 0;
   overflow: hidden;
   border-top: 1px solid rgba(196, 149, 58, 0.3);
   border-bottom: 1px solid rgba(196, 149, 58, 0.3);
+  margin-top: auto;
 }
 .home-container .marquee-inner {
   display: flex;
@@ -801,81 +809,6 @@
     opacity: 1;
     transform: translateY(0);
   }
-}
-
-/* Mobile (max-width: 768px) */
-@media (max-width: 768px) {
-  .home-container .hero-title {
-    font-size: clamp(42px, 10vw, 52px);
-  }
-
-  .home-container .hero-left,
-  .home-container .about-content,
-  .home-container .services,
-  .home-container .process,
-  .home-container .quote-section,
-  .home-container .contact-info,
-  .home-container .contact-form {
-    padding: 40px 20px;
-  }
-
-  .home-container .hero-actions {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 20px;
-  }
-
-  .home-container .hero-stats {
-    flex-direction: row;
-    flex-wrap: wrap;
-    gap: 30px;
-  }
-
-  .home-container .about-pillars {
-    flex-direction: column;
-  }
-
-  .home-container .services-grid,
-  .home-container .process-steps {
-    grid-template-columns: 1fr;
-  }
-
-  .home-container .services-header {
-    flex-direction: column;
-    align-items: flex-start;
-  }
-
-  .home-container .gallery-strip {
-    flex-direction: column;
-    height: auto;
-  }
-
-  .home-container .gallery-pane {
-    height: 150px;
-    flex: none !important;
-  }
-
-  .home-container .quote-mark {
-    font-size: 80px;
-    margin-bottom: 20px;
-  }
-
-  .home-container .quote-text {
-    font-size: 20px;
-    line-height: 1.5;
-  }
-
-  .home-container .hero-badge {
-    width: 70px;
-    height: 70px;
-    top: 20px;
-    right: 20px;
-  }
-
-  .home-container .hero-badge-inner b {
-    font-size: 14px;
-  }
-
   .gallery-section-title {
     font-size: 32px;
     margin-top: 40px;

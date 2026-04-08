@@ -13,6 +13,7 @@ const enquirySchema = yup.object().shape({
     phone: yup.string()
         .matches(/^[0-9]{10}$/, "Phone number must be exactly 10 digits")
         .required("Phone number is required"),
+    email: yup.string().email("Please enter a valid email address").required("Email address is required"),
     service: yup.string().required("Please select a service"),
     message: yup.string().min(10, "Message should be at least 10 characters")
 });
@@ -32,6 +33,7 @@ const Home = () => {
         defaultValues: {
             name: '',
             phone: '',
+            email: '',
             service: '',
             message: ''
         }
@@ -66,7 +68,7 @@ const Home = () => {
                     <h1 className="hero-title">Where <em>Timber</em><br />Becomes<br />Legacy</h1>
                     <p className="hero-desc">Premium sawmill timbers, bespoke furniture, and handcrafted interiors — built from the finest wood, shaped by decades of mastery.</p>
                     <div className="hero-actions">
-                        <a href="#services" className="btn-primary">Explore Our Work</a>
+                        <a href="#services" className="btn-primary">Explore Our Products</a>
                         <a href="#contact" className="btn-ghost">Request a Consultation</a>
                     </div>
                     <div className="hero-stats">
@@ -89,29 +91,29 @@ const Home = () => {
                         <div className="hero-overlay-sub">Premium Timbers · Bespoke Furniture · Tamil Nadu</div>
                     </div>
                 </div>
-            </section>
 
-            {/* MARQUEE */}
-            <div className="marquee-strip">
-                <div className="marquee-inner">
-                    <div className="marquee-item"><span className="marquee-dot"></span>Timber Supply</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Custom Furniture</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Sofa Sets</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Cots & Beds</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Dining Tables</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Premium Hardwood</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Teak Wood</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Rosewood</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Timber Supply</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Custom Furniture</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Sofa Sets</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Cots & Beds</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Dining Tables</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Premium Hardwood</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Teak Wood</div>
-                    <div className="marquee-item"><span className="marquee-dot"></span>Rosewood</div>
+                {/* MARQUEE Moved Inside Hero */}
+                <div className="marquee-strip">
+                    <div className="marquee-inner">
+                        <div className="marquee-item"><span className="marquee-dot"></span>Timber Supply</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Custom Furniture</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Sofa Sets</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Single Beds</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Dining Tables</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Premium Hardwood</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Teak Wood</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Rosewood</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Timber Supply</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Custom Furniture</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Sofa Sets</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Single Beds</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Dining Tables</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Premium Hardwood</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Teak Wood</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Rosewood</div>
+                    </div>
                 </div>
-            </div>
+            </section>
 
             {/* ABOUT */}
             <section className="about" id="about">
@@ -174,13 +176,13 @@ const Home = () => {
                         </div>
                     </div>
 
-                    <div className="service-card fade-up" onClick={() => navigate('/category/cots-and-beds')}>
-                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80&fit=crop" alt="Cots and Beds" />
+                    <div className="service-card fade-up" onClick={() => navigate('/category/bedroom')}>
+                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80&fit=crop" alt="Bedroom Collection" />
                         <div className="service-card-overlay"></div>
                         <div className="service-card-body">
                             <div className="service-num">04</div><div className="service-line"></div>
-                            <div className="service-name">Cots & Beds</div>
-                            <div className="service-desc">Handcrafted wooden cots and bed frames built for lasting comfort and timeless beauty. Available in single, double, and king sizes.</div>
+                            <div className="service-name">Bedroom</div>
+                            <div className="service-desc">Handcrafted wooden beds and frames built for lasting comfort and timeless beauty. Available in single, queen, and king sizes.</div>
                         </div>
                     </div>
 
@@ -217,31 +219,31 @@ const Home = () => {
                         <div className="gallery-pane-tag">Wood</div>
                         <div className="gallery-pane-label">Teak Timber</div>
                     </div>
-                <div className="gallery-pane" onClick={() => navigate('/category/custom-furniture')}>
-                    <img src="https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=500&q=80&fit=crop" alt="Craftsman" />
-                    <div className="gallery-g-overlay"></div>
-                    <div className="gallery-pane-tag">Craft</div>
-                    <div className="gallery-pane-label">Master Craftsmen</div>
+                    <div className="gallery-pane" onClick={() => navigate('/category/custom-furniture')}>
+                        <img src="https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=500&q=80&fit=crop" alt="Craftsman" />
+                        <div className="gallery-g-overlay"></div>
+                        <div className="gallery-pane-tag">Craft</div>
+                        <div className="gallery-pane-label">Master Craftsmen</div>
+                    </div>
+                    <div className="gallery-pane" onClick={() => navigate('/category/sofa-sets')}>
+                        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&q=80&fit=crop" alt="Sofa" />
+                        <div className="gallery-g-overlay"></div>
+                        <div className="gallery-pane-tag">Living</div>
+                        <div className="gallery-pane-label">Sofa Collection</div>
+                    </div>
+                    <div className="gallery-pane" onClick={() => navigate('/category/dining-tables')}>
+                        <img src="https://images.unsplash.com/photo-1617806118233-18e1de247200?w=500&q=80&fit=crop" alt="Dining" />
+                        <div className="gallery-g-overlay"></div>
+                        <div className="gallery-pane-tag">Dining</div>
+                        <div className="gallery-pane-label">Dining Sets</div>
+                    </div>
+                    <div className="gallery-pane" onClick={() => navigate('/category/bedroom')}>
+                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&q=80&fit=crop" alt="Bedroom" />
+                        <div className="gallery-g-overlay"></div>
+                        <div className="gallery-pane-tag">Bedroom</div>
+                        <div className="gallery-pane-label">Bedroom Sets</div>
+                    </div>
                 </div>
-                <div className="gallery-pane" onClick={() => navigate('/category/sofa-sets')}>
-                    <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&q=80&fit=crop" alt="Sofa" />
-                    <div className="gallery-g-overlay"></div>
-                    <div className="gallery-pane-tag">Living</div>
-                    <div className="gallery-pane-label">Sofa Collection</div>
-                </div>
-                <div className="gallery-pane" onClick={() => navigate('/category/dining-tables')}>
-                    <img src="https://images.unsplash.com/photo-1617806118233-18e1de247200?w=500&q=80&fit=crop" alt="Dining" />
-                    <div className="gallery-g-overlay"></div>
-                    <div className="gallery-pane-tag">Dining</div>
-                    <div className="gallery-pane-label">Dining Sets</div>
-                </div>
-                <div className="gallery-pane" onClick={() => navigate('/category/cots-and-beds')}>
-                    <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&q=80&fit=crop" alt="Bedroom" />
-                    <div className="gallery-g-overlay"></div>
-                    <div className="gallery-pane-tag">Bedroom</div>
-                    <div className="gallery-pane-label">Cots & Beds</div>
-                </div>
-            </div>
             </section>
 
             {/* PROCESS */}
@@ -281,7 +283,7 @@ const Home = () => {
                 <div className="contact-form">
                     <div className="section-label">Send an Enquiry</div>
                     <h3 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: "32px", fontWeight: "300", color: "var(--brown-deep)", marginBottom: "40px" }}>Request a <em style={{ fontStyle: "italic", color: "var(--brown-warm)" }}>Quote</em></h3>
-                    
+
                     <Form layout="vertical" onFinish={handleSubmit(onSubmit)}>
                         <Form.Item
                             label="Your Name"
@@ -307,6 +309,20 @@ const Home = () => {
                                 control={control}
                                 render={({ field }) => (
                                     <Input {...field} placeholder={SITE_CONTENT.contact.phone} size="large" />
+                                )}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Email Address"
+                            validateStatus={errors.email ? "error" : ""}
+                            help={errors.email?.message}
+                        >
+                            <Controller
+                                name="email"
+                                control={control}
+                                render={({ field }) => (
+                                    <Input {...field} placeholder="youremail@example.com" size="large" type="email" />
                                 )}
                             />
                         </Form.Item>
@@ -355,7 +371,7 @@ const Home = () => {
                     </Form>
                 </div>
             </section>
-            </div>
+        </div>
     );
 };
 

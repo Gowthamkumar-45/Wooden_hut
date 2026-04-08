@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
@@ -8,15 +8,18 @@ import { SITE_CONTENT } from '../../constants/content';
 import './ProductDetail.css';
 
 const reviewSchema = yup.object().shape({
-    rating: yup.number().min(1, "Please provide a rating").required("Rating is required"),
-    review: yup.string().min(10, "Review should be at least 10 characters").required("Review is required"),
-    name: yup.string().required("Name is required"),
-    email: yup.string().email("Invalid email address").required("Email is required"),
+  rating: yup.number().min(1, "Please provide a rating").required("Rating is required"),
+  subject: yup.string().required("Subject is required"),
+  review: yup.string().min(10, "Review should be at least 10 characters").required("Review is required"),
+  name: yup.string().required("Name is required"),
+  email: yup.string().email("Invalid email address").required("Email is required"),
 });
 
 const ProductDetail = () => {
-  const { productId } = useParams();
+  const { productSlug } = useParams();
+  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
+  // const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeImg, setActiveImg] = useState('');
   const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
@@ -24,8 +27,8 @@ const ProductDetail = () => {
   const imgRef = useRef(null);
 
   const { handleSubmit, control, reset, formState: { errors } } = useForm({
-      resolver: yupResolver(reviewSchema),
-      defaultValues: { rating: 0, review: '', name: '', email: '' }
+    resolver: yupResolver(reviewSchema),
+    defaultValues: { rating: 0, subject: '', review: '', name: '', email: '' }
   });
 
   const getImageUrl = (path) => {
@@ -36,25 +39,36 @@ const ProductDetail = () => {
     return `${base}${imgPath}`;
   };
 
+  const fetchProductAndReviews = async () => {
+    setLoading(true);
+    try {
+      const [productRes, reviewsRes] = await Promise.all([
+        fetch(`${SITE_CONTENT.api.base}/api/products/${productSlug}/`),
+        fetch(`${SITE_CONTENT.api.base}/api/reviews/?product_slug=${productSlug}`)
+      ]);
+
+      if (productRes.ok) {
+        const prodData = await productRes.json();
+        setProduct(prodData);
+        setActiveImg(getImageUrl(prodData.main_image));
+      }
+
+      if (reviewsRes.ok) {
+        // const reviewsData = await reviewsRes.json();
+        // setReviews(reviewsData);
+      }
+    } catch (err) {
+      console.error("Fetch Error:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
     window.scrollTo(0, 0);
-    const fetchProduct = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`${SITE_CONTENT.api.base}/api/products/${productId}/`);
-        if (response.ok) {
-          const data = await response.json();
-          setProduct(data);
-          setActiveImg(getImageUrl(data.main_image));
-        }
-      } catch (err) {
-        console.error("Fetch Error:", err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProduct();
-  }, [productId]);
+    fetchProductAndReviews();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [productSlug]);
 
   const handleMouseMove = (e) => {
     if (!imgRef.current) return;
@@ -66,21 +80,37 @@ const ProductDetail = () => {
     setZoomPos({ x, y });
   };
 
-  const onSubmit = (data) => {
-      console.log("Review Data:", data);
-      antMessage.success("Thank you! Your review has been submitted for approval.");
-      reset();
+  const onSubmit = async (data) => {
+    try {
+      const response = await fetch(`${SITE_CONTENT.api.base}/api/reviews/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ...data, product: product.id })
+      });
+      if (response.ok) {
+        antMessage.success("Thank you! Your review has been submitted for approval.");
+        reset();
+        setTimeout(() => {
+          navigate('/reviews');
+        }, 2000);
+      } else {
+        antMessage.error("Failed to submit review. Please try again.");
+      }
+    } catch (err) {
+      console.error("Submit Error:", err);
+      antMessage.error("Something went wrong. Please check your connection.");
+    }
   };
 
   const logWhatsAppContact = async () => {
     try {
-        await fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ product_name: product.name })
-        });
+      await fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_name: product.name })
+      });
     } catch (err) {
-        console.error("Failed to log contact:", err);
+      console.error("Failed to log contact:", err);
     }
   };
 
@@ -88,11 +118,11 @@ const ProductDetail = () => {
   if (!product) return <div className="not-found">Product not found</div>;
 
   const galleryImages = [
-      product.main_image,
-      product.image2,
-      product.image3,
-      product.image4,
-      product.image5
+    product.main_image,
+    product.image2,
+    product.image3,
+    product.image4,
+    product.image5
   ].filter(img => img).map(img => getImageUrl(img));
 
   return (
@@ -100,16 +130,16 @@ const ProductDetail = () => {
       <div className="product-main-section">
         {/* LEFT: IMAGES */}
         <div className="image-gallery">
-          <div 
-            className="main-image-wrap" 
+          <div
+            className="main-image-wrap"
             onMouseMove={handleMouseMove}
             onMouseEnter={() => setIsZooming(true)}
             onMouseLeave={() => { setIsZooming(false); setZoomPos({ x: 0, y: 0 }); }}
             ref={imgRef}
           >
-            <img 
-              src={activeImg} 
-              alt={product.name} 
+            <img
+              src={activeImg}
+              alt={product.name}
               className="main-detail-img"
               onError={(e) => e.target.src = 'https://via.placeholder.com/800x600?text=Product+Hero'}
             />
@@ -117,8 +147,8 @@ const ProductDetail = () => {
           </div>
           <div className="thumbnail-strip">
             {galleryImages.map((img, idx) => (
-              <div 
-                key={idx} 
+              <div
+                key={idx}
                 className={`thumb-wrap ${activeImg === img ? 'active' : ''}`}
                 onClick={() => setActiveImg(img)}
               >
@@ -131,19 +161,21 @@ const ProductDetail = () => {
         {/* RIGHT: INFO & ZOOM PANEL */}
         <div className="product-info-wrap">
           {isZooming && (
-            <div 
-                className="side-zoom-panel"
-                style={{
-                    backgroundImage: `url(${activeImg})`,
-                    backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
-                    backgroundSize: '250%'
-                }}
+            <div
+              className="side-zoom-panel"
+              style={{
+                backgroundImage: `url(${activeImg})`,
+                backgroundPosition: `${zoomPos.x}% ${zoomPos.y}%`,
+                backgroundSize: '250%'
+              }}
             ></div>
           )}
 
           <h1 className="detail-title">{product.name}</h1>
-          <div className="status-badge">● In Stock</div>
-          
+          <div className={`status-badge ${product.in_stock ? 'in-stock' : 'out-of-stock'}`}>
+            {product.in_stock ? '● In Stock' : '● Out of Stock'}
+          </div>
+
           <p className="detail-desc">{product.description}</p>
 
           <div className="specs-container">
@@ -153,27 +185,27 @@ const ProductDetail = () => {
                 <tr><td>Category</td><td>{product.category_name} - {product.sub_category_name}</td></tr>
                 <tr><td>Material</td><td>{product.material}</td></tr>
                 <tr><td>Color</td><td>{product.color}</td></tr>
-                <tr><td>Dimensions</td><td>{product.dimensions}</td></tr>
+                {product.dimensions && <tr><td>Dimensions</td><td>{product.dimensions}</td></tr>}
                 {product.storage && <tr><td>Storage</td><td>{product.storage}</td></tr>}
               </tbody>
             </table>
           </div>
 
           <div className="product-actions-row">
-               <a 
-                href={`https://wa.me/${SITE_CONTENT.contact.whatsapp}?text=I'm interested in ${product.name}`} 
-                target="_blank" 
-                rel="noreferrer" 
-                className="whatsapp-btn"
-                onClick={logWhatsAppContact}
-               >
+            <a
+              href={`https://wa.me/${SITE_CONTENT.contact.whatsapp}?text=I'm interested in ${product.name}`}
+              target="_blank"
+              rel="noreferrer"
+              className="whatsapp-btn"
+              onClick={logWhatsAppContact}
+            >
               <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
               Message Us
             </a>
             <div className="feature-item">
               <div className="icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M1 10h15m-1 0l3-5h4l1 5v7h-3m-12 0h11" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M1 10h15m-1 0l3-5h4l1 5v7h-3m-12 0h11" strokeLinecap="round" strokeLinejoin="round" />
                   <circle cx="7" cy="17" r="2" /><circle cx="18" cy="17" r="2" />
                 </svg>
               </div>
@@ -183,8 +215,8 @@ const ProductDetail = () => {
             <div className="feature-item">
               <div className="icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round"/>
-                  <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" strokeLinecap="round" strokeLinejoin="round" />
+                  <path d="M9 12l2 2 4-4" strokeLinecap="round" strokeLinejoin="round" />
                 </svg>
               </div>
               <div className="feature-text"><strong>Lifetime</strong><span>Guarantee</span></div>
@@ -193,34 +225,42 @@ const ProductDetail = () => {
         </div>
       </div>
 
+
       <section className="reviews-section-minimal">
         <div className="review-form-wrap centered">
           <h3>Add a Review</h3>
           <p className="form-sub">Your email address will not be published. Required fields are marked *</p>
-          
+
           <Form layout="vertical" onFinish={handleSubmit(onSubmit)} className="review-form">
             <Form.Item label="Your Rating *" validateStatus={errors.rating ? "error" : ""} help={errors.rating?.message}>
-              <Controller name="rating" control={control} render={({ field }) => ( <Rate {...field} /> )} />
+              <Controller name="rating" control={control} render={({ field }) => (<Rate {...field} />)} />
+            </Form.Item>
+
+            <Form.Item label="Subject *" validateStatus={errors.subject ? "error" : ""} help={errors.subject?.message} className="full-width" >
+              <Controller name="subject" control={control} render={({ field }) => (<Input {...field} placeholder="Review Subject (e.g. Excellent Product)" />)} />
             </Form.Item>
 
             <Form.Item label="Your Review *" validateStatus={errors.review ? "error" : ""} help={errors.review?.message} className="full-width" >
-              <Controller name="review" control={control} render={({ field }) => ( <Input.TextArea {...field} placeholder="Write your comments here..." rows={4} /> )} />
+              <Controller name="review" control={control} render={({ field }) => (<Input.TextArea {...field} placeholder="Write your comments here..." rows={4} />)} />
             </Form.Item>
 
             <div className="form-row">
               <Form.Item label="Name *" validateStatus={errors.name ? "error" : ""} help={errors.name?.message} >
-                <Controller name="name" control={control} render={({ field }) => ( <Input {...field} placeholder="Your Name" size="large" /> )} />
+                <Controller name="name" control={control} render={({ field }) => (<Input {...field} placeholder="Your Name" />)} />
               </Form.Item>
 
               <Form.Item label="Email *" validateStatus={errors.email ? "error" : ""} help={errors.email?.message} >
-                <Controller name="email" control={control} render={({ field }) => ( <Input {...field} placeholder="Your Email" size="large" /> )} />
+                <Controller name="email" control={control} render={({ field }) => (<Input {...field} placeholder="Your Email" />)} />
               </Form.Item>
             </div>
 
-            <Form.Item>
-              <Button type="primary" htmlType="submit" size="large" className="submit-review-btn">
-                Submit Review
-              </Button>
+            <Form.Item className="submit-row">
+              <div className="submit-btn-wrap">
+                <Button type="primary" htmlType="submit" size="large" className="submit-review-btn">
+                  Submit Review
+                </Button>
+                <Link to="/reviews" className="view-all-reviews-btn">View All Customer Reviews →</Link>
+              </div>
             </Form.Item>
           </Form>
         </div>

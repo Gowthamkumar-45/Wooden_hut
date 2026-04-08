@@ -7,8 +7,8 @@ export const SITE_CONTENT = {
         fullName: "Marutham Timbers & Furnitures",
         tagline: "Where Timber Becomes Legacy",
         est: "Est. with Pride",
-        experience: "25+ Years",
-        projectsLine: "1200+ Projects Delivered",
+        experience: "25+ ",
+        projectsLine: "500+ Projects Delivered",
         promise: "100% Solid Wood Promise"
     },
     api: {
@@ -60,12 +60,13 @@ export const NAV_LINKS = [
 
 export const PRODUCTS_MENU = {
     living: [
-        { name: "Pooja Unit", path: "/category/pooja-unit" },
+        { name: "Sofa Sets", path: "/category/sofa-sets" },
         { name: "Teapoy", path: "/category/teapoy" },
-        { name: "Storage Unit", path: "/category/pooja-unit" },
+        { name: "Pooja Unit", path: "/category/pooja-unit" },
+        { name: "Storage Unit", path: "/category/storage-unit" },
         { name: "Swing", path: "/category/swing" },
-        { name: "Bed Side Table", path: "/category/pooja-unit" },
-        { name: "TV Unit", path: "/category/pooja-unit" }
+        { name: "TV Unit", path: "/category/tv-unit" },
+        { name: "Chairs", path: "/category/chairs" }
     ],
     dining: [
         { name: "Dining Table Sets", path: "/category/dining-tables" },
@@ -76,7 +77,21 @@ export const PRODUCTS_MENU = {
     bedroom: [
         { name: "King Size Beds", path: "/category/king-size-beds" },
         { name: "Queen Size Beds", path: "/category/queen-size-beds" },
+        { name: "Single Beds", path: "/category/single-beds" },
+        { name: "Cradle", path: "/category/cradle" },
         { name: "Wardrobes", path: "/category/wardrobes" },
-        { name: "Dressing Tables", path: "/category/dressing-tables" }
+        { name: "Dressing Tables", path: "/category/dressing-tables" },
+        { name: "Bedside Tables", path: "/category/bed-side-table" }
+    ],
+    office: [
+        { name: "Office Tables", path: "/category/office-tables" },
+        { name: "Office Chairs", path: "/category/office-chairs" },
+        { name: "Bookshelves", path: "/category/bookshelves" },
+        { name: "Office Storage Cabinets", path: "/category/office-storage-cabinets" }
+    ],
+    "doors-and-windows": [
+        { name: "Doors", path: "/category/doors" },
+        { name: "Windows", path: "/category/windows" },
+        { name: "Nilai", path: "/category/nilai" }
     ]
 };

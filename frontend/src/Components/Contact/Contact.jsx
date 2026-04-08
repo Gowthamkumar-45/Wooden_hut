@@ -18,7 +18,7 @@ const contactSchema = yup.object().shape({
 });
 
 const Contact = () => {
-    const [form] = Form.useForm();
+    // const [form] = Form.useForm();
 
     const {
         handleSubmit,
