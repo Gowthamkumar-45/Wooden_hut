@@ -5,6 +5,7 @@ import * as yup from 'yup';
 import { Form, Input, Button, Select, Upload, message } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+import { SITE_CONTENT } from '../../../constants/content';
 import './AddProduct.css';
 
 const { Option } = Select;
@@ -46,7 +47,7 @@ const AddProduct = () => {
     React.useEffect(() => {
         const fetchCategories = async () => {
             try {
-                const response = await fetch('http://localhost:8000/api/categories/');
+                const response = await fetch(`${SITE_CONTENT.api.base}/api/categories/`);
                 if (response.ok) {
                     const data = await response.json();
                     setCategories(data);
@@ -91,7 +92,7 @@ const AddProduct = () => {
 
         try {
             const token = sessionStorage.getItem('token');
-            const response = await fetch('http://localhost:8000/api/products/', {
+            const response = await fetch(`${SITE_CONTENT.api.base}/api/products/`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Token ${token}`

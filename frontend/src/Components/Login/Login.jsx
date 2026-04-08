@@ -32,7 +32,7 @@ const Login = () => {
 
     const onSubmit = async (data) => {
         try {
-            const response = await fetch('http://localhost:8000/api/login/', {
+            const response = await fetch(`${SITE_CONTENT.api.base}/api/login/`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
