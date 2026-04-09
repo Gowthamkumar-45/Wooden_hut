@@ -2,10 +2,8 @@ services:
   # The Backend Service (Django)
   - type: web
     name: wooden-hut-backend
-    env: python
-    # Build command: install dependencies, collect static files, and migrate DB
+    runtime: python
     buildCommand: pip install -r requirements.txt && python Backend_M/manage.py collectstatic --no-input && python Backend_M/manage.py migrate
-    # Start command: run gunicorn
     startCommand: gunicorn --bind 0.0.0.0:$PORT --pythonpath Backend_M Backend.wsgi
     envVars:
       - key: PYTHON_VERSION
@@ -16,13 +14,15 @@ services:
         generateValue: true
 
   # The Frontend Service (React)
-  - type: static
+  - type: web
     name: wooden-hut-frontend
-    env: static
+    runtime: static
     # Root directory for the static site
     rootDir: frontend
     buildCommand: npm install && npm run build
-    publishPath: build
+    # staticPublishPath is relative to the root of the repo if rootDir is set? 
+    # Actually, Render documentation says it's relative to the repo root.
+    staticPublishPath: frontend/build
     routes:
       - type: rewrite
         source: /*
