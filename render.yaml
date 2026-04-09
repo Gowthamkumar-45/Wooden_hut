@@ -20,8 +20,7 @@ services:
     # Root directory for the static site
     rootDir: frontend
     buildCommand: npm install && npm run build
-    # staticPublishPath is relative to the root of the repo if rootDir is set? 
-    # Actually, Render documentation says it's relative to the repo root.
+    # staticPublishPath is relative to the root of the repo.
     staticPublishPath: frontend/build
     routes:
       - type: rewrite
