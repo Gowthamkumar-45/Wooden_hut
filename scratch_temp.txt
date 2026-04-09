@@ -1,0 +1,8 @@
+#!/opt/render/project/src/.venv/bin/python
+import os
+import sys
+
+# Add Backend_M to path so we can import things if needed
+sys.path.append(os.path.join(os.getcwd(), 'Backend_M'))
+
+# No, simpler to just use a bash script

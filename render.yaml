@@ -1,11 +1,11 @@
 services:
-  # The Backend Service (Django) - Free Tier
+  # Backend (Django)
   - type: web
     name: wooden-hut-backend
     runtime: python
     plan: free
-    buildCommand: pip install -r requirements.txt && python Backend_M/manage.py collectstatic --no-input && python Backend_M/manage.py migrate
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --pythonpath Backend_M Backend.wsgi
+    buildCommand: ./build.sh
+    startCommand: gunicorn Backend.wsgi:application --bind 0.0.0.0:$PORT
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
@@ -14,14 +14,14 @@ services:
       - key: SECRET_KEY
         generateValue: true
 
-  # The Frontend Service (React) - Free Tier
+  # Frontend (React)
   - type: web
     name: wooden-hut-frontend
     runtime: static
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
-    staticPublishPath: frontend/build
+    staticPublishPath: build
     routes:
       - type: rewrite
         source: /*

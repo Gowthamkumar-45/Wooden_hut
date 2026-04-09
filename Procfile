@@ -1,1 +1,1 @@
-web: gunicorn --bind 0.0.0.0:$PORT --pythonpath Backend_M Backend.wsgi
+web: gunicorn Backend.wsgi:application --bind 0.0.0.0:$PORT
