@@ -5,7 +5,7 @@ services:
     runtime: python
     plan: free
     buildCommand: ./build.sh
-    startCommand: gunicorn --bind 0.0.0.0:$PORT --pythonpath Backend_M Backend.wsgi
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --pythonpath backend Backend.wsgi
 
     envVars:
       - key: PYTHON_VERSION
