@@ -1,0 +1,29 @@
+services:
+  # The Backend Service (Django)
+  - type: web
+    name: wooden-hut-backend
+    env: python
+    # Build command: install dependencies, collect static files, and migrate DB
+    buildCommand: pip install -r requirements.txt && python Backend_M/manage.py collectstatic --no-input && python Backend_M/manage.py migrate
+    # Start command: run gunicorn
+    startCommand: gunicorn --bind 0.0.0.0:$PORT --pythonpath Backend_M Backend.wsgi
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.0
+      - key: DEBUG
+        value: "False"
+      - key: SECRET_KEY
+        generateValue: true
+
+  # The Frontend Service (React)
+  - type: static
+    name: wooden-hut-frontend
+    env: static
+    # Root directory for the static site
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    publishPath: build
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
