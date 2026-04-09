@@ -12,8 +12,8 @@ export const SITE_CONTENT = {
         promise: "100% Solid Wood Promise"
     },
     api: {
-        base: "https://wooden-hut-1.onrender.com",
-        media: "https://wooden-hut-1.onrender.com"
+        base: "https://wooden-hut-ibx7.onrender.com",
+        media: "https://wooden-hut-ibx7.onrender.com"
     },
     contact: {
         email: "marutham@gmail.com",
