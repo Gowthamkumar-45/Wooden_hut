@@ -1,5 +1,15 @@
 from rest_framework import serializers
-from products.models import Product, Category, SubCategory, Review
+from products.models import Product, Category, SubCategory, Review, MediaItem, MakingVideo
+
+class MediaItemSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MediaItem
+        fields = '__all__'
+
+class MakingVideoSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = MakingVideo
+        fields = '__all__'
 
 class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:

@@ -90,9 +90,6 @@ const ProductDetail = () => {
       if (response.ok) {
         antMessage.success("Thank you! Your review has been submitted for approval.");
         reset();
-        setTimeout(() => {
-          navigate('/reviews');
-        }, 2000);
       } else {
         antMessage.error("Failed to submit review. Please try again.");
       }
@@ -141,7 +138,11 @@ const ProductDetail = () => {
               src={activeImg}
               alt={product.name}
               className="main-detail-img"
-              onError={(e) => e.target.src = 'https://via.placeholder.com/800x600?text=Product+Hero'}
+              onError={(e) => {
+                if (e.target.src !== 'https://via.placeholder.com/800x600?text=Product+Hero') {
+                  e.target.src = 'https://via.placeholder.com/800x600?text=Product+Hero';
+                }
+              }}
             />
             {isZooming && <div className="zoom-lens" style={{ left: `${zoomPos.x}%`, top: `${zoomPos.y}%` }}></div>}
           </div>

@@ -83,7 +83,11 @@ const ProductList = () => {
                     src={getImageUrl(text)}
                     alt="product"
                     style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
-                    onError={(e) => e.target.src = 'https://via.placeholder.com/50x50'}
+                    onError={(e) => {
+                        if (e.target.src !== 'https://via.placeholder.com/50x50?text=No+Image') {
+                          e.target.src = 'https://via.placeholder.com/50x50?text=No+Image';
+                        }
+                      }}
                 />
             )
         },

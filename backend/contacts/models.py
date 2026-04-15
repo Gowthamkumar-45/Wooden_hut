@@ -16,6 +16,7 @@ class WhatsAppContact(models.Model):
     product_name = models.CharField(max_length=255)
     customer_name = models.CharField(max_length=255, blank=True, null=True) 
     phone_number = models.CharField(max_length=20, blank=True, null=True)
+    message = models.TextField(blank=True, null=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New')
     is_order_confirmed = models.BooleanField(default=False)
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Not Started')

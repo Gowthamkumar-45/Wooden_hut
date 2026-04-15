@@ -1,0 +1,177 @@
+:root {
+  --admin-primary: #7c3aed;
+  --admin-primary-dark: #6d28d9;
+  --admin-success: #10b981;
+  --admin-warning: #f59e0b;
+  --admin-danger: #ef4444;
+  --admin-bg: #f8fafc;
+  --admin-card: #ffffff;
+  --admin-text: #1e293b;
+  --admin-text-light: #64748b;
+  --admin-border: #e2e8f0;
+  --admin-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --admin-shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+}
+
+.admin-layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: var(--admin-bg);
+}
+
+.admin-main {
+  flex: 1;
+  /* Automatically takes remaining width */
+  min-width: 0;
+  /* Important for flex-child overflow containment */
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  transition: all 0.3s ease;
+}
+
+.admin-layout.collapsed .admin-main {
+  /* No margin needed as sidebar pushes content naturally in flexbox */
+}
+
+.admin-content {
+  flex: 1;
+  padding: 0;
+  /* Pages handle their own internal spacing */
+  overflow-y: auto;
+  overflow-x: auto;
+  /* Allow horizontal scroll if needed for wide tables */
+  background: transparent;
+}
+
+/* Transitions for smooth navigation */
+.admin-content>* {
+  animation: fadeIn 0.4s ease-out;
+}
+
+/* Global Shared Header Actions */
+.track-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 32px;
+  padding: 0 4px;
+}
+
+.refresh-btn-main {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: white;
+  color: var(--admin-primary);
+  border: 1px solid var(--admin-primary);
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.05);
+}
+
+.refresh-btn-main:hover {
+  background: var(--admin-primary);
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(124, 58, 237, 0.15);
+}
+
+.refresh-btn-main:active {
+  transform: translateY(0);
+}
+
+.refresh-btn-main svg {
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.refresh-btn-main:hover svg {
+  transform: rotate(180deg);
+}
+
+/* Global Pagination Styling */
+.admin-pagination {
+  display: flex;
+  justify-content: flex-end;
+  /* Moved to right side */
+  align-items: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 16px 4px;
+}
+
+.pag-btn {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  color: var(--admin-text);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pag-btn:hover:not(:disabled) {
+  border-color: var(--admin-primary);
+  color: var(--admin-primary);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.1);
+}
+
+.pag-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.pag-numbers {
+  display: flex;
+  gap: 8px;
+}
+
+.pag-num {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: white;
+  border: 1px solid var(--admin-border);
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--admin-text-light);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.pag-num:hover {
+  border-color: var(--admin-primary);
+  color: var(--admin-primary);
+}
+
+.pag-num.active {
+  background: var(--admin-primary);
+  color: white;
+  border-color: var(--admin-primary);
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.2);
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

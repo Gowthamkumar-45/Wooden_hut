@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from 'react';
 import './FurnitureMaking.css';
+import { SITE_CONTENT } from '../../constants/content';
 
 const FurnitureMaking = () => {
     const [currentSlide, setCurrentSlide] = useState(0);
@@ -66,18 +67,23 @@ const FurnitureMaking = () => {
     ];
 
     const [publishedVideos, setPublishedVideos] = useState([]);
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        const saved = localStorage.getItem('making_videos');
-        if (saved) {
-            setPublishedVideos(JSON.parse(saved));
-        } else {
-            // Default samples if nothing in storage
-            setPublishedVideos([
-                { id: 1, title: "Raw Teak Selection", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", thumb: "https://images.unsplash.com/photo-1603126857599-f6e157fa2fe6?w=800&q=80" },
-                { id: 2, title: "Precision Cutting", url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ", thumb: "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=800&q=80" }
-            ]);
-        }
+        const fetchVideos = async () => {
+            try {
+                const res = await fetch(`${SITE_CONTENT.api.base}/api/making-videos/`);
+                if (res.ok) {
+                    const data = await res.json();
+                    setPublishedVideos(data);
+                }
+            } catch (err) {
+                console.error("Failed to load making videos:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchVideos();
     }, []);
 
     useEffect(() => {
@@ -187,24 +193,37 @@ const FurnitureMaking = () => {
                     <h2 className="process-main-title">Our Making <em>Process Videos</em></h2>
                 </div>
                 <div className="process-grid">
-                    {publishedVideos.map(p => (
-                        <div key={p.id} className="process-card" onClick={() => {
-                            const videoId = p.url?.split('v=')[1]?.split('&')[0] || p.url?.split('/').pop();
-                            window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-                        }}>
-                            <div className="video-wrap">
-                                <img src={p.thumbnail || p.thumb} alt={p.title} />
-                                <div className="video-overlay">
-                                    <span className="watch-yt">Watch on <strong>YouTube</strong></span>
+                    {loading ? (
+                        <div className="process-loading">Exploring our workshop...</div>
+                    ) : publishedVideos.length > 0 ? (
+                        publishedVideos.map(p => (
+                            <div key={p.id} className="process-card" onClick={() => {
+                                if (p.youtube_url) {
+                                    window.open(p.youtube_url, '_blank');
+                                } else if (p.video_file) {
+                                    window.open(p.video_file, '_blank');
+                                }
+                            }}>
+                                <div className="video-wrap">
+                                    <img src={p.thumbnail || "https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80"} alt={p.title} />
+                                    <div className="video-overlay">
+                                        {p.youtube_url ? (
+                                            <span className="watch-yt">Watch on <strong>YouTube</strong></span>
+                                        ) : (
+                                            <span className="watch-yt">Play <strong>Video</strong></span>
+                                        )}
+                                    </div>
+                                    <span className="duration-tag">{p.youtube_url ? 'YouTube' : 'Original Piece'}</span>
                                 </div>
-                                <span className="duration-tag">{p.time || 'Process Video'}</span>
+                                <div className="process-info">
+                                    <h3 className="process-video-title">{p.title}</h3>
+                                    <p className="process-video-desc">{p.description || `Experience our traditional ${p.title.toLowerCase()} process in high definition detail.`}</p>
+                                </div>
                             </div>
-                            <div className="process-info">
-                                <h3 className="process-video-title">{p.title}</h3>
-                                <p className="process-video-desc">{p.description || `Experience our traditional ${p.title.toLowerCase()} process in high definition detail.`}</p>
-                            </div>
-                        </div>
-                    ))}
+                        ))
+                    ) : (
+                        <div className="process-empty">No videos shared yet. Check back soon!</div>
+                    )}
                 </div>
             </section>
 

@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './Components/Header/Header';
 import Home from './Components/Home/Home';
 import CategoryPage from './Components/CategoryPage/CategoryPage';
@@ -21,15 +21,31 @@ import MakingVideos from './Components/Admin/MakingVideos/MakingVideos';
 import MediaManager from './Components/Admin/MediaManager/MediaManager';
 import ReviewManagement from './Components/Admin/ReviewManagement/ReviewManagement';
 
+import Dashboard from './Components/Admin/Dashboard/Dashboard';
+import AdminLayout from './Components/Admin/Layout/AdminLayout';
+
 function AppContent() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
+  const [isAdmin, setIsAdmin] = useState(!!sessionStorage.getItem('token'));
+  
+  // Check if we are in "Preview Mode"
+  const isPreview = new URLSearchParams(location.search).get('preview') === 'true';
+
+  // Update isAdmin state when location changes (to catch login/logout)
+  useEffect(() => {
+    setIsAdmin(!!sessionStorage.getItem('token'));
+  }, [location]);
+
+  const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <>
-      {!isLoginPage && <Header />}
+      {!isLoginPage && !isAdminRoute && <Header />}
       <Routes>
-        <Route path="/" element={<Home />} />
+        {/* If Admin is logged in AND NOT in preview mode, redirect to Admin area */}
+        <Route path="/" element={isAdmin && !isPreview ? <Navigate to="/admin/dashboard" /> : <Home />} />
+        
         <Route path="/about" element={<About />} />
         <Route path="/category/:categoryId" element={<CategoryPage />} />
         <Route path="/product/:productSlug" element={<ProductDetail />} />
@@ -38,16 +54,28 @@ function AppContent() {
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/admin/add-product" element={<AddProduct />} />
-        <Route path="/admin/products" element={<ProductList />} />
-        <Route path="/admin/edit-product/:productId" element={<EditProduct />} />
-        <Route path="/admin/whatsapp-contacts" element={<ContactLogs />} />
-        <Route path="/admin/track-orders" element={<TrackOrders />} />
-        <Route path="/admin/making-videos" element={<MakingVideos />} />
-        <Route path="/admin/media" element={<MediaManager />} />
-        <Route path="/admin/reviews" element={<ReviewManagement />} />
+        
+        {/* Admin Routes wrapped in AdminLayout */}
+        <Route path="/admin/*" element={
+          <AdminLayout>
+            <Routes>
+              <Route path="/" element={<Navigate to="dashboard" />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="add-products" element={<AddProduct />} />
+              <Route path="products" element={<ProductList />} />
+              <Route path="edit-product/:productId" element={<EditProduct />} />
+              <Route path="whatsapp-contacts" element={<ContactLogs />} />
+              <Route path="track-orders" element={<TrackOrders />} />
+              <Route path="making-videos" element={<MakingVideos />} />
+              <Route path="media" element={<MediaManager />} />
+              <Route path="reviews" element={<ReviewManagement />} />
+              <Route path="settings" element={<div>Settings Page (Coming Soon)</div>} />
+              <Route path="help" element={<div>Help Center (Coming Soon)</div>} />
+            </Routes>
+          </AdminLayout>
+        } />
       </Routes>
-      {!isLoginPage && <Footer />}
+      {!isLoginPage && !isAdminRoute && <Footer />}
     </>
   );
 }

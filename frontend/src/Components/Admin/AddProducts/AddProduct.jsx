@@ -1,22 +1,22 @@
-import React from 'react';
-import { useForm, Controller } from 'react-hook-form';
+import React, { useState, useEffect } from 'react';
+import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Form, Input, Button, Select, Upload, message } from 'antd';
-import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { message } from 'antd';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+    ArrowLeft,
+    Upload,
+    Trash2,
+    Package,
+    Info,
+    Box,
+    Image as ImageIcon,
+    CheckCircle,
+    XCircle
+} from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
 import './AddProduct.css';
-
-const { Option } = Select;
-
-// const CATEGORY_MAPPING = {
-//     living: ["Sofa Sets", "Pooja Unit", "Teapoy", "Storage Unit", "Swing", "TV Unit", "Chairs"],
-//     dining: ["Dining Table Sets", "Dining Chairs", "Crockery Units", "Bar Cabinets"],
-//     bedroom: ["King Size Beds", "Queen Size Beds", "Single Beds", "Cradle", "Wardrobes", "Dressing Tables", "Bedside Tables"],
-//     office: ["Office Tables", "Office Chairs", "Bookshelves", "Office Storage Cabinets"],
-//     "doors-and-windows": ["Doors", "Windows", "Nilai"]
-// };
 
 const productSchema = yup.object().shape({
     name: yup.string().required("Product name is required"),
@@ -31,20 +31,19 @@ const productSchema = yup.object().shape({
 });
 
 const AddProduct = () => {
-    const { handleSubmit, control, reset, watch, setValue, formState: { errors, isSubmitting } } = useForm({
+    const navigate = useNavigate();
+    const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting }, reset } = useForm({
         resolver: yupResolver(productSchema),
-        defaultValues: {
-            category: undefined,
-            subCategory: undefined,
-            storage: '',
-            in_stock: true
-        }
+        defaultValues: { in_stock: true }
     });
 
-    const [categories, setCategories] = React.useState([]);
-    const [subCategoriesList, setSubCategoriesList] = React.useState([]);
+    const [categories, setCategories] = useState([]);
+    const [subCategoriesList, setSubCategoriesList] = useState([]);
+    const [previews, setPreviews] = useState({ main: null, g1: null, g2: null, g3: null, g4: null });
 
-    React.useEffect(() => {
+    const selectedCategoryId = watch("category");
+
+    useEffect(() => {
         const fetchCategories = async () => {
             try {
                 const response = await fetch(`${SITE_CONTENT.api.base}/api/categories/`);
@@ -59,190 +58,175 @@ const AddProduct = () => {
         fetchCategories();
     }, []);
 
-    const selectedCategoryId = watch("category");
-
-    React.useEffect(() => {
+    useEffect(() => {
         if (selectedCategoryId) {
-            const cat = categories.find(c => c.id === selectedCategoryId);
+            const cat = categories.find(c => c.id.toString() === selectedCategoryId);
             setSubCategoriesList(cat ? cat.subcategories : []);
-            setValue("subCategory", undefined);
         } else {
             setSubCategoriesList([]);
         }
-    }, [selectedCategoryId, categories, setValue]);
+    }, [selectedCategoryId, categories]);
+
+    const handleImageChange = (e, key) => {
+        const file = e.target.files[0];
+        if (file) {
+            const url = URL.createObjectURL(file);
+            setPreviews(prev => ({ ...prev, [key]: url }));
+            setValue(key, file);
+        }
+    };
 
     const onSubmit = async (data) => {
         const formData = new FormData();
-        formData.append('name', data.name);
-        formData.append('category', data.category);
-        formData.append('sub_category', data.subCategory);
-        formData.append('description', data.description);
-        formData.append('material', data.material);
-        formData.append('color', data.color);
-        formData.append('dimensions', data.dimensions);
-        formData.append('storage', data.storage);
-        formData.append('in_stock', data.in_stock);
+        Object.keys(data).forEach(key => {
+            if (!['main', 'g1', 'g2', 'g3', 'g4'].includes(key)) {
+                formData.append(key === 'subCategory' ? 'sub_category' : key, data[key]);
+            }
+        });
 
-        // Images handling (Ant Design Upload stores files in fileList)
-        if (data.mainImage?.fileList?.[0]) formData.append('main_image', data.mainImage.fileList[0].originFileObj);
-        if (data.gallery1?.fileList?.[0]) formData.append('image2', data.gallery1.fileList[0].originFileObj);
-        if (data.gallery2?.fileList?.[0]) formData.append('image3', data.gallery2.fileList[0].originFileObj);
-        if (data.gallery3?.fileList?.[0]) formData.append('image4', data.gallery3.fileList[0].originFileObj);
-        if (data.gallery4?.fileList?.[0]) formData.append('image5', data.gallery4.fileList[0].originFileObj);
+        if (data.main) formData.append('main_image', data.main);
+        if (data.g1) formData.append('image2', data.g1);
+        if (data.g2) formData.append('image3', data.g2);
+        if (data.g3) formData.append('image4', data.g3);
+        if (data.g4) formData.append('image5', data.g4);
 
         try {
             const token = sessionStorage.getItem('token');
             const response = await fetch(`${SITE_CONTENT.api.base}/api/products/`, {
                 method: 'POST',
-                headers: {
-                    'Authorization': `Token ${token}`
-                },
+                headers: { 'Authorization': `Token ${token}` },
                 body: formData
             });
 
             if (response.ok) {
-                message.success("Masterpiece added successfully!");
-                reset({
-                    name: '',
-                    category: undefined,
-                    subCategory: undefined,
-                    description: '',
-                    material: '',
-                    color: '',
-                    dimensions: '',
-                    storage: '',
-                    in_stock: true,
-                    mainImage: { fileList: [] },
-                    gallery1: { fileList: [] },
-                    gallery2: { fileList: [] },
-                    gallery3: { fileList: [] },
-                    gallery4: { fileList: [] }
-                });
+                message.success("Product published to showroom!");
+                reset();
+                setPreviews({ main: null, g1: null, g2: null, g3: null, g4: null });
+                navigate('/admin/products');
             } else {
-                const errData = await response.json();
-                message.error(JSON.stringify(errData) || "Failed to add product.");
+                message.error("Creation failed. Please check inputs.");
             }
         } catch (error) {
-            message.error("Network error. Please try again.");
+            message.error("Network error.");
         }
     };
 
     return (
-        <div className="add-product-page">
-            <div className="form-container">
-                <header className="form-header">
-                    <Link to="/admin/products" className="back-link">
-                        <ArrowLeftOutlined /> Back to Inventory
+        <div className="track-orders-container add-product-page">
+            <div className="track-header">
+                <div>
+                    <Link to="/admin/products" style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--admin-primary)', textDecoration: 'none', fontSize: '12px', marginBottom: '12px', fontWeight: 800}}>
+                        <ArrowLeft size={14}/> BACK TO INVENTORY
                     </Link>
-                    <span className="header-label">Inventory Management</span>
-                    <h1 className="header-title">Add New <em>Furniture</em></h1>
-                    <p className="header-subtitle">Fill in the details below to list a new masterpiece in your collection.</p>
-                </header>
-
-                <Form layout="vertical" onFinish={handleSubmit(onSubmit)} className="premium-form">
-                    <div className="form-grid">
-                        <Form.Item label="Product Name *" className="full-width" validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
-                            <Controller name="name" control={control} render={({ field }) => <Input {...field} size="large" placeholder="E.g. Royal Teak Sofa" />} />
-                        </Form.Item>
-
-                        <Form.Item label="Category *" validateStatus={errors.category ? "error" : ""} help={errors.category?.message}>
-                            <Controller name="category" control={control} render={({ field }) => (
-                                <Select {...field} size="large" placeholder="Select Category">
-                                    {categories.map(cat => (
-                                        <Option key={cat.id} value={cat.id}>{cat.name}</Option>
-                                    ))}
-                                </Select>
-                            )} />
-                        </Form.Item>
-
-                        <Form.Item label="Sub-Category *" validateStatus={errors.subCategory ? "error" : ""} help={errors.subCategory?.message}>
-                            <Controller name="subCategory" control={control} render={({ field }) => (
-                                <Select {...field} size="large" placeholder="Select Sub-Category" disabled={!selectedCategoryId}>
-                                    {subCategoriesList.map(sub => (
-                                        <Option key={sub.id} value={sub.id}>{sub.name}</Option>
-                                    ))}
-                                </Select>
-                            )} />
-                        </Form.Item>
-
-                        <Form.Item label="Material *" validateStatus={errors.material ? "error" : ""} help={errors.material?.message}>
-                            <Controller name="material" control={control} render={({ field }) => <Input {...field} size="large" placeholder="E.g. Solid Teak Wood" />} />
-                        </Form.Item>
-
-                        <Form.Item label="Color/Finish *" validateStatus={errors.color ? "error" : ""} help={errors.color?.message}>
-                            <Controller name="color" control={control} render={({ field }) => <Input {...field} size="large" placeholder="E.g. Honey Oak" />} />
-                        </Form.Item>
-
-                        <Form.Item label="Dimensions" validateStatus={errors.dimensions ? "error" : ""} help={errors.dimensions?.message} className="full-width">
-                            <Controller name="dimensions" control={control} render={({ field }) => <Input {...field} size="large" placeholder="E.g. 80 H X 35 W X 30 D inches" />} />
-                        </Form.Item>
-
-                        <Form.Item label="Storage *" validateStatus={errors.storage ? "error" : ""} help={errors.storage?.message} className="full-width">
-                            <Controller name="storage" control={control} render={({ field }) => <Input {...field} size="large" placeholder="E.g. Under-bed storage, Side drawers, etc." />} />
-                        </Form.Item>
-
-                        <Form.Item label="Description *" validateStatus={errors.description ? "error" : ""} help={errors.description?.message} className="full-width">
-                            <Controller name="description" control={control} render={({ field }) => <Input.TextArea {...field} rows={4} placeholder="Describe the craftsmanship and features..." />} />
-                        </Form.Item>
-
-                        <Form.Item label="Inventory Status *" validateStatus={errors.in_stock ? "error" : ""} help={errors.in_stock?.message} className="full-width">
-                            <Controller name="in_stock" control={control} render={({ field }) => (
-                                <Select {...field} size="large" placeholder="Select Status">
-                                    <Option value={true}>In Stock (Available for Order)</Option>
-                                    <Option value={false}>Out of Stock (Hidden Badge)</Option>
-                                </Select>
-                            )} />
-                        </Form.Item>
-
-                        <div className="image-upload-section full-width">
-                            <h3 className="section-title">Product Imagery (Total 5)</h3>
-                            <div className="upload-grid">
-                                <Form.Item label="Main Feature Image" className="main-uploader">
-                                    <Controller name="mainImage" control={control} render={({ field }) => (
-                                        <Upload 
-                                            listType="picture-card" 
-                                            maxCount={1} 
-                                            beforeUpload={() => false}
-                                            fileList={field.value?.fileList || []}
-                                            onChange={(info) => field.onChange(info)}
-                                        >
-                                            {(field.value?.fileList?.length || 0) >= 1 ? null : (
-                                                <div><UploadOutlined /><div style={{ marginTop: 8 }}>Main Image</div></div>
-                                            )}
-                                        </Upload>
-                                    )} />
-                                </Form.Item>
-
-                                <div className="gallery-uploaders">
-                                    {[1, 2, 3, 4].map(idx => (
-                                        <Form.Item key={idx}>
-                                            <Controller name={`gallery${idx}`} control={control} render={({ field }) => (
-                                                <Upload 
-                                                    listType="picture-card" 
-                                                    maxCount={1} 
-                                                    beforeUpload={() => false}
-                                                    fileList={field.value?.fileList || []}
-                                                    onChange={(info) => field.onChange(info)}
-                                                >
-                                                    {(field.value?.fileList?.length || 0) >= 1 ? null : (
-                                                        <div><UploadOutlined /></div>
-                                                    )}
-                                                </Upload>
-                                            )} />
-                                        </Form.Item>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <Form.Item className="submit-section">
-                        <Button type="primary" htmlType="submit" size="large" className="submit-product-btn" loading={isSubmitting}>
-                            PUBLISH PRODUCT
-                        </Button>
-                    </Form.Item>
-                </Form>
+                </div>
             </div>
+
+            <form onSubmit={handleSubmit(onSubmit)} className="form-grid-modern">
+                {/* SECTION: BASIC INFO */}
+                <div className="form-section">
+                    <h3><Info size={16} style={{ marginRight: '8px' }} /> Basic Information</h3>
+                </div>
+
+                <div className="input-group full-width">
+                    <label>Product Name <span style={{ color: 'var(--admin-danger)' }}>*</span></label>
+                    <input {...register("name")} className={`modern-input ${errors.name ? 'error' : ''}`} placeholder="E.g. Heritage King Size Bed" />
+                    {errors.name && <span className="error-msg">{errors.name.message}</span>}
+                </div>
+
+                <div className="input-group">
+                    <label>Category <span style={{ color: 'var(--admin-danger)' }}>*</span></label>
+                    <select {...register("category")} className="modern-input">
+                        <option value="">Select Category</option>
+                        {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    </select>
+                </div>
+
+                <div className="input-group">
+                    <label>Sub-Category <span style={{ color: 'var(--admin-danger)' }}>*</span></label>
+                    <select {...register("subCategory")} className="modern-input" disabled={!selectedCategoryId}>
+                        <option value="">Select Sub-Category</option>
+                        {subCategoriesList.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
+                    </select>
+                </div>
+
+                <div className="input-group full-width">
+                    <label>Description <span style={{ color: 'var(--admin-danger)' }}>*</span></label>
+                    <textarea {...register("description")} className="modern-input" rows={5} placeholder="Describe the wood quality, design philosophy, and comfort..."></textarea>
+                    {errors.description && <span className="error-msg">{errors.description.message}</span>}
+                </div>
+
+                {/* SECTION: SPECS */}
+                <div className="form-section">
+                    <h3><Box size={16} style={{ marginRight: '8px' }} /> Specifications</h3>
+                </div>
+
+                <div className="input-group">
+                    <label>Material <span style={{ color: 'var(--admin-danger)' }}>*</span></label>
+                    <input {...register("material")} className="modern-input" placeholder="E.g. A Grade Teakwood" />
+                </div>
+
+                <div className="input-group">
+                    <label>Color/Finish <span style={{ color: 'var(--admin-danger)' }}>*</span></label>
+                    <input {...register("color")} className="modern-input" placeholder="E.g. Walnut Finish" />
+                </div>
+
+                <div className="input-group">
+                    <label>Dimensions <span style={{ color: 'var(--admin-danger)' }}>*</span></label>
+                    <input {...register("dimensions")} className="modern-input" placeholder="E.g. 78L x 72W x 42H inches" />
+                </div>
+
+                <div className="input-group">
+                    <label>Storage Details</label>
+                    <input {...register("storage")} className="modern-input" placeholder="E.g. Box Storage with Hydraulic Lift" />
+                </div>
+
+                <div className="input-group full-width">
+                    <label>Availability Status</label>
+                    <select {...register("in_stock")} className="modern-input">
+                        <option value={true}>In Stock (Ready to Order)</option>
+                        <option value={false}>Out of Stock</option>
+                    </select>
+                </div>
+
+                {/* SECTION: IMAGES */}
+                <div className="form-section">
+                    <h3><ImageIcon size={16} style={{ marginRight: '8px' }} /> Product Gallery</h3>
+                </div>
+
+                <div className="upload-modern-grid">
+                    <label className="upload-box-main">
+                        <input type="file" hidden onChange={(e) => handleImageChange(e, 'main')} />
+                        {previews.main ? (
+                            <img src={previews.main} className="preview-img" alt="Main" />
+                        ) : (
+                            <div className="upload-inner">
+                                <Upload size={32} />
+                                <span>MAIN IMAGE</span>
+                                <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>Maximum Impact</p>
+                            </div>
+                        )}
+                    </label>
+
+                    <div className="gallery-modern">
+                        {['g1', 'g2', 'g3', 'g4'].map((key) => (
+                            <label key={key} className="upload-box-small">
+                                <input type="file" hidden onChange={(e) => handleImageChange(e, key)} />
+                                {previews[key] ? (
+                                    <img src={previews[key]} className="preview-img" alt="Gallery" />
+                                ) : (
+                                    <ImageIcon size={20} color="#cbd5e1" />
+                                )}
+                            </label>
+                        ))}
+                    </div>
+                </div>
+
+                <div className="submit-wrap-modern">
+                    <button type="submit" className="btn-publish" disabled={isSubmitting}>
+                        {isSubmitting ? 'UPLOADING...' : 'PUBLISH PRODUCT'}
+                    </button>
+                </div>
+            </form>
         </div>
     );
 };

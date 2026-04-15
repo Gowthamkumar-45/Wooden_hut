@@ -1,582 +1,340 @@
-import React, { useEffect, useState } from 'react';
-import { Table, Tabs, message, Spin, Tag, Button, Space, Modal, Form, Input, Select } from 'antd';
-import { WhatsAppOutlined, MailOutlined, EditOutlined, DeleteOutlined, CheckCircleOutlined, EyeOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { 
+  MessageSquare, 
+  Search, 
+  Trash2, 
+  Phone, 
+  Calendar, 
+  Eye, 
+  Edit, 
+  X, 
+  Mail,
+  ArrowUpRight,
+  Package,
+  Info,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
 import './ContactLogs.css';
 
-const { TabPane } = Tabs;
-
 const ContactLogs = () => {
+  const [activeTab, setActiveTab] = useState('whatsapp');
+  const [whatsappContacts, setWhatsappContacts] = useState([]);
+  const [enquiries, setEnquiries] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
-    const [whatsappLogs, setWhatsappLogs] = useState([]);
-    const [enquiries, setEnquiries] = useState([]);
-    const [loading, setLoading] = useState(false);
-    const [isEditModalVisible, setIsEditModalVisible] = useState(false);
-    const [isQuickModalVisible, setIsQuickModalVisible] = useState(false);
-    const [editingRecord, setEditingRecord] = useState(null);
-    const [quickRecord, setQuickRecord] = useState(null);
-    const [form] = Form.useForm();
-    const [quickForm] = Form.useForm();
+  const [selectedItem, setSelectedItem] = useState(null);
+  const [modalType, setModalType] = useState(null);
 
-    const fetchLogs = async (isInitial = false) => {
-        if (isInitial) setLoading(true);
-        try {
-            const token = sessionStorage.getItem('token');
-            const headers = { 'Authorization': `Token ${token}` };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
-            const [waRes, enqRes] = await Promise.all([
-                fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, { headers }),
-                fetch(`${SITE_CONTENT.api.base}/api/enquiries/`, { headers })
-            ]);
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = sessionStorage.getItem('token');
+      const headers = { 'Authorization': `Token ${token}`, 'Content-Type': 'application/json' };
+      const [waRes, enqRes] = await Promise.all([
+        fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, { headers }),
+        fetch(`${SITE_CONTENT.api.base}/api/enquiries/`, { headers })
+      ]);
+      if (waRes.ok && enqRes.ok) {
+        const waData = await waRes.json();
+        const enqData = await enqRes.json();
+        setWhatsappContacts(waData.map(i => ({...i, _source: 'whatsapp'})));
+        setEnquiries(enqData.map(i => ({...i, _source: 'enquiries'})));
+      }
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  };
 
-            if (waRes.ok) {
-                const waData = await waRes.json();
-                const formattedWa = waData.map(item => ({
-                    id: item.id,
-                    source: 'wa',
-                    name: item.customer_name || 'Anonymous (WhatsApp Click)',
-                    phone: item.phone_number || 'N/A',
-                    product: item.product_name,
-                    timestamp: new Date(item.timestamp).toLocaleString(),
-                    query: `User clicked WhatsApp button for ${item.product_name}`,
-                    status: item.status || 'New',
-                    is_order_confirmed: item.is_order_confirmed,
-                    order_status: item.order_status || 'Not Started',
-                    order_confirm_status: item.is_order_confirmed ? 'Confirmed' : (item.status || 'New')
-                }));
-                // Sort by newest
-                setWhatsappLogs(formattedWa.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp)));
-            }
-            if (enqRes.ok) {
-                const enqData = await enqRes.json();
-                const formattedEnq = enqData.map(item => ({
-                    ...item,
-                    source: 'enq',
-                    created_at: new Date(item.created_at).toLocaleString(),
-                    order_confirm_status: item.is_order_confirmed ? 'Confirmed' : item.status
-                }));
-                setEnquiries(formattedEnq.sort((a, b) => new Date(b.created_at) - new Date(a.created_at)));
-            }
-        } catch (error) {
-            console.error("Fetch Error:", error);
-            message.error("Failed to fetch logs.");
-        } finally {
-            if (isInitial) setLoading(false);
+  const handleStatusUpdate = async (source, id, newStatus) => {
+    const endpoint = source === 'whatsapp' ? 'whatsapp-contacts' : 'enquiries';
+    
+    let updatePayload = { status: newStatus };
+    if (newStatus === 'Confirmed') {
+      updatePayload.is_order_confirmed = true;
+      updatePayload.order_status = 'Not Started';
+    } else if (newStatus === 'Rejected') {
+      updatePayload.is_order_confirmed = true;
+      updatePayload.order_status = 'Cancelled';
+    } else {
+      updatePayload.is_order_confirmed = false;
+    }
+
+    try {
+      const res = await fetch(`${SITE_CONTENT.api.base}/api/${endpoint}/${id}/`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Token ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatePayload)
+      });
+      if (res.ok) {
+        if (source === 'whatsapp') {
+          setWhatsappContacts(prev => prev.map(i => i.id === id ? { ...i, ...updatePayload } : i));
+        } else {
+          setEnquiries(prev => prev.map(i => i.id === id ? { ...i, ...updatePayload } : i));
         }
-    };
+        closeModal();
+      }
+    } catch (err) { console.error("Status Update Failed:", err); }
+  };
 
-    useEffect(() => {
-        fetchLogs(true);
-    }, []);
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    const source = selectedItem._source;
+    const updatedData = Object.fromEntries(new FormData(e.target).entries());
+    try {
+      const res = await fetch(`${SITE_CONTENT.api.base}/api/${source === 'whatsapp' ? 'whatsapp-contacts' : 'enquiries'}/${selectedItem.id}/`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Token ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(updatedData)
+      });
+      if (res.ok) {
+        const updateFn = (prev) => prev.map(i => i.id === selectedItem.id ? { ...i, ...updatedData } : i);
+        if (source === 'whatsapp') setWhatsappContacts(updateFn); else setEnquiries(updateFn);
+        closeModal();
+      }
+    } catch (err) {}
+  };
 
-    const handleEdit = (record) => {
-        setEditingRecord(record);
-        form.setFieldsValue({
-            ...record,
-            query: record.query || record.message,
-            subject_or_service: record.subject || record.service,
-            order_confirm_status: record.order_confirm_status || (record.status === 'Rejected' ? 'Rejected' : record.status) || 'New',
-            order_status: record.order_status || 'Not Started'
-        });
-        setIsEditModalVisible(true);
-    };
+  const handleDelete = async (source, id) => {
+    if (!window.confirm('Delete this log?')) return;
+    try {
+      const res = await fetch(`${SITE_CONTENT.api.base}/api/${source === 'whatsapp' ? 'whatsapp-contacts' : 'enquiries'}/${id}/`, {
+        method: 'DELETE',
+        headers: { 'Authorization': `Token ${sessionStorage.getItem('token')}` }
+      });
+      if (res.ok) {
+        if (source === 'whatsapp') setWhatsappContacts(p => p.filter(i => i.id !== id));
+        else setEnquiries(p => p.filter(i => i.id !== id));
+      }
+    } catch (err) {}
+  };
 
-    const handleQuickStatus = (record) => {
-        setQuickRecord(record);
-        quickForm.setFieldsValue({
-            order_confirm_status: record.order_confirm_status || 'Pending'
-        });
-        setIsQuickModalVisible(true);
-    };
+  const closeModal = () => { setSelectedItem(null); setModalType(null); };
 
-    const handleUpdate = async (values) => {
-        const targetRecord = editingRecord || quickRecord;
-        const isOrderConfirmed = values.order_confirm_status === 'Confirmed';
+  const filteredData = () => {
+    let data = [];
+    if (activeTab === 'whatsapp') {
+      data = whatsappContacts.filter(i => i.status === 'New' || !i.status);
+    } else if (activeTab === 'enquiries') {
+      data = enquiries.filter(i => i.status === 'New' || !i.status);
+    } else if (activeTab === 'pending orders') {
+      data = [...whatsappContacts, ...enquiries].filter(i => i.status === 'Pending');
+    }
 
-        try {
-            if (targetRecord.source === 'enq') {
-                const token = sessionStorage.getItem('token');
-                const response = await fetch(`${SITE_CONTENT.api.base}/api/enquiries/${targetRecord.id}/`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        status: values.order_confirm_status || targetRecord.status,
-                        is_order_confirmed: isOrderConfirmed,
-                        order_status: values.order_status || targetRecord.order_status
-                    })
-                });
+    return data.filter(i => {
+      const search = searchQuery.toLowerCase();
+      const matchSearch = (i.customer_name || i.name || '').toLowerCase().includes(search) || (i.phone_number || i.phone || '').includes(search);
+      const matchStatus = statusFilter === 'all' || i.status === statusFilter;
+      return matchSearch && matchStatus;
+    });
+  };
 
-                if (response.ok) {
-                    message.success("Enquiry updated successfully!");
-                    fetchLogs();
-                } else {
-                    message.error("Failed to update enquiry.");
-                }
-            } else if (targetRecord.source === 'wa') {
-                const token = sessionStorage.getItem('token');
-                const response = await fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/${targetRecord.id}/`, {
-                    method: 'PATCH',
-                    headers: {
-                        'Authorization': `Token ${token}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        customer_name: values.name,
-                        phone_number: values.phone,
-                        status: values.order_confirm_status || targetRecord.status,
-                        is_order_confirmed: isOrderConfirmed,
-                        order_status: values.order_status || targetRecord.order_status
-                    })
-                });
+  const getPaginatedData = () => {
+    const data = filteredData();
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return data.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
 
-                if (response.ok) {
-                    message.success("Customer details updated successfully!");
-                    fetchLogs();
-                } else {
-                    message.error("Failed to update WhatsApp contact.");
-                }
-            }
+  const totalPages = Math.ceil(filteredData().length / ITEMS_PER_PAGE);
 
-            setIsEditModalVisible(false);
-            setIsQuickModalVisible(false);
-            setEditingRecord(null);
-            setQuickRecord(null);
-        } catch (error) {
-            console.error("Update Error:", error);
-            message.error("Could not update record.");
-        }
-    };
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [activeTab, searchQuery, statusFilter]);
 
-    const handleDeleteWA = async (id) => {
-        Modal.confirm({
-            title: 'Delete this contact log?',
-            content: 'This will remove the entry from your view permanently.',
-            okText: 'Delete',
-            okType: 'danger',
-            onOk: async () => {
-                try {
-                    const token = sessionStorage.getItem('token');
-                    await fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/${id}/`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Token ${token}` }
-                    });
-                    message.success("Contact log removed.");
-                    fetchLogs();
-                } catch (error) {
-                    message.error("Failed to delete log.");
-                }
-            }
-        });
-    };
+  const getStatusIcon = (status) => {
+    const cls = `status-indicator ${status?.toLowerCase() || 'new'}`;
+    return <span className={cls}>{status || 'New'}</span>;
+  };
 
-    const showDetails = (record) => {
-        Modal.info({
-            title: 'Customer Lead Details',
-            width: 500,
-            icon: <EyeOutlined />,
-            content: (
-                <div style={{ marginTop: 20 }}>
-                    <p style={{ marginBottom: 8 }}><b>Customer Name:</b> {record.name}</p>
-                    <p style={{ marginBottom: 8 }}><b>Phone Number:</b> {record.phone}</p>
-                    {record.source === 'enq' && <p style={{ marginBottom: 8 }}><b>Email:</b> {record.email}</p>}
-                    <p style={{ marginBottom: 8 }}><b>{record.source === 'enq' ? 'Subject / Service' : 'Product'}:</b> {record.subject || record.service || record.product}</p>
-                    <div style={{ background: '#f5f5f5', padding: 10, borderRadius: 5, marginBottom: 8 }}>
-                        <b>Message:</b> <br />
-                        <span style={{ color: '#555' }}>{record.query || record.message}</span>
-                    </div>
-                    <p style={{ marginBottom: 8 }}><b>Contacted On:</b> <Tag>{record.timestamp || record.created_at}</Tag></p>
-                </div>
-            ),
-            okText: 'Close',
-        });
-    };
+  if (loading) return <div className="admin-loading"><p>Syncing contact logs...</p></div>;
 
-    const waColumns = [
-        {
-            title: 'Customer Name',
-            dataIndex: 'name',
-            key: 'name',
-            render: (text) => <span className="customer-name-log">{text}</span>
-        },
-        {
-            title: 'Phone Number',
-            dataIndex: 'phone',
-            key: 'phone',
-            render: (text) => <Tag color="green">{text}</Tag>
-        },
-        {
-            title: 'Interested In',
-            dataIndex: 'product',
-            key: 'product',
-            render: (text) => <span className="product-title-log">{text}</span>
-        },
-        {
-            title: 'Query',
-            dataIndex: 'query',
-            key: 'query',
-            render: (text) => <span className="query-text-log">"{text}"</span>
-        },
-        {
-            title: 'Contacted On',
-            dataIndex: 'timestamp',
-            key: 'time',
-            render: (text) => <Tag color="blue">{text}</Tag>
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            render: (status) => (
-                <Tag color={status === 'Confirmed' ? 'green' : status === 'Rejected' ? 'red' : status === 'Pending' ? 'orange' : 'gold'}>
-                    {status || 'New'}
-                </Tag>
-            )
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            fixed: 'right',
-            width: 250,
-            render: (_, record) => (
-                <Space size="small">
-                    <Button icon={<EyeOutlined />} size="small" onClick={() => showDetails(record)}>View</Button>
-                    <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>Edit</Button>
-                    <Button
-                        danger
-                        icon={<DeleteOutlined />}
-                        size="small"
-                        onClick={() => handleDeleteWA(record.id)}
-                    >
-                        Delete
-                    </Button>
-                </Space>
-            )
-        }
-    ];
+  return (
+    <div className="contact-logs-container">
+      <div className="track-header">
+        <button className="refresh-btn-main" onClick={fetchData} title="Refresh Logs">
+          <RefreshCw size={18} />
+          <span>Refresh</span>
+        </button>
+      </div>
 
-    const handleDeleteEnquiry = async (id) => {
-        Modal.confirm({
-            title: 'Delete this enquiry?',
-            content: 'This will remove the customer message from your logs.',
-            okText: 'Delete',
-            okType: 'danger',
-            onOk: async () => {
-                try {
-                    const token = sessionStorage.getItem('token');
-                    await fetch(`${SITE_CONTENT.api.base}/api/enquiries/${id}/`, {
-                        method: 'DELETE',
-                        headers: { 'Authorization': `Token ${token}` }
-                    });
-                    message.success("Enquiry removed.");
-                    fetchLogs();
-                } catch (error) {
-                    message.error("Failed to delete enquiry.");
-                }
-            }
-        });
-    };
-
-    const enqColumns = [
-        {
-            title: 'Customer Name',
-            dataIndex: 'name',
-            key: 'name',
-        },
-        {
-            title: 'Email',
-            dataIndex: 'email',
-            key: 'email',
-        },
-        {
-            title: 'Phone',
-            dataIndex: 'phone',
-            key: 'phone',
-            render: (text) => <Tag color="green">{text}</Tag>
-        },
-        {
-            title: 'Subject / Service',
-            key: 'subject_service',
-            render: (_, record) => (
-                <Space direction="vertical" size="mini">
-                    {record.subject && <Tag color="blue">{record.subject}</Tag>}
-                    {record.service && <Tag color="gold">{record.service}</Tag>}
-                </Space>
-            )
-        },
-        {
-            title: 'Message',
-            dataIndex: 'message',
-            key: 'message',
-            ellipsis: true,
-        },
-        {
-            title: 'Contacted On',
-            dataIndex: 'created_at',
-            key: 'time',
-            width: 160,
-            render: (date) => <Tag color="blue">{date}</Tag>
-        },
-        {
-            title: 'Status',
-            dataIndex: 'status',
-            key: 'status',
-            width: 120,
-            render: (status) => (
-                <Tag color={status === 'Confirmed' ? 'green' : status === 'Rejected' ? 'red' : status === 'Pending' ? 'orange' : 'gold'}>
-                    {status || 'New'}
-                </Tag>
-            )
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            fixed: 'right',
-            width: 250,
-            render: (_, record) => (
-                <Space size="small">
-                    <Button icon={<EyeOutlined />} size="small" onClick={() => showDetails(record)}>View</Button>
-                    <Button icon={<EditOutlined />} size="small" onClick={() => handleEdit(record)}>Edit</Button>
-                    <Button
-                        danger
-                        icon={<DeleteOutlined />}
-                        size="small"
-                        onClick={() => handleDeleteEnquiry(record.id)}
-                    >
-                        Delete
-                    </Button>
-                </Space>
-            )
-        }
-    ];
-
-    const orderColumns = [
-        {
-            title: 'Customer Details',
-            key: 'customer',
-            render: (_, record) => (
-                <div className="order-customer-info">
-                    <div style={{ fontWeight: 600 }}>{record.name}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>{record.phone}</div>
-                </div>
-            )
-        },
-        {
-            title: 'Order Confirmation',
-            key: 'confirmed',
-            render: (_, record) => {
-                const status = record.order_confirm_status || (record.is_order_confirmed ? 'Confirmed' : (record.status === 'Rejected' ? 'Rejected' : 'Pending'));
-                return (
-                    <Tag color={status === 'Confirmed' ? 'green' : status === 'Rejected' ? 'red' : 'gold'}>
-                        {status === 'Confirmed' && <CheckCircleOutlined />} {status.toUpperCase()}
-                    </Tag>
-                );
-            }
-        },
-        {
-            title: 'Requirement',
-            key: 'req',
-            width: '40%',
-            render: (_, record) => (
-                <div style={{ fontSize: '13px' }}>
-                    <b>Intention:</b> {record.product || record.subject || record.service} <br />
-                    <b>Message:</b> <span style={{ color: '#666' }}>{record.query || record.message}</span>
-                </div>
-            )
-        },
-        {
-            title: 'Action',
-            key: 'action',
-            width: 150,
-            render: (_, record) => (
-                <Button icon={<EditOutlined />} onClick={() => handleEdit(record)}>Adjust Order</Button>
-            )
-        }
-    ];
-
-    // Filters for each tab
-    const newFilter = (list) => list.filter(item => !item.status || item.status === 'New');
-    const pendingList = [...whatsappLogs, ...enquiries].filter(item => item.status === 'Pending' || item.order_confirm_status === 'Pending');
-    // const confirmedList = [...whatsappLogs, ...enquiries].filter(item => item.order_confirm_status === 'Confirmed');
-    // const cancelledList = [...whatsappLogs, ...enquiries].filter(item => item.order_confirm_status === 'Rejected' || item.status === 'Rejected');
-
-    if (loading) return <div className="detail-loader"><Spin size="large" /><span>Opening logs...</span></div>;
-
-    return (
-        <div className="contact-logs-page">
-            <div className="logs-container">
-                <header className="logs-header">
-                    <Link to="/admin/products" className="back-link">
-                        <ArrowLeftOutlined /> Back to Inventory
-                    </Link>
-                    <span className="header-label">Store Execution & Order Flow</span>
-                    <h1 className="header-title">Orders & <em>Customer Leads</em></h1>
-                </header>
-
-                <Tabs defaultActiveKey="1" className="premium-tabs">
-                    <TabPane
-                        tab={<span><WhatsAppOutlined /> WhatsApp Contacts</span>}
-                        key="1"
-                    >
-                        <Table
-                            columns={waColumns.filter(c => c.key !== 'status')}
-                            dataSource={newFilter(whatsappLogs)}
-                            rowKey="id"
-                            pagination={{ pageSize: 10 }}
-                            scroll={{ x: 1000 }}
-                            className="premium-table cursor-pointer"
-                            onRow={(record) => ({
-                                onClick: (e) => {
-                                    // Don't trigger if clicking buttons
-                                    if (e.target.closest('button')) return;
-                                    handleQuickStatus(record);
-                                }
-                            })}
-                        />
-                    </TabPane>
-                    <TabPane
-                        tab={<span><MailOutlined /> Website Enquiries</span>}
-                        key="2"
-                    >
-                        <Table
-                            columns={enqColumns.filter(c => c.key !== 'status')}
-                            dataSource={newFilter([...enquiries])}
-                            rowKey={(record) => `${record.source}-${record.id}`}
-                            pagination={{ pageSize: 10 }}
-                            scroll={{ x: 1200 }}
-                            className="premium-table cursor-pointer"
-                            onRow={(record) => ({
-                                onClick: (e) => {
-                                    if (e.target.closest('button')) return;
-                                    handleQuickStatus(record);
-                                }
-                            })}
-                        />
-                    </TabPane>
-                    <TabPane
-                        tab={<span><EditOutlined /> All Pending Orders</span>}
-                        key="3"
-                    >
-                        <Table
-                            columns={orderColumns}
-                            dataSource={pendingList}
-                            rowKey={(record) => `${record.source}-${record.id}`}
-                            pagination={{ pageSize: 10 }}
-                            scroll={{ x: 1000 }}
-                            className="premium-table cursor-pointer"
-                            onRow={(record) => ({
-                                onClick: (e) => {
-                                    if (e.target.closest('button')) return;
-                                    handleQuickStatus(record);
-                                }
-                            })}
-                        />
-                    </TabPane>
-                </Tabs>
-            </div>
-
-            <Modal
-                title={editingRecord?.is_order_confirmed ? "Manage Active Order" : "Manage Customer Lead"}
-                open={isEditModalVisible}
-                onCancel={() => setIsEditModalVisible(false)}
-                footer={null}
-                centered
-                width={600}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleUpdate}
-                    className="manage-lead-form"
-                >
-                    <div className="form-section-title">Edit {editingRecord?.source === 'wa' ? 'WhatsApp' : 'Enquiry'} Details</div>
-
-                    {/* Common Name/Phone */}
-                    <Space size="large" style={{ width: '100%' }}>
-                        <Form.Item name="name" label="Customer Name" rules={[{ required: true }]} style={{ flex: 1 }}>
-                            <Input />
-                        </Form.Item>
-                        <Form.Item name="phone" label="Phone Number" rules={[{ required: true }]} style={{ flex: 1 }}>
-                            <Input />
-                        </Form.Item>
-                    </Space>
-
-                    {/* Source Specific Fields */}
-                    {editingRecord?.source === 'wa' ? (
-                        <>
-                            <Form.Item name="product" label="Interested In">
-                                <Input placeholder="E.g. King Size Teak Bed" />
-                            </Form.Item>
-
-                            <Form.Item name="query" label="Customer Query">
-                                <Input.TextArea rows={3} placeholder="Customer message or discussion notes..." />
-                            </Form.Item>
-                        </>
-                    ) : (
-                        <>
-                            <Form.Item name="email" label="Email Address">
-                                <Input type="email" />
-                            </Form.Item>
-
-                            <Form.Item name="subject_or_service" label="Subject / Service">
-                                <Input placeholder="Requirement type..." />
-                            </Form.Item>
-
-                            <Form.Item name="query" label="Message Details">
-                                <Input.TextArea rows={3} />
-                            </Form.Item>
-                        </>
-                    )}
-
-                    <Form.Item style={{ textAlign: 'right', marginTop: '20px', marginBottom: 0 }}>
-                        <Space>
-                            <Button onClick={() => setIsEditModalVisible(false)}>Close</Button>
-                            <Button type="primary" htmlType="submit">Save Changes</Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
-
-            <Modal
-                title="Quick Status Update"
-                open={isQuickModalVisible}
-                onCancel={() => {
-                    setIsQuickModalVisible(false);
-                    setQuickRecord(null);
-                }}
-                footer={null}
-                centered
-                width={400}
-            >
-                <Form
-                    form={quickForm}
-                    layout="vertical"
-                    onFinish={handleUpdate}
-                >
-                    <div style={{ marginBottom: '20px', color: '#666' }}>
-                        Update the decision for <b>{quickRecord?.name}</b>
-                    </div>
-                    <Form.Item name="order_confirm_status" label="Order Decision?" rules={[{ required: true }]}>
-                        <Select placeholder="Choose Status">
-                            <Select.Option value="New">Keep as New</Select.Option>
-                            <Select.Option value="Confirmed">Confirmed</Select.Option>
-                            <Select.Option value="Pending">Move to Pending</Select.Option>
-                            <Select.Option value="Rejected">Rejected</Select.Option>
-                        </Select>
-                    </Form.Item>
-                    <Form.Item style={{ textAlign: 'right', marginTop: '20px', marginBottom: 0 }}>
-                        <Space>
-                            <Button onClick={() => setIsQuickModalVisible(false)}>Cancel</Button>
-                            <Button type="primary" htmlType="submit">Apply Status</Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
+      <div className="track-tabs-row">
+        <div className="tabs-group">
+          <button className={`track-tab ${activeTab==='whatsapp'?'active':''}`} onClick={()=>setActiveTab('whatsapp')}><MessageSquare size={18}/> WhatsApp Contacts</button>
+          <button className={`track-tab ${activeTab==='enquiries'?'active':''}`} onClick={()=>setActiveTab('enquiries')}><Mail size={18}/> Web Enquiries</button>
+          <button className={`track-tab ${activeTab==='pending orders'?'active':''}`} onClick={()=>setActiveTab('pending orders')}><Package size={18}/> Pending Inquiry</button>
         </div>
-    );
+      </div>
+
+      <div className="active-count-pill" style={{marginBottom: '24px'}}>
+        {activeTab === 'whatsapp' ? 'New Leads: ' : activeTab === 'enquiries' ? 'New Enquiries: ' : 'Total Pending: '}
+        {filteredData().length}
+      </div>
+
+      <div className="table-wrapper">
+        <table className="logs-table">
+          <thead>
+            <tr>
+              <th>CUSTOMER NAME</th>
+              <th>PHONE NUMBER</th>
+              <th>INTERESTED IN</th>
+              <th>CONTACTED ON</th>
+              <th>STATUS</th>
+              <th>ACTION</th>
+            </tr>
+          </thead>
+          <tbody>
+            {getPaginatedData().length > 0 ? (
+              getPaginatedData().map(item => (
+                <tr key={`${item._source}-${item.id}`} onClick={(e)=>{ if(!e.target.closest('.action-btns')) { setSelectedItem(item); setModalType('status'); }}}>
+                  <td>
+                     <div className="info-text">
+                       <span className="name">{item.customer_name || item.name || 'Guest'}</span>
+                       <span className="subtext">({item._source === 'whatsapp' ? 'WhatsApp' : 'Web'})</span>
+                     </div>
+                  </td>
+                  <td>
+                    <span className="phone-badge">{item.phone_number || item.phone || 'N/A'}</span>
+                  </td>
+                  <td>
+                    <strong style={{fontSize: '13px', color: '#1e293b'}}>{item.product_name || item.service || 'N/A'}</strong>
+                  </td>
+                  <td>
+                     <div className="date-badge">
+                       {new Date(item.timestamp || item.created_at).toLocaleDateString()}
+                     </div>
+                  </td>
+                  <td>{getStatusIcon(item.status)}</td>
+                  <td>
+                    <div className="action-btns" onClick={e=>e.stopPropagation()}>
+                      <button className="icon-btn" title="View" onClick={()=>setSelectedItem(item)||setModalType('view')}><Eye size={16}/></button>
+                      <button className="icon-btn edit" title="Edit" onClick={()=>setSelectedItem(item)||setModalType('edit')}><Edit size={16}/></button>
+                      <button className="icon-btn delete" title="Delete" onClick={()=>handleDelete(item._source, item.id)}><Trash2 size={16}/></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan="6" className="no-data"><Package size={40} strokeWidth={1}/> <p>No logs found matching your criteria</p></td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="admin-pagination">
+          <button 
+            disabled={currentPage === 1} 
+            onClick={() => setCurrentPage(p => p - 1)}
+            className="pag-btn"
+          >
+            <ChevronLeft size={18} />
+          </button>
+          
+          <div className="pag-numbers">
+            {[...Array(totalPages)].map((_, i) => (
+              <button 
+                key={i + 1}
+                className={`pag-num ${currentPage === i + 1 ? 'active' : ''}`}
+                onClick={() => setCurrentPage(i + 1)}
+              >
+                {i + 1}
+              </button>
+            ))}
+          </div>
+
+          <button 
+            disabled={currentPage === totalPages} 
+            onClick={() => setCurrentPage(p => p + 1)}
+            className="pag-btn"
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
+
+      {modalType === 'view' && selectedItem && (
+        <div className="admin-modal-overlay" onClick={closeModal}>
+          <div className="admin-modal-content view-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header"><h2>Inquiry Details</h2><button className="close-x" onClick={closeModal}><X size={20}/></button></div>
+            <div className="modal-body">
+              <div className="detail-section"><div className="detail-main-info"><h3>{selectedItem.customer_name || selectedItem.name}</h3><p className="status-label">{getStatusIcon(selectedItem.status)}</p></div></div>
+              <div className="details-grid">
+                <div className="detail-item"><label><Phone size={12}/> Phone</label><span>{selectedItem.phone_number || selectedItem.phone || 'N/A'}</span></div>
+                <div className="detail-item"><label><Package size={12}/> Interested In</label><span>{selectedItem.product_name || selectedItem.service || 'N/A'}</span></div>
+                <div className="detail-item full-width"><label><Calendar size={12}/> Contacted On</label><span>{new Date(selectedItem.timestamp || selectedItem.created_at).toLocaleString('en-IN', { dateStyle: 'long', timeStyle: 'short' })}</span></div>
+              </div>
+              {(selectedItem.message || selectedItem.subject) && (<div className="message-full"><label><Info size={12}/> Inquiry Message</label><p>{selectedItem.message || selectedItem.subject}</p></div>)}
+            </div>
+            <div className="modal-footer"><button className="admin-btn secondary" onClick={closeModal}>Close</button></div>
+          </div>
+        </div>
+      )}
+
+      {modalType === 'edit' && selectedItem && (
+        <div className="admin-modal-overlay" onClick={closeModal}>
+          <div className="admin-modal-content edit-form" onClick={e => e.stopPropagation()}>
+            <div className="modal-header"><h2>Edit Client Data</h2><button className="close-x" onClick={closeModal}><X size={20}/></button></div>
+            <form onSubmit={handleEditSubmit}>
+              <div className="modal-body">
+                <div className="edit-form-grid">
+                  <div className="form-group"><label>Name</label><input name={selectedItem._source === 'whatsapp' ? 'customer_name' : 'name'} defaultValue={selectedItem.customer_name || selectedItem.name} required /></div>
+                  <div className="form-group"><label>Phone Number</label><input name={selectedItem._source === 'whatsapp' ? 'phone_number' : 'phone'} defaultValue={selectedItem.phone_number || selectedItem.phone} required /></div>
+                  <div className="form-group full-width"><label>Product / Service</label><input name={selectedItem._source === 'whatsapp' ? 'product_name' : 'service'} defaultValue={selectedItem.product_name || selectedItem.service} required /></div>
+                  <div className="form-group full-width">
+                    <label>Inquiry Message</label>
+                    <textarea 
+                      name="message" 
+                      className="form-textarea" 
+                      defaultValue={selectedItem.message || selectedItem.subject} 
+                      placeholder="Add details about the customer's inquiry..."
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="modal-footer"><button type="button" className="admin-btn secondary" onClick={closeModal}>Cancel</button><button type="submit" className="admin-btn primary">Save Changes</button></div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {modalType === 'status' && selectedItem && (
+        <div className="admin-modal-overlay" onClick={closeModal}>
+          <div className="admin-status-modal" onClick={e => e.stopPropagation()}>
+            <div className="status-modal-header"><h3>Quick Status Update</h3><button className="close-icon-btn" onClick={closeModal}><X size={18}/></button></div>
+            <div className="status-modal-body">
+              <p className="status-desc">Update the decision for <strong>{selectedItem.customer_name || selectedItem.name || 'Anonymous'}</strong></p>
+              <div className="status-form-field">
+                <label><span className="required">*</span> Order Decision?</label>
+                <div className="select-box-custom">
+                  <select defaultValue={selectedItem.status} id="status-select-input">
+                    <option value="New">Keep as New</option>
+                    <option value="Pending">Move to Pending</option>
+                    <option value="Confirmed">Confirm Order</option>
+                    <option value="Rejected">Reject Inquiry</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            <div className="status-modal-footer">
+              <button className="cancel-btn" onClick={closeModal}>Cancel</button>
+              <button className="apply-btn" onClick={() => {
+                const val = document.getElementById('status-select-input').value;
+                handleStatusUpdate(selectedItem._source, selectedItem.id, val);
+              }}>Apply Change</button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default ContactLogs;

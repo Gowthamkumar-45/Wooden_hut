@@ -1,11 +1,6 @@
-.product-list-page {
-    padding: 80px 40px;
-    background: #fdfaf5;
-    min-height: 100vh;
-}
 
 .list-container {
-    max-width: 1200px;
+    max-width: 1300px;
     margin: 0 auto;
     background: #fff;
     padding: 40px;

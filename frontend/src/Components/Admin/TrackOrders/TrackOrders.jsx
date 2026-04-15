@@ -1,273 +1,254 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Tabs, Tag, Button, Space, Modal, Form, Select, message } from 'antd';
-import { ShoppingCartOutlined, CloseSquareOutlined, CheckCircleOutlined, ArrowLeftOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
-import '../ContactLogs/ContactLogs.css';
+import {
+  Trash2,
+  Phone,
+  Eye,
+  X,
+  ShoppingCart,
+  CheckCircle,
+  XSquare,
+  Database,
+  Calendar,
+  Package,
+  Info,
+  RefreshCw,
+  ChevronLeft,
+  ChevronRight
+} from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
-
-const { TabPane } = Tabs;
+import './TrackOrders.css';
 
 const TrackOrders = () => {
-    // These would normally come from a global state or API
-    // For now, using the sample data that was previously in ContactLogs
-    const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [activeTab, setActiveTab] = useState('confirmed');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 6;
 
-    const fetchOrders = async () => {
-        try {
-            const token = sessionStorage.getItem('token');
-            const headers = { 'Authorization': `Token ${token}` };
+  const [selectedOrder, setSelectedOrder] = useState(null);
+  const [modalType, setModalType] = useState(null);
 
-            const [waRes, enqRes] = await Promise.all([
-                fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, { headers }),
-                fetch(`${SITE_CONTENT.api.base}/api/enquiries/`, { headers })
-            ]);
+  useEffect(() => {
+    fetchOrders();
+  }, []);
 
-            const allOrders = [];
+  const fetchOrders = async () => {
+    setLoading(true);
+    try {
+      const token = sessionStorage.getItem('token');
+      const headers = { 'Authorization': `Token ${token}` };
+      const [waRes, enqRes] = await Promise.all([
+        fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, { headers }),
+        fetch(`${SITE_CONTENT.api.base}/api/enquiries/`, { headers })
+      ]);
+      if (waRes.ok && enqRes.ok) {
+        const waData = await waRes.json();
+        const enqData = await enqRes.json();
+        const isConfirmedEntry = (i) => i.is_order_confirmed || i.status === 'Confirmed' || i.status === 'Rejected';
+        const combined = [
+          ...waData.filter(isConfirmedEntry).map(i => ({ ...i, _source: 'whatsapp' })),
+          ...enqData.filter(isConfirmedEntry).map(i => ({ ...i, _source: 'enquiries' }))
+        ];
+        setOrders(combined.sort((a, b) => new Date(b.timestamp || b.created_at) - new Date(a.timestamp || a.created_at)));
+      }
+    } catch (err) { console.error(err); } finally { setLoading(false); }
+  };
 
-            if (waRes.ok) {
-                const waData = await waRes.json();
-                waData.forEach(item => {
-                    allOrders.push({
-                        id: item.id,
-                        source: 'wa',
-                        name: item.customer_name || 'Anonymous (WhatsApp Click)',
-                        phone: item.phone_number || 'N/A',
-                        product: item.product_name,
-                        order_confirm_status: item.is_order_confirmed ? 'Confirmed' : (item.status || 'Pending'),
-                        order_status: item.order_status || 'Not Started',
-                        created_at: new Date(item.timestamp),
-                        message: `User clicked WhatsApp button for ${item.product_name}`
-                    });
-                });
-            }
-            if (enqRes.ok) {
-                const enqData = await enqRes.json();
-                enqData.forEach(item => {
-                    allOrders.push({
-                        ...item,
-                        source: 'enq',
-                        created_at: new Date(item.created_at),
-                        order_confirm_status: item.is_order_confirmed ? 'Confirmed' : item.status
-                    });
-                });
-            }
+  const handleUpdate = async (status, progress) => {
+    const endpoint = selectedOrder._source === 'whatsapp' ? 'whatsapp-contacts' : 'enquiries';
+    const payload = { status, order_status: progress, is_order_confirmed: status !== 'Pending' };
 
-            setOrders(allOrders.sort((a, b) => b.created_at - a.created_at));
-        } catch (error) {
-            console.error("Fetch Error:", error);
-            message.error("Failed to fetch orders.");
+    try {
+      const res = await fetch(`${SITE_CONTENT.api.base}/api/${endpoint}/${selectedOrder.id}/`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Token ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      if (res.ok) {
+        if (status === 'Pending') {
+          setOrders(prev => prev.filter(o => !(o.id === selectedOrder.id && o._source === selectedOrder._source)));
+        } else {
+          setOrders(prev => prev.map(o => (o.id === selectedOrder.id && o._source === selectedOrder._source) ? { ...o, ...payload } : o));
         }
-    };
+        closeModal();
+      }
+    } catch (err) { }
+  };
 
-    useEffect(() => {
-        fetchOrders();
-    }, []);
+  const handleDelete = async (source, id) => {
+    if (!window.confirm('Remove from Tracker?')) return;
+    try {
+      const res = await fetch(`${SITE_CONTENT.api.base}/api/${source === 'whatsapp' ? 'whatsapp-contacts' : 'enquiries'}/${id}/`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Token ${sessionStorage.getItem('token')}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ is_order_confirmed: false, status: 'Pending' })
+      });
+      if (res.ok) {
+        setOrders(prev => prev.filter(o => !(o.id === id && o._source === source)));
+      }
+    } catch (err) { }
+  };
 
-    const [isStatusModalVisible, setIsStatusModalVisible] = useState(false);
-    const [selectedOrder, setSelectedOrder] = useState(null);
-    const [form] = Form.useForm();
+  const closeModal = () => { setSelectedOrder(null); setModalType(null); };
 
-    const handleUpdateStatus = async (values) => {
-        const isOrderConfirmed = values.order_confirm_status === 'Confirmed';
+  const getFilteredOrders = () => {
+    let data = [];
+    if (activeTab === 'confirmed') data = orders.filter(o => o.order_status !== 'Delivered' && o.order_status !== 'Cancelled' && o.status !== 'Rejected');
+    else if (activeTab === 'cancelled') data = orders.filter(o => o.order_status === 'Cancelled' || o.status === 'Rejected');
+    else data = orders.filter(o => o.order_status === 'Delivered');
 
-        try {
-            const token = sessionStorage.getItem('token');
-            const endpoint = selectedOrder.source === 'wa'
-                ? `${SITE_CONTENT.api.base}/api/whatsapp-contacts/${selectedOrder.id}/`
-                : `${SITE_CONTENT.api.base}/api/enquiries/${selectedOrder.id}/`;
-
-            const response = await fetch(endpoint, {
-                method: 'PATCH',
-                headers: {
-                    'Authorization': `Token ${token}`,
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({
-                    status: values.order_confirm_status || selectedOrder.order_confirm_status,
-                    is_order_confirmed: isOrderConfirmed,
-                    order_status: values.order_status || selectedOrder.order_status
-                })
-            });
-
-            if (response.ok) {
-                message.success("Order status updated!");
-                fetchOrders();
-            } else {
-                message.error("Failed to update status.");
-            }
-        } catch (error) {
-            console.error(error);
-            message.error("Could not update record.");
-        }
-
-        setIsStatusModalVisible(false);
-        setSelectedOrder(null);
-    };
-
-    const orderColumns = [
-        {
-            title: 'Customer Details',
-            key: 'customer',
-            render: (_, record) => (
-                <div className="order-customer-info">
-                    <div style={{ fontWeight: 600 }}>{record.name}</div>
-                    <div style={{ fontSize: '12px', color: '#666' }}>{record.phone}</div>
-                </div>
-            )
-        },
-        {
-            title: 'Order Confirmation',
-            key: 'confirmed',
-            render: (_, record) => {
-                const status = record.order_confirm_status;
-                return (
-                    <Tag color={status === 'Confirmed' ? 'green' : 'red'}>
-                        {status === 'Confirmed' && <CheckCircleOutlined />} {status.toUpperCase()}
-                    </Tag>
-                );
-            }
-        },
-        {
-            title: 'Current Status',
-            dataIndex: 'order_status',
-            key: 'order_status',
-            render: (status) => (
-                <Tag color={status === 'Delivered' ? 'blue' : status === 'Processing' ? 'orange' : 'default'}>
-                    {status}
-                </Tag>
-            )
-        },
-        {
-            title: 'Requirement',
-            key: 'req',
-            render: (_, record) => (
-                <div style={{ fontSize: '13px' }}>
-                    <b>Intention:</b> {record.product || record.subject || record.service} <br />
-                    <b>Message:</b> <span style={{ color: '#666' }}>{record.message}</span>
-                </div>
-            )
-        }
-    ];
-
-    const confirmedOrders = orders.filter(o => o.order_confirm_status === 'Confirmed' && o.order_status !== 'Delivered');
-    // const pendingOrders = orders.filter(o => o.order_confirm_status === 'Pending');
-    const cancelledOrders = orders.filter(o => o.order_confirm_status === 'Rejected');
-    const deliveredOrders = orders.filter(o => o.order_status === 'Delivered');
-
-    const renderTable = (dataSource, countLabel, countValue, cardColor = '#c4953a') => (
-        <div className="order-tab-content">
-            <div className="order-stats-mini">
-                <div className="stat-card" style={{ borderColor: cardColor, color: cardColor }}>{countLabel}: {countValue}</div>
-            </div>
-            <Table
-                columns={orderColumns}
-                dataSource={dataSource}
-                rowKey="id"
-                className="premium-table cursor-pointer"
-                onRow={(record) => ({
-                    onClick: () => {
-                        setSelectedOrder(record);
-                        form.setFieldsValue({
-                            order_confirm_status: record.order_confirm_status,
-                            order_status: record.order_status
-                        });
-                        setIsStatusModalVisible(true);
-                    }
-                })}
-            />
-        </div>
+    return data.filter(o =>
+      (o.customer_name || o.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (o.id.toString()).includes(searchQuery)
     );
+  };
 
-    return (
-        <div className="contact-logs-page">
-            <div className="logs-container">
-                <header className="logs-header">
-                    <Link to="/admin/products" className="back-link">
-                        <ArrowLeftOutlined /> Back to Inventory
-                    </Link>
-                    <span className="header-label">Order Management System</span>
-                    <h1 className="header-title">Track <em>Customer Orders</em></h1>
-                </header>
+  const getPaginatedOrders = () => {
+    const filtered = getFilteredOrders();
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filtered.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  };
 
-                <Tabs defaultActiveKey="1" className="premium-tabs">
-                    <TabPane
-                        tab={<span><ShoppingCartOutlined /> Confirmed Orders</span>}
-                        key="1"
-                    >
-                        {renderTable(confirmedOrders, "Active Orders", confirmedOrders.length)}
-                    </TabPane>
+  const totalPages = Math.ceil(getFilteredOrders().length / ITEMS_PER_PAGE);
 
+  const getStatusBadge = (status) => {
+    const s = status || 'Not Started';
+    const display = s === 'Processing' ? 'In Production' : s;
+    const cls = `status-pill ${s.toLowerCase().replace(' ', '-')}`;
+    return <span className={cls}>{display}</span>;
+  };
 
-                    <TabPane
-                        tab={<span><CloseSquareOutlined /> Cancelled Orders</span>}
-                        key="3"
-                    >
-                        {renderTable(cancelledOrders, "Cancelled Logs", cancelledOrders.length, '#ff4d4f')}
-                    </TabPane>
+  if (loading) return <div className="admin-loading"><p>Syncing production queue...</p></div>;
 
-                    <TabPane
-                        tab={<span><CheckCircleOutlined /> Delivered Orders</span>}
-                        key="4"
-                    >
-                        {renderTable(deliveredOrders, "Completed Orders", deliveredOrders.length, '#52c41a')}
-                    </TabPane>
-                </Tabs>
-            </div>
-
-            <Modal
-                title="Update Order Status"
-                open={isStatusModalVisible}
-                onCancel={() => setIsStatusModalVisible(false)}
-                footer={null}
-                centered
-                width={400}
-            >
-                <Form
-                    form={form}
-                    layout="vertical"
-                    onFinish={handleUpdateStatus}
-                    onValuesChange={(changedValues, allValues) => {
-                        if (changedValues.order_confirm_status) {
-                            const decision = changedValues.order_confirm_status;
-                            let newProgress = allValues.order_status;
-
-                            if (decision === 'Confirmed') {
-                                newProgress = 'Processing';
-                            } else if (decision === 'Pending') {
-                                newProgress = 'Not Started';
-                            } else if (decision === 'Rejected') {
-                                newProgress = 'Cancelled';
-                            }
-
-                            form.setFieldsValue({ order_status: newProgress });
-                        }
-                    }}
-                >
-                    <Form.Item name="order_confirm_status" label="Order Decision?">
-                        <Select placeholder="Change status">
-                            <Select.Option value="Confirmed">Confirmed</Select.Option>
-                            <Select.Option value="Pending">Pending</Select.Option>
-                            <Select.Option value="Rejected">Rejected</Select.Option>
-                        </Select>
-                    </Form.Item>
-                    <Form.Item name="order_status" label="Progress?">
-                        <Select>
-                            <Select.Option value="Not Started">Not Started</Select.Option>
-                            <Select.Option value="Processing">In Production</Select.Option>
-                            <Select.Option value="Delivered">Order Delivered</Select.Option>
-                            <Select.Option value="Cancelled">Cancelled</Select.Option>
-                        </Select>
-                    </Form.Item>
-                    <Form.Item style={{ textAlign: 'right', marginTop: '20px', marginBottom: 0 }}>
-                        <Space>
-                            <Button onClick={() => setIsStatusModalVisible(false)}>Cancel</Button>
-                            <Button type="primary" htmlType="submit">Save Changes</Button>
-                        </Space>
-                    </Form.Item>
-                </Form>
-            </Modal>
+  return (
+    <div className="track-orders-container">
+      <div className="track-header">
+        <button className="refresh-btn-main" onClick={fetchOrders} title="Refresh Tracker">
+          <RefreshCw size={18} />
+          <span>Refresh</span>
+        </button>
+      </div>
+      <div className="track-tabs-row">
+        <div className="tabs-group">
+          <button className={`track-tab ${activeTab === 'confirmed' ? 'active' : ''}`} onClick={() => { setActiveTab('confirmed'); setCurrentPage(1); }}><ShoppingCart size={18} /> Confirmed Orders</button>
+          <button className={`track-tab ${activeTab === 'cancelled' ? 'active' : ''}`} onClick={() => { setActiveTab('cancelled'); setCurrentPage(1); }}><XSquare size={18} /> Cancelled Orders</button>
+          <button className={`track-tab ${activeTab === 'delivered' ? 'active' : ''}`} onClick={() => { setActiveTab('delivered'); setCurrentPage(1); }}><CheckCircle size={18} /> Delivered Orders</button>
         </div>
-    );
+      </div>
+      {activeTab === 'confirmed' && (<div className="active-count-pill">Active Orders: {getFilteredOrders().length}</div>)}
+      {activeTab === 'delivered' && (<div className="active-count-pill" style={{ color: 'var(--admin-success)', borderColor: 'var(--admin-success)', background: '#ecfdf5' }}>Total Delivered: {getFilteredOrders().length}</div>)}
+      {activeTab === 'cancelled' && (<div className="active-count-pill" style={{ color: 'var(--admin-danger)', borderColor: 'var(--admin-danger)', background: '#fef2f2' }}>Total Cancelled: {getFilteredOrders().length}</div>)}
+
+      <div className="table-wrapper">
+        <table className="orders-table">
+          <thead>
+            <tr><th>CUSTOMER DETAILS</th><th>ORDER CONFIRMATION</th><th>CURRENT STATUS</th><th>REQUIREMENT</th><th>ACTION</th></tr>
+          </thead>
+          <tbody>
+            {getPaginatedOrders().length > 0 ? (
+              getPaginatedOrders().map((order) => (
+                <tr key={`${order._source}-${order.id}`} onClick={() => setSelectedOrder(order) || setModalType('status')}>
+                  <td><div className="cust-info"><span className="name">{order.customer_name || order.name}</span><span className="phone"><Phone size={10} /> {order.phone_number || order.phone}</span></div></td>
+                  <td>
+                    <div className="order-meta">
+                      <span className={`status-text-small ${(order.order_status === 'Cancelled' || order.status === 'Rejected') ? 'cancelled' : 'confirmed'}`}>
+                        {(order.order_status === 'Cancelled' || order.status === 'Rejected') ? 'Cancelled' : 'Order Confirmed'}
+                      </span>
+                    </div>
+                  </td>
+                  <td>{getStatusBadge(order.order_status)}</td>
+                  <td><span className="req-text">{order.product_name || order.service}</span></td>
+                  <td>
+                    <div className="action-btns" onClick={e => e.stopPropagation()}>
+                      <button className="icon-btn" title="View Details" onClick={() => setSelectedOrder(order) || setModalType('view')}><Eye size={16} /></button>
+                      <button className="icon-btn delete" title="Remove" onClick={() => handleDelete(order._source, order.id)}><Trash2 size={16} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            ) : (
+              <tr><td colSpan="5"><div className="no-data"><Database size={48} strokeWidth={1} /><p>No data</p></div></td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {totalPages > 1 && (
+        <div className="admin-pagination">
+          <button disabled={currentPage === 1} onClick={() => setCurrentPage(p => p - 1)} className="pag-btn">
+            <ChevronLeft size={18} />
+          </button>
+          <div className="pag-numbers">
+            {[...Array(totalPages)].map((_, i) => (
+              <button key={i + 1} className={`pag-num ${currentPage === i + 1 ? 'active' : ''}`} onClick={() => setCurrentPage(i + 1)}>
+                {i + 1}
+              </button>
+            ))}
+          </div>
+          <button disabled={currentPage === totalPages} onClick={() => setCurrentPage(p => p + 1)} className="pag-btn">
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      )}
+
+      {modalType === 'status' && selectedOrder && (
+        <div className="admin-modal-overlay" onClick={closeModal}>
+          <div className="admin-status-modal" onClick={e => e.stopPropagation()}>
+            <div className="status-modal-header"><h3>Update Order Status</h3><button className="close-icon-btn" onClick={closeModal}><X size={18} /></button></div>
+            <div className="status-modal-body">
+              <div className="status-form-field"><label>Order Decision?</label><div className="select-box-custom">
+                <select id="tracker-status-input" defaultValue={selectedOrder.status}>
+                  <option value="Confirmed">Confirmed</option>
+                  <option value="Pending">Pending (Back to Logs)</option>
+                  <option value="Rejected">Cancelled</option>
+                </select></div></div>
+              <div className="status-form-field" style={{ marginTop: '20px' }}><label>Progress?</label><div className="select-box-custom">
+                <select id="tracker-progress-input" defaultValue={selectedOrder.order_status || 'Not Started'}>
+                  <option value="Not Started">Not Started</option>
+                  <option value="Processing">In Production</option>
+                  <option value="Delivered">Order Delivered</option>
+                  <option value="Cancelled">Cancelled</option>
+                </select></div></div>
+            </div>
+            <div className="status-modal-footer">
+              <button className="cancel-btn" onClick={closeModal}>Cancel</button>
+              <button className="apply-btn" onClick={() => {
+                const status = document.getElementById('tracker-status-input').value;
+                const progress = document.getElementById('tracker-progress-input').value;
+                handleUpdate(status, progress);
+              }}>Save Changes</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {modalType === 'view' && selectedOrder && (
+        <div className="admin-modal-overlay" onClick={closeModal}>
+          <div className="admin-modal-content view-card" onClick={e => e.stopPropagation()}>
+            <div className="modal-header"><h2>Order Details Card</h2><button className="close-x" onClick={closeModal}><X size={20} /></button></div>
+            <div className="modal-body">
+              <div className="detail-section"><div className="detail-main-info">
+                <h3>{selectedOrder.customer_name || selectedOrder.name}</h3>
+                <div style={{ marginTop: '8px' }}>{getStatusBadge(selectedOrder.order_status)}</div>
+              </div></div>
+              <div className="details-grid">
+                <div className="detail-item"><label><Phone size={12} /> Phone</label><span>{selectedOrder.phone_number || selectedOrder.phone || 'N/A'}</span></div>
+                <div className="detail-item"><label><Package size={12} /> Interested In</label><span>{selectedOrder.product_name || selectedOrder.service || 'N/A'}</span></div>
+                <div className="detail-item full-width"><label><Calendar size={12} /> Order ID & Date</label><span>#{selectedOrder._source.substring(0, 2).toUpperCase()}-{selectedOrder.id} • {new Date(selectedOrder.timestamp || selectedOrder.created_at).toLocaleString()}</span></div>
+              </div>
+
+              <div className="message-full">
+                <label><Info size={12} /> Inquiry Message</label>
+                <p>{selectedOrder.message || selectedOrder.subject || 'No specific message provided for this order.'}</p>
+              </div>
+            </div>
+            <div className="modal-footer"><button className="admin-btn secondary" onClick={closeModal}>Close Details</button></div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default TrackOrders;

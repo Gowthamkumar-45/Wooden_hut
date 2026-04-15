@@ -1,7 +1,30 @@
 from rest_framework import viewsets, permissions
-from products.models import Product, Category, SubCategory, Review
-from .serializers import ProductSerializer, CategorySerializer, ReviewSerializer
+from products.models import Product, Category, SubCategory, Review, MediaItem, MakingVideo
+from .serializers import (
+    ProductSerializer, CategorySerializer, ReviewSerializer,
+    MediaItemSerializer, MakingVideoSerializer
+)
 from rest_framework.parsers import MultiPartParser, FormParser
+
+class MediaItemViewSet(viewsets.ModelViewSet):
+    queryset = MediaItem.objects.all().order_by('-created_at')
+    serializer_class = MediaItemSerializer
+    parser_classes = [MultiPartParser, FormParser]
+    
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
+
+class MakingVideoViewSet(viewsets.ModelViewSet):
+    queryset = MakingVideo.objects.all().order_by('-created_at')
+    serializer_class = MakingVideoSerializer
+    parser_classes = [MultiPartParser, FormParser]
+
+    def get_permissions(self):
+        if self.action in ['list', 'retrieve']:
+            return [permissions.AllowAny()]
+        return [permissions.IsAuthenticated()]
 
 class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all().prefetch_related('subcategories')

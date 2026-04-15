@@ -1,64 +1,110 @@
 import React, { useState, useEffect } from 'react';
-import { Table, Button, Modal, Form, Input, Space, message, Tag } from 'antd';
-import { PlusOutlined, EditOutlined, DeleteOutlined, PlaySquareOutlined } from '@ant-design/icons';
-import '../ProductList/ProductList.css'; // Reuse table patterns
+import { Table, Button, Modal, Form, Input, Space, message, Tag, Upload } from 'antd';
+import { 
+    PlusOutlined, EditOutlined, DeleteOutlined, 
+    PlaySquareOutlined, UploadOutlined, FileImageOutlined 
+} from '@ant-design/icons';
+import '../ProductList/ProductList.css';
+
+const API_BASE_URL = 'http://localhost:8000/api';
 
 const MakingVideos = () => {
-    const initialVideos = [
-        { id: 1, title: 'Teak Wood Furniture Making Process', url: 'https://www.youtube.com/watch?v=W-879sugOG8', thumbnail: 'https://img.youtube.com/vi/W-879sugOG8/hqdefault.jpg', date: '2026-04-01' },
-        { id: 2, title: 'Teak Dining Set Polishing', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', thumbnail: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', date: '2026-03-25' }
-    ];
-
-    const [videos, setVideos] = useState(() => {
-        const saved = localStorage.getItem('making_videos');
-        return saved ? JSON.parse(saved) : initialVideos;
-    });
-
+    const [videos, setVideos] = useState([]);
+    const [loading, setLoading] = useState(false);
     const [isAddModalVisible, setIsAddModalVisible] = useState(false);
     const [editingVideo, setEditingVideo] = useState(null);
     const [form] = Form.useForm();
+    const [thumbFileList, setThumbFileList] = useState([]);
 
-    useEffect(() => {
-        localStorage.setItem('making_videos', JSON.stringify(videos));
-    }, [videos]);
-
-    const getYoutubeThumb = (url) => {
-        if (!url) return '';
-        const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-        const match = url.match(regExp);
-        const id = (match && match[2].length === 11) ? match[2] : null;
-        return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : 'https://images.unsplash.com/photo-1596708053450-474be618a901?w=400';
+    const fetchVideos = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`${API_BASE_URL}/making-videos/`);
+            if (res.ok) {
+                const data = await res.json();
+                setVideos(data);
+            }
+        } catch (err) {
+            message.error("Failed to load videos");
+        } finally {
+            setLoading(false);
+        }
     };
 
-    const handleAddOrEdit = (values) => {
-        const thumb = getYoutubeThumb(values.url);
-        if (editingVideo) {
-            setVideos(prev => prev.map(v => v.id === editingVideo.id ? { ...v, ...values, thumbnail: thumb } : v));
-            message.success("Video updated successfully!");
-        } else {
-            const newVideo = {
-                id: Date.now(),
-                ...values,
-                date: new Date().toISOString().split('T')[0],
-                thumbnail: thumb
-            };
-            setVideos([...videos, newVideo]);
-            message.success("New making video added!");
+    useEffect(() => {
+        fetchVideos();
+    }, []);
+
+    const handleAddOrEdit = async (values) => {
+        const formData = new FormData();
+        formData.append('title', values.title);
+        formData.append('description', values.description);
+        formData.append('youtube_url', values.youtube_url || '');
+        
+        if (thumbFileList[0]?.originFileObj) {
+            formData.append('thumbnail', thumbFileList[0].originFileObj);
         }
-        setIsAddModalVisible(false);
-        setEditingVideo(null);
-        form.resetFields();
+
+        const token = sessionStorage.getItem('token');
+        const url = editingVideo 
+            ? `${API_BASE_URL}/making-videos/${editingVideo.id}/` 
+            : `${API_BASE_URL}/making-videos/`;
+        
+        const method = editingVideo ? 'PATCH' : 'POST';
+
+        try {
+            const res = await fetch(url, {
+                method,
+                headers: {
+                    'Authorization': `Token ${token}`
+                },
+                body: formData
+            });
+
+            if (res.ok) {
+                message.success(`Video ${editingVideo ? 'updated' : 'published'} successfully!`);
+                setIsAddModalVisible(false);
+                setEditingVideo(null);
+                setThumbFileList([]);
+                form.resetFields();
+                fetchVideos();
+            } else {
+                const errData = await res.json();
+                if (errData.video_file) {
+                    message.error(errData.video_file[0]);
+                } else if (errData.youtube_url) {
+                    message.error("Please enter a valid YouTube link.");
+                } else if (errData.detail) {
+                    message.error(errData.detail);
+                } else {
+                    message.error("Error saving video. Please check your inputs.");
+                }
+            }
+        } catch (err) {
+            message.error("Network error.");
+        }
     };
 
     const handleDelete = (id) => {
         Modal.confirm({
             title: 'Delete this video?',
-            content: 'This will remove the video from the public "Making" section.',
+            content: 'This will permanently remove the video from storage.',
             okText: 'Delete',
             okType: 'danger',
-            onOk: () => {
-                setVideos(videos.filter(v => v.id !== id));
-                message.success("Video deleted.");
+            onOk: async () => {
+                const token = sessionStorage.getItem('token');
+                try {
+                    const res = await fetch(`${API_BASE_URL}/making-videos/${id}/`, {
+                        method: 'DELETE',
+                        headers: { 'Authorization': `Token ${token}` }
+                    });
+                    if (res.ok) {
+                        message.success("Video deleted.");
+                        fetchVideos();
+                    }
+                } catch (err) {
+                    message.error("Delete failed.");
+                }
             }
         });
     };
@@ -69,9 +115,15 @@ const MakingVideos = () => {
             key: 'preview',
             width: 150,
             render: (_, record) => (
-                <div style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden' }}>
-                    <img src={record.thumbnail} alt={record.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    <PlaySquareOutlined style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#fff', fontSize: '24px' }} />
+                <div style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', backgroundColor: '#f5f5f5' }}>
+                    {record.thumbnail ? (
+                        <img src={record.thumbnail} alt={record.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                    ) : (
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>
+                            <PlaySquareOutlined style={{ fontSize: '24px', color: '#ccc' }} />
+                        </div>
+                    )}
+                    <PlaySquareOutlined style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#fff', fontSize: '24px', opacity: 0.8 }} />
                 </div>
             )
         },
@@ -86,16 +138,23 @@ const MakingVideos = () => {
             )
         },
         {
-            title: 'YouTube URL',
-            dataIndex: 'url',
-            key: 'url',
-            render: (text) => <a href={text} target="_blank" rel="noreferrer" style={{ color: '#c4953a' }}>Watch Link</a>
+            title: 'Video Source',
+            key: 'video_source',
+            render: (_, record) => (
+                record.youtube_url ? (
+                    <a href={record.youtube_url} target="_blank" rel="noreferrer" style={{ color: '#ff0000', fontWeight: 600 }}>
+                        <PlaySquareOutlined /> YouTube Link
+                    </a>
+                ) : (
+                    <span style={{ color: '#999' }}>No Link Available</span>
+                )
+            )
         },
         {
             title: 'Posted On',
-            dataIndex: 'date',
-            key: 'date',
-            render: (text) => <Tag color="gold">{text}</Tag>
+            dataIndex: 'created_at',
+            key: 'created_at',
+            render: (text) => <Tag color="purple">{new Date(text).toLocaleDateString()}</Tag>
         },
         {
             title: 'Action',
@@ -115,68 +174,94 @@ const MakingVideos = () => {
     ];
 
     return (
-        <div className="contact-logs-page">
+        <div className="contact-logs-page" style={{ padding: '40px' }}>
             <div className="logs-container">
-                <header className="logs-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <header className="logs-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '32px' }}>
                     <div>
-                        <span className="header-label">Media Management</span>
-                        <h1 className="header-title">Making <em>Videos</em></h1>
+                        <span className="header-label" style={{ color: '#7c3aed', fontWeight: 600 }}>Media Production</span>
+                        <h1 className="header-title" style={{ fontSize: '28px', margin: '4px 0' }}>Making <em>Videos</em></h1>
                     </div>
                     <Button 
                         type="primary" 
                         icon={<PlusOutlined />} 
                         size="large"
-                        style={{ backgroundColor: '#c4953a', borderColor: '#c4953a' }}
+                        style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed', height: '48px', borderRadius: '12px', fontWeight: 600 }}
                         onClick={() => {
                             setEditingVideo(null);
+                            setThumbFileList([]);
                             form.resetFields();
                             setIsAddModalVisible(true);
                         }}
                     >
-                        Add New Video
+                        Upload New Video
                     </Button>
                 </header>
 
-                <div style={{ marginTop: '20px' }}>
-                    <Table 
-                        columns={columns} 
-                        dataSource={videos} 
-                        rowKey="id"
-                        pagination={{ pageSize: 10 }}
-                        className="premium-table"
-                    />
-                </div>
+                <Table 
+                    columns={columns} 
+                    dataSource={videos} 
+                    rowKey="id"
+                    loading={loading}
+                    pagination={{ pageSize: 10 }}
+                    style={{ background: 'white', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                />
             </div>
 
             <Modal
-                title={editingVideo ? "Edit Making Video" : "Add New Making Video"}
+                title={editingVideo ? "Edit Video Details" : "Upload Furniture Making Video"}
                 open={isAddModalVisible}
                 onCancel={() => setIsAddModalVisible(false)}
                 footer={null}
                 centered
                 width={500}
             >
-                <Form form={form} layout="vertical" onFinish={handleAddOrEdit}>
-                    <Form.Item name="title" label="Video Name" rules={[{ required: true, message: 'Please enter a name' }]}>
-                        <Input placeholder="E.g. Table Making Process" />
+                <Form form={form} layout="vertical" onFinish={handleAddOrEdit} style={{ marginTop: '20px' }}>
+                    <Form.Item name="title" label="Video Title" rules={[{ required: true, message: 'Give your video a title' }]}>
+                        <Input placeholder="E.g. Handcrafting our Teak Sofa" />
                     </Form.Item>
                     
-                    <Form.Item name="description" label="Video Description" rules={[{ required: true, message: 'Please describe the making process' }]}>
-                        <Input.TextArea rows={3} placeholder="Tell about the craftsmanship..." />
+                    <Form.Item name="description" label="Process Description" rules={[{ required: true }]}>
+                        <Input.TextArea rows={2} placeholder="Describe the crafting stages..." />
                     </Form.Item>
 
-                    <Form.Item name="url" label="Video Link (YouTube)" rules={[{ required: true, message: 'Please provide a YouTube URL' }]}>
-                        <Input prefix={<PlaySquareOutlined />} placeholder="https://youtube.com/watch?v=..." />
+                    <Form.Item 
+                        name="youtube_url" 
+                        label="YouTube Video Link" 
+                        extra="Paste the full YouTube URL (e.g., https://www.youtube.com/watch?v=...)"
+                        rules={[
+                            { required: true, message: 'YouTube Link is required' },
+                            { type: 'url', message: 'Please enter a valid URL' }
+                        ]}
+                    >
+                        <Input prefix={<PlaySquareOutlined style={{ color: '#ff0000' }} />} placeholder="https://www.youtube.com/watch?v=..." />
                     </Form.Item>
 
-                    <Form.Item style={{ textAlign: 'right', marginTop: '30px', marginBottom: 0 }}>
-                        <Space>
-                            <Button onClick={() => setIsAddModalVisible(false)}>Cancel</Button>
-                            <Button type="primary" htmlType="submit" style={{ backgroundColor: '#c4953a', borderColor: '#c4953a' }}>
-                                {editingVideo ? "Save Updates" : "Publish Video"}
+                    <Form.Item label="Custom Thumbnail (Optional)" extra="If left blank, the site will use a default workshop image.">
+                        <Upload 
+                            listType="picture-card"
+                            maxCount={1}
+                            accept="image/*"
+                            beforeUpload={() => false}
+                            fileList={thumbFileList}
+                            onChange={(info) => setThumbFileList(info.fileList)}
+                        >
+                            {thumbFileList.length < 1 && (
+                                <div>
+                                    <FileImageOutlined />
+                                    <div style={{ marginTop: 8 }}>Thumbnail</div>
+                                </div>
+                            )}
+                        </Upload>
+                    </Form.Item>
+
+                    <div style={{ textAlign: 'right', marginTop: '32px' }}>
+                        <Space size="large">
+                            <Button onClick={() => setIsAddModalVisible(false)} style={{ border: 'none' }}>Cancel</Button>
+                            <Button type="primary" htmlType="submit" style={{ backgroundColor: '#7c3aed', borderColor: '#7c3aed', borderRadius: '8px', padding: '0 24px', height: '40px' }}>
+                                {editingVideo ? "Update Content" : "Start Upload"}
                             </Button>
                         </Space>
-                    </Form.Item>
+                    </div>
                 </Form>
             </Modal>
         </div>

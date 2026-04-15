@@ -160,7 +160,11 @@ const CategoryPage = () => {
                     <img
                       src={getImageUrl(product.main_image)}
                       alt={product.name}
-                      onError={(e) => e.target.src = 'https://via.placeholder.com/600x400?text=Masterpiece'}
+                      onError={(e) => {
+                        if (e.target.src !== 'https://via.placeholder.com/600x400?text=Masterpiece') {
+                          e.target.src = 'https://via.placeholder.com/600x400?text=Masterpiece';
+                        }
+                      }}
                     />
                     <div className={`product-badge ${!product.in_stock ? 'out-of-stock' : ''}`}>
                       {product.in_stock ? (product.sub_category_name || 'Premium') : 'Out of Stock'}
