@@ -9,8 +9,7 @@ import {
     RefreshCw,
     Star,
     ChevronLeft,
-    ChevronRight,
-    ArrowLeft
+    ChevronRight
 } from 'lucide-react';
 import './ReviewManagement.css';
 

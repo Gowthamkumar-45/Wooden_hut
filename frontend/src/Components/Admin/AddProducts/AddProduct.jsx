@@ -7,13 +7,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     ArrowLeft,
     Upload,
-    Trash2,
-    Package,
     Info,
     Box,
-    Image as ImageIcon,
-    CheckCircle,
-    XCircle
+    Image as ImageIcon
 } from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
 import './AddProduct.css';

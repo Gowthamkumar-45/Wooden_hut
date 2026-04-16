@@ -8,7 +8,6 @@ import {
   Star, 
   Settings, 
   HelpCircle,
-  Search,
   Video,
   Image,
   ChevronLeft,
