@@ -83,7 +83,7 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
             <User size={20} />
           </div>
           <div className="user-info">
-            <span className="user-name">Admin User</span>
+            <span className="user-name">Marutham Admin</span>
             <span className="user-role">Super Admin</span>
           </div>
         </div>
@@ -92,10 +92,7 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
           <Settings size={20} />
           <span>Settings</span>
         </NavLink>
-        <NavLink to="/admin/help" className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}>
-          <HelpCircle size={20} />
-          <span>Help Center</span>
-        </NavLink>
+
       </div>
     </aside>
   );

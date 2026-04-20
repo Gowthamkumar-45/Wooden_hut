@@ -1,10 +1,9 @@
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import { LogOut, ExternalLink } from 'lucide-react';
 import './AdminHeader.css';
 
 const AdminHeader = () => {
   const location = useLocation();
-  const navigate = useNavigate();
   
   const getPageTitle = (pathname) => {
     if (pathname.includes('/admin/dashboard')) return 'Dashboard';
@@ -24,7 +23,8 @@ const AdminHeader = () => {
   };
 
   const handlePreview = () => {
-    navigate('/?preview=true');
+    localStorage.setItem('admin_preview', 'true');
+    window.open('/?preview=true', '_blank');
   };
 
   return (

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -22,6 +22,23 @@ const { Option } = Select;
 
 const Home = () => {
     const navigate = useNavigate();
+    const [products, setProducts] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchProducts = async () => {
+            try {
+                const response = await fetch(`${SITE_CONTENT.api.base}/api/products/`);
+                const data = await response.json();
+                setProducts(data);
+            } catch (error) {
+                console.error("Error fetching products:", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchProducts();
+    }, []);
 
     const {
         handleSubmit,
@@ -98,19 +115,25 @@ const Home = () => {
                         <div className="marquee-item"><span className="marquee-dot"></span>Timber Supply</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Custom Furniture</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Sofa Sets</div>
-                        <div className="marquee-item"><span className="marquee-dot"></span>Single Beds</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Luxury Beds</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Dining Tables</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Premium Hardwood</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Teak Wood</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Rosewood</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Office Furniture</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Modular Kitchen</div>
+                        
+                        {/* Duplicate for seamless loop */}
                         <div className="marquee-item"><span className="marquee-dot"></span>Timber Supply</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Custom Furniture</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Sofa Sets</div>
-                        <div className="marquee-item"><span className="marquee-dot"></span>Single Beds</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Luxury Beds</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Dining Tables</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Premium Hardwood</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Teak Wood</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Rosewood</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Office Furniture</div>
+                        <div className="marquee-item"><span className="marquee-dot"></span>Modular Kitchen</div>
                     </div>
                 </div>
             </section>
@@ -142,70 +165,35 @@ const Home = () => {
                         <div className="section-label">What We Create</div>
                         <h2 className="section-title">Our <em>Collections</em></h2>
                     </div>
-                    <a href="#contact" className="btn-ghost">View All →</a>
                 </div>
-                <div className="services-grid">
-
-                    <div className="service-card fade-up" onClick={() => navigate('/category/timber-supply')}>
-                        <img src="https://images.unsplash.com/photo-1603380353725-f8a4d39cc41e?w=600&q=80&fit=crop" alt="Timber Supply" />
-                        <div className="service-card-overlay"></div>
-                        <div className="service-card-body">
-                            <div className="service-num">01</div><div className="service-line"></div>
-                            <div className="service-name">Timber Supply</div>
-                            <div className="service-desc">Premium quality raw and processed timbers — teak, rosewood, mahogany — cut to your exact specifications for construction and interior work.</div>
+                <div className="services-grid-wrapper">
+                    {loading ? (
+                        <div className="loading-state">Loading our collections...</div>
+                    ) : (
+                        <div className="services-grid-scroll">
+                            <div className="services-grid products-scrollable">
+                                {products.map((product, index) => (
+                                    <div
+                                        key={product.id}
+                                        className="service-card product-item fade-up"
+                                        onClick={() => navigate(`/product/${product.slug || product.id}`)}
+                                    >
+                                        <img src={product.main_image} alt={product.name} />
+                                        <div className="service-card-overlay"></div>
+                                        <div className="service-card-body">
+                                            <div className="service-num">{(index + 1).toString().padStart(2, '0')}</div>
+                                            <div className="service-line"></div>
+                                            <div className="service-name">{product.name}</div>
+                                            <div className="service-desc">{product.description}</div>
+                                            <div className="service-action">
+                                                <button className="view-details-btn">View Details →</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </div>
-
-                    <div className="service-card fade-up" onClick={() => navigate('/category/custom-furniture')}>
-                        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=600&q=80&fit=crop" alt="Custom Furniture" />
-                        <div className="service-card-overlay"></div>
-                        <div className="service-card-body">
-                            <div className="service-num">02</div><div className="service-line"></div>
-                            <div className="service-name">Custom Furniture</div>
-                            <div className="service-desc">Bespoke furniture crafted entirely to your design vision. Every dimension, every finish, every detail — exactly as you imagine it.</div>
-                        </div>
-                    </div>
-
-                    <div className="service-card fade-up" onClick={() => navigate('/category/sofa-sets')}>
-                        <img src="https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=600&q=80&fit=crop" alt="Sofa Sets" />
-                        <div className="service-card-overlay"></div>
-                        <div className="service-card-body">
-                            <div className="service-num">03</div><div className="service-line"></div>
-                            <div className="service-name">Sofa Sets</div>
-                            <div className="service-desc">Solid wood sofa frames with premium upholstery options. Classic, contemporary, or heritage designs that anchor any living space with elegance.</div>
-                        </div>
-                    </div>
-
-                    <div className="service-card fade-up" onClick={() => navigate('/category/bedroom')}>
-                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=600&q=80&fit=crop" alt="Bedroom Collection" />
-                        <div className="service-card-overlay"></div>
-                        <div className="service-card-body">
-                            <div className="service-num">04</div><div className="service-line"></div>
-                            <div className="service-name">Bedroom</div>
-                            <div className="service-desc">Handcrafted wooden beds and frames built for lasting comfort and timeless beauty. Available in single, queen, and king sizes.</div>
-                        </div>
-                    </div>
-
-                    <div className="service-card fade-up" onClick={() => navigate('/category/dining-tables')}>
-                        <img src="https://images.unsplash.com/photo-1617806118233-18e1de247200?w=600&q=80&fit=crop" alt="Dining Tables" />
-                        <div className="service-card-overlay"></div>
-                        <div className="service-card-body">
-                            <div className="service-num">05</div><div className="service-line"></div>
-                            <div className="service-name">Dining Tables</div>
-                            <div className="service-desc">From intimate 4-seater tables to grand 12-seater dining sets — each piece a statement of craftsmanship, built to gather families for generations.</div>
-                        </div>
-                    </div>
-
-                    <div className="service-card fade-up" onClick={() => navigate('/category/wood-finishing')}>
-                        <img src="https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=600&q=80&fit=crop" alt="Wood Finishing" />
-                        <div className="service-card-overlay"></div>
-                        <div className="service-card-body">
-                            <div className="service-num">06</div><div className="service-line"></div>
-                            <div className="service-name">Wood Finishing</div>
-                            <div className="service-desc">Expert polishing, lacquering, and wood treatment services to restore, protect, and elevate your existing furniture to its finest form.</div>
-                        </div>
-                    </div>
-
+                    )}
                 </div>
             </section>
 

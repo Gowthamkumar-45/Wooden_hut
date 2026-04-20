@@ -164,7 +164,7 @@ const ProductList = () => {
                         <span className="header-label">Inventory Overview</span>
                         <h1 className="header-title">Our <em>Masterpieces</em></h1>
                     </div>
-                    <Link to="/admin/add-product">
+                    <Link to="/admin/add-products">
                         <Button type="primary" icon={<PlusOutlined />} size="large" className="add-btn-premium">
                             ADD NEW PRODUCT
                         </Button>

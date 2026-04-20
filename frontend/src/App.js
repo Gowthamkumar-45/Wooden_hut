@@ -30,7 +30,7 @@ function AppContent() {
   const [isAdmin, setIsAdmin] = useState(!!sessionStorage.getItem('token'));
   
   // Check if we are in "Preview Mode"
-  const isPreview = new URLSearchParams(location.search).get('preview') === 'true';
+  const isPreview = new URLSearchParams(location.search).get('preview') === 'true' || localStorage.getItem('admin_preview') === 'true';
 
   // Update isAdmin state when location changes (to catch login/logout)
   useEffect(() => {
@@ -55,24 +55,28 @@ function AppContent() {
         <Route path="/contact" element={<Contact />} />
         <Route path="/login" element={<Login />} />
         
-        {/* Admin Routes wrapped in AdminLayout */}
+        {/* Admin Routes wrapped in AdminLayout with Auth Protection */}
         <Route path="/admin/*" element={
-          <AdminLayout>
-            <Routes>
-              <Route path="/" element={<Navigate to="dashboard" />} />
-              <Route path="dashboard" element={<Dashboard />} />
-              <Route path="add-products" element={<AddProduct />} />
-              <Route path="products" element={<ProductList />} />
-              <Route path="edit-product/:productId" element={<EditProduct />} />
-              <Route path="whatsapp-contacts" element={<ContactLogs />} />
-              <Route path="track-orders" element={<TrackOrders />} />
-              <Route path="making-videos" element={<MakingVideos />} />
-              <Route path="media" element={<MediaManager />} />
-              <Route path="reviews" element={<ReviewManagement />} />
-              <Route path="settings" element={<div>Settings Page (Coming Soon)</div>} />
-              <Route path="help" element={<div>Help Center (Coming Soon)</div>} />
-            </Routes>
-          </AdminLayout>
+          isAdmin ? (
+            <AdminLayout>
+              <Routes>
+                <Route path="/" element={<Navigate to="dashboard" />} />
+                <Route path="dashboard" element={<Dashboard />} />
+                <Route path="add-products" element={<AddProduct />} />
+                <Route path="products" element={<ProductList />} />
+                <Route path="edit-product/:productId" element={<EditProduct />} />
+                <Route path="whatsapp-contacts" element={<ContactLogs />} />
+                <Route path="track-orders" element={<TrackOrders />} />
+                <Route path="making-videos" element={<MakingVideos />} />
+                <Route path="media" element={<MediaManager />} />
+                <Route path="reviews" element={<ReviewManagement />} />
+                <Route path="settings" element={<div>Settings Page (Coming Soon)</div>} />
+                <Route path="help" element={<div>Help Center (Coming Soon)</div>} />
+              </Routes>
+            </AdminLayout>
+          ) : (
+            <Navigate to="/login" />
+          )
         } />
       </Routes>
       {!isLoginPage && !isAdminRoute && <Footer />}

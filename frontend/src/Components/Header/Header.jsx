@@ -1,17 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useLocation } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { SITE_CONTENT, NAV_LINKS, PRODUCTS_MENU } from '../../constants/content';
 import './Header.css';
 
 const Header = () => {
-  const location = useLocation();
+
   const [activeTab, setActiveTab] = useState(null);
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [isMegaMenuVisible, setIsMegaMenuVisible] = useState(false);
+  const [mobileActiveDropdown, setMobileActiveDropdown] = useState(null);
 
-  // Check if we are in preview mode or if an admin is logged in
-  const isPreview = new URLSearchParams(location.search).get('preview') === 'true';
   const isAdminLoggedIn = !!sessionStorage.getItem('token');
 
   useEffect(() => {
@@ -22,10 +20,23 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  const toggleMobileDropdown = (category, e) => {
+    if (window.innerWidth <= 968) {
+      e.preventDefault();
+      e.stopPropagation();
+      setMobileActiveDropdown(mobileActiveDropdown === category ? null : category);
+    }
+  };
+
   const closeMenus = () => {
     setIsMobileMenuOpen(false);
-    setIsMegaMenuVisible(false);
     setActiveTab(null);
+    setMobileActiveDropdown(null);
+  };
+
+  const exitPreview = () => {
+    localStorage.removeItem('admin_preview');
+    closeMenus();
   };
 
   return (
@@ -34,50 +45,41 @@ const Header = () => {
         {SITE_CONTENT.brand.name}<span>{SITE_CONTENT.brand.subName}</span>
       </Link>
 
-      <div className={`hamburger ${isMobileMenuOpen ? 'open' : ''}`} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
+      <div className={`hamburger ${isMobileMenuOpen ? 'open' : ''} ${mobileActiveDropdown ? 'hide-for-dropdown' : ''}`} onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
         <span className="line"></span>
         <span className="line"></span>
         <span className="line"></span>
       </div>
 
       <ul className={`nav-links ${isMobileMenuOpen ? 'mobile-active' : ''}`}>
-        {/* Always show Customer Navigation now that we have a separate Admin Dashboard */}
-        <li><Link to="/" onClick={closeMenus}>{NAV_LINKS.find(l => l.name === "Home")?.name || "Home"}</Link></li>
+        <li><Link to="/" onClick={closeMenus}>Home</Link></li>
 
-        {/* OUR PRODUCTS Dropdown */}
-        <li 
-          className="dropdown" 
-          onMouseEnter={() => setIsMegaMenuVisible(true)}
-          onMouseLeave={() => setIsMegaMenuVisible(false)}
-        >
-          <span className="nav-dropdown-trigger">Our Products ▾</span>
-
-          <div className={`mega-menu ${isMegaMenuVisible ? 'visible' : ''}`} onMouseLeave={() => setActiveTab(null)}>
-            <div className="menu-column cat-column">
-              <h4>Categories</h4>
-              <Link to="/category/living" className={`cat-link ${activeTab === 'living' ? 'active' : ''}`} onMouseEnter={() => setActiveTab('living')} onClick={closeMenus}>Living</Link>
-              <Link to="/category/doors-and-windows" className={`cat-link ${activeTab === 'doors-and-windows' ? 'active' : ''}`} onMouseEnter={() => setActiveTab('doors-and-windows')} onClick={closeMenus}>Doors & Windows</Link>
-              <Link to="/category/dining" className={`cat-link ${activeTab === 'dining' ? 'active' : ''}`} onMouseEnter={() => setActiveTab('dining')} onClick={closeMenus}>Dining</Link>
-              <Link to="/category/bedroom" className={`cat-link ${activeTab === 'bedroom' ? 'active' : ''}`} onMouseEnter={() => setActiveTab('bedroom')} onClick={closeMenus}>Bedroom</Link>
-              <Link to="/category/office" className={`cat-link ${activeTab === 'office' ? 'active' : ''}`} onMouseEnter={() => setActiveTab('office')} onClick={closeMenus}>Office</Link>
-            </div>
-
-            {Object.keys(PRODUCTS_MENU).map((cat) => (
-              <div key={cat} className={`menu-column products-pane ${activeTab === cat ? 'active' : ''}`} id={`pane-${cat}`}>
-                <h4>Products</h4>
-                {PRODUCTS_MENU[cat].map((product) => (
-                  <Link key={product.name} to={product.path} onClick={closeMenus}>{product.name}</Link>
-                ))}
-              </div>
-            ))}
-          </div>
-        </li>
+        {Object.entries(PRODUCTS_MENU).map(([category, products]) => (
+          <li key={category} className={`dropdown link-dropdown ${mobileActiveDropdown === category ? 'active-mobile' : ''}`}>
+            <Link 
+              to={`/category/${category}`} 
+              className="nav-dropdown-trigger" 
+              onClick={(e) => toggleMobileDropdown(category, e)}
+            >
+              {category.replace(/-/g, ' ')} ▾
+            </Link>
+            <ul className={`simple-dropdown ${mobileActiveDropdown === category ? 'visible' : ''}`}>
+              <li className="mobile-only mobile-dropdown-header">
+                <span>{category.replace(/-/g, ' ')}</span>
+                <button className="close-sub-btn" onClick={(e) => { e.stopPropagation(); setMobileActiveDropdown(null); }}>×</button>
+              </li>
+              {products.map((product) => (
+                <li key={product.name}>
+                  <Link to={product.path} onClick={closeMenus}>{product.name}</Link>
+                </li>
+              ))}
+            </ul>
+          </li>
+        ))}
 
         {NAV_LINKS.filter(l => l.name !== "Home").map((link) => (
           <li key={link.name}>
-            {link.path.startsWith('#') || (link.path.includes('#') && link.path !== '/#about') ? (
-              <a href={link.path} onClick={closeMenus}>{link.name}</a>
-            ) : link.name === "About Us" ? (
+            {link.path.startsWith('#') ? (
               <a href={link.path} onClick={closeMenus}>{link.name}</a>
             ) : (
               <Link to={link.path} onClick={closeMenus}>{link.name}</Link>
@@ -85,14 +87,12 @@ const Header = () => {
           </li>
         ))}
 
-        {isAdminLoggedIn ? (
-          <li>
-            <Link to="/admin/dashboard">
-              <button className="admin-back-btn">Go to Dashboard</button>
+        {isAdminLoggedIn && (
+          <li className="admin-nav-item">
+            <Link to="/admin/dashboard" onClick={exitPreview} className="back-to-admin-btn">
+              Dashboard <span>→</span>
             </Link>
           </li>
-        ) : (
-          <li><Link to="/login"><button className="login-btn">Login</button></Link></li>
         )}
       </ul>
     </nav>
