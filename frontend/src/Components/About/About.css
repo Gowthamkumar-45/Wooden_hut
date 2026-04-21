@@ -42,12 +42,13 @@
     font-size: 13px;
     letter-spacing: 0.3em;
     text-transform: uppercase;
-    color: var(--gold);
+    color: #fff;
     margin-bottom: 24px;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 16px;
+    font-weight: 800;
 }
 
 .about-hero-eyebrow::before,
@@ -56,7 +57,7 @@
     display: block;
     width: 40px;
     height: 1px;
-    background: var(--gold);
+    background: #fff;
 }
 
 .about-hero-title {
@@ -66,11 +67,23 @@
     line-height: 1.05;
     color: var(--white);
     margin: 0;
+    text-shadow: 0 4px 30px rgba(0, 0, 0, 0.9);
 }
 
 .about-hero-title em {
     font-style: italic;
     color: var(--gold-light);
+}
+
+.about-hero-desc {
+    max-width: 600px;
+    margin: 32px auto 0;
+    font-size: 18px;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.95);
+    font-weight: 400;
+    text-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
+    animation-delay: 0.4s;
 }
 
 /* TALE SECTION */
@@ -84,47 +97,56 @@
 .tale-container {
     max-width: 1300px;
     width: 100%;
-    display: flex;
-    gap: 80px;
-    align-items: flex-start;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas: 
+        "title image"
+        "content image";
+    gap: 40px 80px;
+    align-items: start;
 }
 
 .tale-container.row-reverse {
-    flex-direction: row-reverse;
-}
-
-.tale-content {
-    flex: 1;
+    grid-template-areas: 
+        "image title"
+        "image content";
 }
 
 .tale-title {
+    grid-area: title;
     font-family: 'Cormorant Garamond', serif;
     font-size: clamp(36px, 4vw, 56px);
     font-weight: 500;
     color: var(--gold);
-    margin-bottom: 40px;
+    margin-bottom: 0px;
     line-height: 1.1;
 }
 
+.tale-content {
+    grid-area: content;
+}
+
+.tale-image-wrapper {
+    grid-area: image;
+    position: relative;
+}
+
 .tale-text {
-    font-size: 16px;
-    line-height: 2;
+    font-size: 17px;
+    line-height: 1.8;
     color: var(--brown-deep);
-    text-align: justify;
+    text-align: left;
     font-family: 'Jost', sans-serif;
+    font-weight: 300;
+    letter-spacing: 0.01em;
 }
 
 .tale-text p {
-    margin-bottom: 28px;
+    margin-bottom: 24px;
 }
 
 .tale-text p:last-child {
     margin-bottom: 0;
-}
-
-.tale-image-wrapper {
-    flex: 0 0 45%;
-    position: relative;
 }
 
 .tale-image {
@@ -136,11 +158,16 @@
 }
 
 /* Adding a vintage photo frame effect */
-.tale-image-wrapper::after {
+.tale-image-container {
+    position: relative;
+    line-height: 0;
+}
+
+.tale-image-container::after {
     content: '';
     position: absolute;
-    inset: 16px;
-    border: 1px solid rgba(255, 255, 255, 0.4);
+    inset: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.8);
     pointer-events: none;
 }
 
@@ -155,13 +182,22 @@
 
 /* RESPONSIVE */
 @media screen and (max-width: 1024px) {
-    .tale-container {
-        flex-direction: column;
-        gap: 60px;
+    .tale-container,
+    .tale-container.row-reverse {
+        grid-template-columns: 1fr;
+        grid-template-areas: 
+            "title"
+            "image"
+            "content";
+        gap: 30px;
+        text-align: center;
+    }
+    
+    .tale-title {
+        text-align: center;
     }
     
     .tale-image-wrapper {
-        flex: 1;
         width: 100%;
     }
     
@@ -171,23 +207,57 @@
 }
 
 @media screen and (max-width: 768px) {
+    .about-hero {
+        min-height: 80vh;
+    }
+
+    .about-hero-eyebrow {
+        font-size: 10px;
+        gap: 10px;
+        letter-spacing: 0.22em;
+    }
+
+    .about-hero-title {
+        font-size: 52px;
+    }
+
     .tale-section {
-        padding: 60px 20px;
+        padding: 50px 20px 0px 20px;
+    }
+
+    .tale-container {
+        gap: 40px;
     }
 
     .tale-title {
-        font-size: 38px;
-        margin-bottom: 24px;
+        font-size: 30px;
+        margin-bottom: 13px;
+        text-align: center;
+        margin-top: 5px;
     }
 
     .tale-text {
         font-size: 15px;
-        text-align: left;
+        text-align: center;
+        line-height: 1.8;
+        margin-top: -19px;
+    }
+    .last_desc{
+        margin-bottom: 50px;
+    }
+
+    .tale-image-wrapper {
+        margin-bottom: 10px;
     }
 }
 
 .fade-up {
     animation: fadeUp 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+
+.fade-in {
+    animation: fadeIn 2.5s ease-out forwards;
     opacity: 0;
 }
 
@@ -202,19 +272,28 @@
     }
 }
 
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
 /* ANIMATIONS */
 .animate-on-scroll {
     opacity: 0;
-    transition: all 3s cubic-bezier(0.2, 0.8, 0.2, 1);
+    transition: all 1.2s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 /* Base starting states */
 .fade-in-left {
-    transform: translateX(-60px);
+    transform: translateX(-100px);
 }
 
 .fade-in-right {
-    transform: translateX(60px);
+    transform: translateX(100px);
 }
 
 /* Final states when visible */
@@ -230,14 +309,18 @@
 
 /* Handle animations gracefully on mobile */
 @media screen and (max-width: 1024px) {
-    .fade-in-left, .fade-in-right {
-        transform: translateY(40px); /* fade up instead on mobile */
+    .fade-in-left {
+        transform: translateX(-30px);
+    }
+    
+    .fade-in-right {
+        transform: translateX(30px);
     }
     
     .is-visible.fade-in-left, 
     .is-visible.fade-in-right {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate(0);
     }
 }
 

@@ -20,6 +20,27 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Scroll Lock for Mobile Menu
+  useEffect(() => {
+    const html = document.documentElement;
+    const body = document.body;
+
+    if (isMobileMenuOpen) {
+      html.style.overflow = 'hidden';
+      body.style.overflow = 'hidden';
+      body.style.touchAction = 'none'; // Prevent touch scroll
+    } else {
+      html.style.overflow = 'unset';
+      body.style.overflow = 'unset';
+      body.style.touchAction = 'unset';
+    }
+    return () => {
+      html.style.overflow = 'unset';
+      body.style.overflow = 'unset';
+      body.style.touchAction = 'unset';
+    };
+  }, [isMobileMenuOpen]);
+
   const toggleMobileDropdown = (category, e) => {
     if (window.innerWidth <= 968) {
       e.preventDefault();

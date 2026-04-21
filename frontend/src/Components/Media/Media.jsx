@@ -21,8 +21,22 @@ const Media = () => {
         } else {
             // Default sample data
             setGalleryData([
-                { id: 1, type: 'photo', src: 'https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80', title: 'Precision Cutting' },
-                { id: 2, type: 'video', src: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', title: 'Luxury Polishing', duration: '2:45', url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' }
+                { 
+                    id: 1, 
+                    type: 'photo', 
+                    src: 'https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80', 
+                    title: 'Precision Cutting',
+                    desc: 'Where raw timber meets masterful dimensioning.' 
+                },
+                { 
+                    id: 2, 
+                    type: 'video', 
+                    src: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', 
+                    title: 'Luxury Polishing', 
+                    desc: 'The meticulous process of bringing out the natural glow of teak.',
+                    duration: '2:45', 
+                    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' 
+                }
             ]);
         }
     }, []);
@@ -90,6 +104,7 @@ const Media = () => {
                                         </div>
                                     )}
                                     <h3 className="media-title">{item.title}</h3>
+                                    <p className="media-desc">{item.desc}</p>
                                     {item.type === 'video' && <span className="duration">{item.duration || 'Play Video'}</span>}
                                 </div>
                             </div>

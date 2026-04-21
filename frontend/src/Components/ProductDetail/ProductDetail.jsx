@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -31,18 +31,18 @@ const ProductDetail = () => {
     defaultValues: { rating: 0, subject: '', review: '', name: '', email: '' }
   });
 
-  const getImageUrl = (path) => {
+  const getImageUrl = useCallback((path) => {
     if (!path) return 'https://via.placeholder.com/800x600?text=No+Image';
     if (path.startsWith('http')) return path;
     const base = SITE_CONTENT.api.base.endsWith('/') ? SITE_CONTENT.api.base.slice(0, -1) : SITE_CONTENT.api.base;
     const imgPath = path.startsWith('/') ? path : `/${path}`;
     return `${base}${imgPath}`;
-  };
+  }, []);
 
-  const fetchProductAndReviews = async () => {
+  const fetchProductAndReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const [productRes, reviewsRes] = await Promise.all([
+      const [productRes] = await Promise.all([
         fetch(`${SITE_CONTENT.api.base}/api/products/${productSlug}/`),
         fetch(`${SITE_CONTENT.api.base}/api/reviews/?product_slug=${productSlug}`)
       ]);
@@ -52,23 +52,39 @@ const ProductDetail = () => {
         setProduct(prodData);
         setActiveImg(getImageUrl(prodData.main_image));
       }
-
-      if (reviewsRes.ok) {
-        // const reviewsData = await reviewsRes.json();
-        // setReviews(reviewsData);
-      }
     } catch (err) {
       console.error("Fetch Error:", err);
     } finally {
       setLoading(false);
     }
-  };
+  }, [productSlug, getImageUrl]);
 
   useEffect(() => {
     window.scrollTo(0, 0);
     fetchProductAndReviews();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [productSlug]);
+  }, [fetchProductAndReviews]);
+
+  // Gallery Images definition moved up
+  const galleryImages = product 
+    ? [product.main_image, product.image2, product.image3, product.image4, product.image5]
+        .filter(img => img)
+        .map(img => getImageUrl(img))
+    : [];
+
+  // Auto-scroll logic
+  useEffect(() => {
+    if (galleryImages.length <= 1) return;
+
+    const interval = setInterval(() => {
+      setActiveImg((prev) => {
+        const currentIndex = galleryImages.indexOf(prev);
+        const nextIndex = (currentIndex + 1) % galleryImages.length;
+        return galleryImages[nextIndex];
+      });
+    }, 4000);
+
+    return () => clearInterval(interval);
+  }, [galleryImages]);
 
   const handleMouseMove = (e) => {
     if (!imgRef.current) return;
@@ -114,13 +130,7 @@ const ProductDetail = () => {
   if (loading) return <div className="detail-loader"><Spin size="large" /><span>Preparing details...</span></div>;
   if (!product) return <div className="not-found">Product not found</div>;
 
-  const galleryImages = [
-    product.main_image,
-    product.image2,
-    product.image3,
-    product.image4,
-    product.image5
-  ].filter(img => img).map(img => getImageUrl(img));
+
 
   return (
     <div className="product-detail-page">

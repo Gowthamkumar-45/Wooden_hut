@@ -24,6 +24,20 @@ const Home = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
+
+    const heroImages = [
+        "https://images.unsplash.com/photo-1516650556972-e9904734f467?w=900&auto=format&fit=crop&q=60",
+        "https://images.unsplash.com/photo-1658946376154-b851ddd94623?w=900&auto=format&fit=crop&q=60",
+        "https://plus.unsplash.com/premium_photo-1736194028753-4066214d5a27?w=900&auto=format&fit=crop&q=60"
+    ];
+
+    useEffect(() => {
+        const timer = setInterval(() => {
+            setCurrentHeroIndex((prev) => (prev + 1) % heroImages.length);
+        }, 3000);
+        return () => clearInterval(timer);
+    }, [heroImages.length]);
 
     useEffect(() => {
         const fetchProducts = async () => {
@@ -81,8 +95,18 @@ const Home = () => {
             {/* HERO SECTION */}
             <section className="hero">
                 <div className="hero-left">
+                    {/* Mobile optimized auto-sliding background */}
+                    <div className="hero-mobile-slider">
+                        {heroImages.map((img, index) => (
+                            <div 
+                                key={index}
+                                className={`hero-mobile-slide ${index === currentHeroIndex ? 'active' : ''}`}
+                                style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url(${img})` }}
+                            />
+                        ))}
+                    </div>
                     <div className="hero-eyebrow">{SITE_CONTENT.brand.est} · Premium Craftsmanship</div>
-                    <h1 className="hero-title">Where <em>Timber</em><br />Becomes<br />Legacy</h1>
+                    <h1 className="hero-title">Where <em>Timber</em> Becomes Legacy</h1>
                     <p className="hero-desc">Premium sawmill timbers, bespoke furniture, and handcrafted interiors — built from the finest wood, shaped by decades of mastery.</p>
                     <div className="hero-actions">
                         <a href="#services" className="btn-primary">Explore Our Products</a>
@@ -96,13 +120,9 @@ const Home = () => {
                 </div>
 
                 <div className="hero-right">
-                    <img src="https://images.unsplash.com/photo-1542621334-a254cf47733d?w=900&q=80&fit=crop" alt="Premium timber workshop" />
+                    <img src="https://images.unsplash.com/photo-1516650556972-e9904734f467?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTA4fHx3b29kZW4lMjBmdXJuaXR1cmUlMjBpbWFnZXxlbnwwfDF8MHx8fDA%3D" alt="Premium timber workshop" />
                     <div className="hero-right-overlay"></div>
-                    <div className="hero-badge">
-                        <div className="hero-badge-inner">
-                            <span>Pure</span><b>Wood</b><span>Since Est.</span>
-                        </div>
-                    </div>
+
                     <div className="hero-overlay">
                         <div className="hero-overlay-title">Crafted from Nature, Built for Eternity</div>
                         <div className="hero-overlay-sub">Premium Timbers · Bespoke Furniture · Tamil Nadu</div>
@@ -141,7 +161,7 @@ const Home = () => {
             {/* ABOUT */}
             <section className="about" id="about">
                 <div className="about-visual">
-                    <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=900&q=80&fit=crop" alt="Wood craftsmanship" />
+                    <img src="https://images.unsplash.com/photo-1693213157053-b9f440929376?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTJ8fHdvb2RlbiUyMGZ1cm5pdHVyZSUyMGFib3V0JTIwaW1hZ2V8ZW58MHx8MHx8fDA%3D" alt="Wood craftsmanship" />
                     <div className="about-img-overlay"></div>
                     <div className="about-img-caption">Every grain tells a story of time and nature.</div>
                 </div>
@@ -248,7 +268,7 @@ const Home = () => {
 
             {/* QUOTE with full-bleed background image */}
             <section className="quote-section">
-                <img src="https://images.unsplash.com/photo-1504328345606-18bbc8c9d7d1?w=1400&q=80&fit=crop" alt="Wood workshop background" />
+                <img src="https://images.unsplash.com/photo-1676902454579-c4c3284adcb5?w=900&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTl8fHdvb2RlbiUyMGZ1cm5pdHVyZSUyMGltYWdlfGVufDB8MHwwfHx8MA%3D%3D" alt="Wood workshop background" />
                 <div className="quote-overlay"></div>
                 <div className="quote-content">
                     <div className="quote-mark">"</div>
