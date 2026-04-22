@@ -14,10 +14,10 @@ export const SITE_CONTENT = {
     api: {
         base: window.location.hostname === 'localhost' 
             ? "http://localhost:8000" 
-            : "https://wooden-hut-ibx7.onrender.com",
+            : "https://api.woodenhut.in",
         media: window.location.hostname === 'localhost' 
             ? "http://localhost:8000" 
-            : "https://wooden-hut-ibx7.onrender.com"
+            : "https://api.woodenhut.in"
     },
     contact: {
         email: "marutham@gmail.com",
