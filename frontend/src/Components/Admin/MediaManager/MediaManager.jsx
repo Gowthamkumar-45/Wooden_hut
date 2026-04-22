@@ -6,8 +6,9 @@ import {
 } from '@ant-design/icons';
 import '../ProductList/ProductList.css'; 
 
-const { TabPane } = Tabs;
 import { SITE_CONTENT } from '../../../constants/content';
+
+const { TabPane } = Tabs;
 
 const API_BASE_URL = `${SITE_CONTENT.api.base}/api`;
 
