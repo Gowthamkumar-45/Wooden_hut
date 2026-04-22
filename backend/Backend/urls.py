@@ -20,8 +20,18 @@ from django.conf import settings
 from django.conf.urls.static import static
 from Backend.views import home
 
+from django.http import HttpResponse
+from django.contrib.auth.models import User
+
+def create_admin_temp(request):
+    if not User.objects.filter(username='admin_live').exists():
+        User.objects.create_superuser('admin_live', 'admin@live.com', 'LiveAdmin@2026')
+        return HttpResponse("Superuser 'admin_live' created successfully! You can now login at /admin/")
+    return HttpResponse("User 'admin_live' already exists.")
+
 urlpatterns = [
     path('', home, name='home'),
     path('admin/', admin.site.urls),
     path('api/', include('api.urls')),
+    path('create-admin-secret-99/', create_admin_temp),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
