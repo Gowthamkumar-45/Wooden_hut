@@ -5,7 +5,7 @@ import './Header.css';
 
 const Header = () => {
 
-  const [activeTab, setActiveTab] = useState(null);
+
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [mobileActiveDropdown, setMobileActiveDropdown] = useState(null);
@@ -51,7 +51,7 @@ const Header = () => {
 
   const closeMenus = () => {
     setIsMobileMenuOpen(false);
-    setActiveTab(null);
+
     setMobileActiveDropdown(null);
   };
 

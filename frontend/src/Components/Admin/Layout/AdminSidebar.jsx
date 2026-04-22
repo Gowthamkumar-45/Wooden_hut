@@ -7,7 +7,6 @@ import {
   Users, 
   Star, 
   Settings, 
-  HelpCircle,
   Video,
   Image,
   ChevronLeft,

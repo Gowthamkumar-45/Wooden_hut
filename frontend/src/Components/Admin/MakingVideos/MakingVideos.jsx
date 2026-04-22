@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Table, Button, Modal, Form, Input, Space, message, Tag, Upload } from 'antd';
 import { 
     PlusOutlined, EditOutlined, DeleteOutlined, 
-    PlaySquareOutlined, UploadOutlined, FileImageOutlined 
+    PlaySquareOutlined, FileImageOutlined 
 } from '@ant-design/icons';
 import '../ProductList/ProductList.css';
 import { SITE_CONTENT } from '../../../constants/content';

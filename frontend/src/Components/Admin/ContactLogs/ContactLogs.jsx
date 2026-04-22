@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { 
   MessageSquare, 
-  Search, 
   Trash2, 
   Phone, 
   Calendar, 
@@ -9,7 +8,6 @@ import {
   Edit, 
   X, 
   Mail,
-  ArrowUpRight,
   Package,
   Info,
   RefreshCw,
@@ -24,8 +22,8 @@ const ContactLogs = () => {
   const [whatsappContacts, setWhatsappContacts] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [searchQuery] = useState('');
+  const [statusFilter] = useState('all');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;
 

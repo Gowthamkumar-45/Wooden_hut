@@ -17,7 +17,6 @@ const reviewSchema = yup.object().shape({
 
 const ProductDetail = () => {
   const { productSlug } = useParams();
-  const navigate = useNavigate();
   const [product, setProduct] = useState(null);
   // const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -65,11 +64,11 @@ const ProductDetail = () => {
   }, [fetchProductAndReviews]);
 
   // Gallery Images definition moved up
-  const galleryImages = product 
+  const galleryImages = React.useMemo(() => product 
     ? [product.main_image, product.image2, product.image3, product.image4, product.image5]
         .filter(img => img)
         .map(img => getImageUrl(img))
-    : [];
+    : [], [product, getImageUrl]);
 
   // Auto-scroll logic
   useEffect(() => {
