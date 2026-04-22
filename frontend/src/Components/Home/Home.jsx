@@ -90,6 +90,14 @@ const Home = () => {
         }
     };
 
+    const getImageUrl = (path) => {
+        if (!path) return 'https://via.placeholder.com/600x400?text=No+Image';
+        if (path.startsWith('http')) return path;
+        const base = SITE_CONTENT.api.base.endsWith('/') ? SITE_CONTENT.api.base.slice(0, -1) : SITE_CONTENT.api.base;
+        const imgPath = path.startsWith('/') ? path : `/${path}`;
+        return `${base}${imgPath}`;
+    };
+
     return (
         <div className="home-container">
             {/* HERO SECTION */}
@@ -198,7 +206,15 @@ const Home = () => {
                                         className="service-card product-item fade-up"
                                         onClick={() => navigate(`/product/${product.slug || product.id}`)}
                                     >
-                                        <img src={product.main_image} alt={product.name} />
+                                        <img 
+                                            src={getImageUrl(product.main_image)} 
+                                            alt={product.name} 
+                                            onError={(e) => {
+                                                if (e.target.src !== 'https://via.placeholder.com/600x400?text=Masterpiece') {
+                                                    e.target.src = 'https://via.placeholder.com/600x400?text=Masterpiece';
+                                                }
+                                            }}
+                                        />
                                         <div className="service-card-overlay"></div>
                                         <div className="service-card-body">
                                             <div className="service-num">{(index + 1).toString().padStart(2, '0')}</div>
