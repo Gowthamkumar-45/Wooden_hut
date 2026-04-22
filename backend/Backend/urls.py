@@ -24,10 +24,10 @@ from django.http import HttpResponse
 from django.contrib.auth.models import User
 
 def create_admin_temp(request):
-    if not User.objects.filter(username='admin_live').exists():
-        User.objects.create_superuser('admin_live', 'admin@live.com', 'LiveAdmin@2026')
-        return HttpResponse("Superuser 'admin_live' created successfully! You can now login at /admin/")
-    return HttpResponse("User 'admin_live' already exists.")
+    if not User.objects.filter(username='Woodenhut').exists():
+        User.objects.create_superuser('Woodenhut', 'admin@woodenhut.in', 'Admin26@')
+        return HttpResponse("Superuser 'Woodenhut' created successfully! You can now login at /admin/")
+    return HttpResponse("User 'Woodenhut' already exists.")
 
 urlpatterns = [
     path('', home, name='home'),
