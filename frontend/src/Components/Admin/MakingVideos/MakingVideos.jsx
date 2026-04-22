@@ -5,8 +5,9 @@ import {
     PlaySquareOutlined, UploadOutlined, FileImageOutlined 
 } from '@ant-design/icons';
 import '../ProductList/ProductList.css';
+import { SITE_CONTENT } from '../../../constants/content';
 
-const API_BASE_URL = 'http://localhost:8000/api';
+const API_BASE_URL = `${SITE_CONTENT.api.base}/api`;
 
 const MakingVideos = () => {
     const [videos, setVideos] = useState([]);

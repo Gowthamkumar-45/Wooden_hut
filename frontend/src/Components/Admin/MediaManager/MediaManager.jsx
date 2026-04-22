@@ -7,7 +7,9 @@ import {
 import '../ProductList/ProductList.css'; 
 
 const { TabPane } = Tabs;
-const API_BASE_URL = 'http://localhost:8000/api';
+import { SITE_CONTENT } from '../../../constants/content';
+
+const API_BASE_URL = `${SITE_CONTENT.api.base}/api`;
 
 const MediaManager = () => {
     const [mediaItems, setMediaItems] = useState([]);

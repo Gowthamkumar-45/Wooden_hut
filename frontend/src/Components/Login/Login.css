@@ -97,7 +97,7 @@
 }
 
 /* Ant Design overrides */
-.login-form .ant-form-item-label > label {
+.login-form .ant-form-item-label>label {
     color: #2c1a0e;
     font-weight: 500;
     font-size: 0.95rem;
@@ -167,12 +167,12 @@
         flex-direction: column;
         max-width: 500px;
     }
-    
+
     .login-image-section {
         min-height: 250px;
         padding: 30px;
     }
-    
+
     .login-form-section {
         padding: 40px 30px;
     }
@@ -182,15 +182,15 @@
     .login-page {
         padding: 20px 10px;
     }
-    
+
     .login-image-title {
         font-size: 2rem;
     }
-    
+
     .login-image-title em {
         font-size: 2.5rem;
     }
-    
+
     .login-form-section {
         padding: 30px 20px;
     }

@@ -151,8 +151,7 @@
   right: 0;
   height: 100%;
   padding: 40px;
-  background: linear-gradient(
-      rgba(44, 26, 14, 0.9) 0%,
+  background: linear-gradient(rgba(44, 26, 14, 0.9) 0%,
       transparent 70%);
 }
 
@@ -303,7 +302,7 @@
   font-family: "Cormorant Garamond", serif;
   font-size: 15px;
   font-style: italic;
-  color:  rgba(255, 255, 255, 0.85);
+  color: rgba(255, 255, 255, 0.85);
   letter-spacing: 0.04em;
   font-weight: 800;
 }
@@ -495,7 +494,7 @@
     max-height 0.5s ease,
     opacity 0.4s;
   opacity: 0;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
   font-weight: 500;
 }
 
@@ -1049,8 +1048,13 @@
   }
 
   @keyframes slider-ken-burns {
-    from { transform: scale(2); }
-    to { transform: scale(1); }
+    from {
+      transform: scale(2);
+    }
+
+    to {
+      transform: scale(1);
+    }
   }
 
   .home-container .hero-right {

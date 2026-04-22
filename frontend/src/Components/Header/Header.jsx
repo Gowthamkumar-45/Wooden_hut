@@ -77,9 +77,9 @@ const Header = () => {
 
         {Object.entries(PRODUCTS_MENU).map(([category, products]) => (
           <li key={category} className={`dropdown link-dropdown ${mobileActiveDropdown === category ? 'active-mobile' : ''}`}>
-            <Link 
-              to={`/category/${category}`} 
-              className="nav-dropdown-trigger" 
+            <Link
+              to={`/category/${category}`}
+              className="nav-dropdown-trigger"
               onClick={(e) => toggleMobileDropdown(category, e)}
             >
               {category.replace(/-/g, ' ')} ▾

@@ -1,4 +1,3 @@
-
 .list-container {
     max-width: 1300px;
     margin: 0 auto;
@@ -83,7 +82,7 @@
     background: #fff;
 }
 
-.premium-table .ant-table-thead > tr > th {
+.premium-table .ant-table-thead>tr>th {
     background: #f9f6f1 !important;
     color: #2c1a0e !important;
     font-weight: 500 !important;
@@ -93,12 +92,12 @@
     padding: 20px 16px !important;
 }
 
-.premium-table .ant-table-tbody > tr > td {
+.premium-table .ant-table-tbody>tr>td {
     padding: 20px 16px !important;
     font-size: 14px !important;
 }
 
-.premium-table .ant-table-tbody > tr:hover > td {
+.premium-table .ant-table-tbody>tr:hover>td {
     background: #fdfaf5 !important;
 }
 
@@ -125,100 +124,110 @@
 
 /* QUICK PREVIEW MODAL */
 .product-preview-modal .ant-modal-content {
-  padding: 0 !important;
-  overflow: hidden;
-  border-radius: 8px;
+    padding: 0 !important;
+    overflow: hidden;
+    border-radius: 8px;
 }
 
 .quick-preview-card {
-  display: flex;
-  flex-direction: column;
+    display: flex;
+    flex-direction: column;
 }
 
 .preview-image-wrap {
-  width: 100%;
-  height: 280px;
-  background: #fdfdfd;
-  position: relative;
-  overflow: hidden;
-  border-bottom: 1px solid rgba(44, 26, 14, 0.05);
+    width: 100%;
+    height: 280px;
+    background: #fdfdfd;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid rgba(44, 26, 14, 0.05);
 }
 
 .preview-image-wrap img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
 
 .preview-badge {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  background: var(--brown-deep, #2c1a0e);
-  color: #fff;
-  padding: 4px 10px;
-  font-size: 9px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    background: var(--brown-deep, #2c1a0e);
+    color: #fff;
+    padding: 4px 10px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 .preview-badge.out-of-stock {
-  background: #d9363e;
+    background: #d9363e;
 }
 
 .preview-content {
-  padding: 30px;
+    padding: 30px;
 }
 
 .preview-mat {
-  font-size: 10px;
-  color: #c4953a;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  display: block;
-  margin-bottom: 10px;
+    font-size: 10px;
+    color: #c4953a;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    display: block;
+    margin-bottom: 10px;
 }
 
 .preview-name {
-  font-family: 'Cormorant Garamond', serif;
-  font-size: 28px;
-  color: #2c1a0e;
-  margin-bottom: 15px;
-  line-height: 1.2;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    color: #2c1a0e;
+    margin-bottom: 15px;
+    line-height: 1.2;
 }
 
 .preview-desc {
-  font-size: 14px;
-  line-height: 1.6;
-  color: #666;
-  margin-bottom: 25px;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #666;
+    margin-bottom: 25px;
 }
 
 .preview-footer {
-  border-top: 1px solid rgba(0, 0, 0, 0.05);
-  padding-top: 20px;
+    border-top: 1px solid rgba(0, 0, 0, 0.05);
+    padding-top: 20px;
 }
 
 .full-page-btn {
-  text-decoration: none;
-  color: #c4953a;
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.3s ease;
+    text-decoration: none;
+    color: #c4953a;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s ease;
 }
 
 .full-page-btn:hover {
-  color: #2c1a0e;
-  transform: translateX(5px);
+    color: #2c1a0e;
+    transform: translateX(5px);
 }
 
 @media (max-width: 768px) {
-    .product-list-page { padding: 40px 20px; }
-    .list-header { flex-direction: column; align-items: flex-start; gap: 20px; }
-    .list-actions .ant-input-affix-wrapper { width: 100% !important; }
+    .product-list-page {
+        padding: 40px 20px;
+    }
+
+    .list-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 20px;
+    }
+
+    .list-actions .ant-input-affix-wrapper {
+        width: 100% !important;
+    }
 }
