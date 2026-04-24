@@ -1,7 +1,7 @@
 from rest_framework import viewsets, permissions
 from products.models import Product, Category, SubCategory, Review, MediaItem, MakingVideo
 from .serializers import (
-    ProductSerializer, CategorySerializer, ReviewSerializer,
+    ProductSerializer, ProductListSerializer, CategorySerializer, ReviewSerializer,
     MediaItemSerializer, MakingVideoSerializer
 )
 from rest_framework.parsers import MultiPartParser, FormParser
@@ -32,14 +32,17 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     permission_classes = [permissions.AllowAny]
 
 class ProductViewSet(viewsets.ModelViewSet):
-    queryset = Product.objects.all()
-    serializer_class = ProductSerializer
     parser_classes = [MultiPartParser, FormParser]
+
+    def get_serializer_class(self):
+        # Use lightweight serializer for list to avoid loading all reviews
+        if self.action == 'list':
+            return ProductListSerializer
+        return ProductSerializer
 
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
         lookup_url_kwarg = self.lookup_url_kwarg or self.lookup_field
-        filter_kwargs = {self.lookup_field: self.kwargs[lookup_url_kwarg]}
         
         # Try lookup by ID first if it's numeric, otherwise by slug
         val = self.kwargs[lookup_url_kwarg]
@@ -61,7 +64,15 @@ class ProductViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        queryset = Product.objects.all()
+        # select_related avoids N+1 queries for FK fields (category, sub_category)
+        # prefetch_related avoids N+1 queries for reverse FK (reviews)
+        if self.action == 'list':
+            # List: no need to prefetch reviews
+            queryset = Product.objects.select_related('category', 'sub_category').order_by('-created_at')
+        else:
+            # Detail: load reviews too
+            queryset = Product.objects.select_related('category', 'sub_category').prefetch_related('reviews').order_by('-created_at')
+
         category_slug = self.request.query_params.get('category', None)
         subcategory_slug = self.request.query_params.get('subcategory', None)
         
@@ -73,7 +84,7 @@ class ProductViewSet(viewsets.ModelViewSet):
         return queryset
 
 class ReviewViewSet(viewsets.ModelViewSet):
-    queryset = Review.objects.all().order_by('-created_at')
+    queryset = Review.objects.select_related('product').order_by('-created_at')
     serializer_class = ReviewSerializer
 
     def get_permissions(self):
@@ -82,7 +93,7 @@ class ReviewViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
     def get_queryset(self):
-        queryset = Review.objects.all().order_by('-created_at')
+        queryset = Review.objects.select_related('product').order_by('-created_at')
         product_id = self.request.query_params.get('product', None)
         product_slug = self.request.query_params.get('product_slug', None)
         

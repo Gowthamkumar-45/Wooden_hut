@@ -41,10 +41,8 @@ const ProductDetail = () => {
   const fetchProductAndReviews = useCallback(async () => {
     setLoading(true);
     try {
-      const [productRes] = await Promise.all([
-        fetch(`${SITE_CONTENT.api.base}/api/products/${productSlug}/`),
-        fetch(`${SITE_CONTENT.api.base}/api/reviews/?product_slug=${productSlug}`)
-      ]);
+      // Single fetch — reviews are embedded in the product detail response
+      const productRes = await fetch(`${SITE_CONTENT.api.base}/api/products/${productSlug}/`);
 
       if (productRes.ok) {
         const prodData = await productRes.json();

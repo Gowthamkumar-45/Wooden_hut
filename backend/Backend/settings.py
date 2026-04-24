@@ -54,6 +54,7 @@ INSTALLED_APPS = [
 
 # MIDDLEWARE
 MIDDLEWARE = [
+    'django.middleware.gzip.GZipMiddleware',  # Compress responses (~70% smaller JSON)
     'django.middleware.security.SecurityMiddleware',
 
     # WhiteNoise (for static files)
@@ -169,4 +170,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],
+    # Limit products per page so the API never dumps hundreds of records at once
+    'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
+    'PAGE_SIZE': 24,
 }

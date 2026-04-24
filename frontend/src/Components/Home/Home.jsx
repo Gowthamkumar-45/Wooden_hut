@@ -44,7 +44,8 @@ const Home = () => {
             try {
                 const response = await fetch(`${SITE_CONTENT.api.base}/api/products/`);
                 const data = await response.json();
-                setProducts(data);
+                // DRF pagination wraps results in { count, next, previous, results }
+                setProducts(Array.isArray(data) ? data : (data.results || []));
             } catch (error) {
                 console.error("Error fetching products:", error);
             } finally {

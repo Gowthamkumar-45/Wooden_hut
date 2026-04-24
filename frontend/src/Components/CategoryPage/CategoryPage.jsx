@@ -96,7 +96,8 @@ const CategoryPage = () => {
         const response = await fetch(`${SITE_CONTENT.api.base}/api/products/?${filterParam}`);
         if (response.ok) {
           const data = await response.json();
-          setProducts(data);
+          // DRF pagination wraps results in { count, next, previous, results }
+          setProducts(Array.isArray(data) ? data : (data.results || []));
         }
       } catch (err) {
         console.error("Fetch Error:", err);
