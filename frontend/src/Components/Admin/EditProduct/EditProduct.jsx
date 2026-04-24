@@ -6,7 +6,7 @@ import { Form, Input, Button, Select, Upload, message, Spin } from 'antd';
 import { UploadOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { SITE_CONTENT } from '../../../constants/content';
-import '../AddProducts/AddProduct.css'; // Reusing the same premium styles
+import './EditProduct.css';
 
 const { Option } = Select;
 
@@ -45,17 +45,13 @@ const EditProduct = () => {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                // 1. Fetch Categories
                 const catRes = await fetch(`${SITE_CONTENT.api.base}/api/categories/`);
                 const catData = await catRes.json();
                 setCategories(catData);
 
-                // 2. Fetch Product Details
                 const prodRes = await fetch(`${SITE_CONTENT.api.base}/api/products/${productId}/`);
                 if (prodRes.ok) {
                     const prodData = await prodRes.json();
-
-                    // Store current images for preview
                     setCurrentImages({
                         main: getImageUrl(prodData.main_image),
                         image2: getImageUrl(prodData.image2),
@@ -63,8 +59,6 @@ const EditProduct = () => {
                         image4: getImageUrl(prodData.image4),
                         image5: getImageUrl(prodData.image5)
                     });
-
-                    // Reset form with existing data
                     reset({
                         name: prodData.name,
                         category: prodData.category,
@@ -76,8 +70,6 @@ const EditProduct = () => {
                         storage: prodData.storage || '',
                         in_stock: prodData.in_stock
                     });
-
-                    // Set initial subcategories for the dropdown
                     const initialCat = catData.find(c => c.id === prodData.category);
                     setSubCategoriesList(initialCat ? initialCat.subcategories : []);
                 }
@@ -139,19 +131,18 @@ const EditProduct = () => {
     if (loading) return <div className="detail-loader"><Spin size="large" /><span>Carving details...</span></div>;
 
     return (
-        <div className="add-product-page">
-            <div className="form-container">
-                <header className="form-header">
-                    <Link to="/admin/products" className="back-link">
+        <div className="edit-product-page">
+            <div className="edit-form-container">
+                <header className="edit-form-header">
+                    <Link to="/admin/products" className="edit-back-link">
                         <ArrowLeftOutlined /> Back to Inventory
                     </Link>
-                    <span className="header-label">Edit Masterpiece</span>
-                    <h1 className="header-title">Refine <em>Furniture</em></h1>
-                    <p className="header-subtitle">Update the details of your listed piece below.</p>
+                    <span className="edit-header-label">Edit Masterpiece</span>
+                    <h1 className="edit-header-title">Refine <em>Furniture</em></h1>
                 </header>
 
-                <Form layout="vertical" onFinish={handleSubmit(onSubmit)} className="premium-form">
-                    <div className="form-grid">
+                <Form layout="vertical" onFinish={handleSubmit(onSubmit)} className="edit-premium-form-card">
+                    <div className="edit-form-grid">
                         <Form.Item label="Product Name *" className="full-width" validateStatus={errors.name ? "error" : ""} help={errors.name?.message}>
                             <Controller name="name" control={control} render={({ field }) => <Input {...field} size="large" />} />
                         </Form.Item>
@@ -184,12 +175,12 @@ const EditProduct = () => {
                             <Controller name="color" control={control} render={({ field }) => <Input {...field} size="large" />} />
                         </Form.Item>
 
-                        <Form.Item label="Dimensions" validateStatus={errors.dimensions ? "error" : ""} help={errors.dimensions?.message} className="full-width">
-                            <Controller name="dimensions" control={control} render={({ field }) => <Input {...field} size="large" placeholder="E.g. 80 H X 35 W X 30 D inches" />} />
+                        <Form.Item label="Dimensions" validateStatus={errors.dimensions ? "error" : ""} help={errors.dimensions?.message}>
+                            <Controller name="dimensions" control={control} render={({ field }) => <Input {...field} size="large" placeholder="E.g. 80 H X 35 W X 30 D" />} />
                         </Form.Item>
 
-                        <Form.Item label="Storage *" validateStatus={errors.storage ? "error" : ""} help={errors.storage?.message} className="full-width">
-                            <Controller name="storage" control={control} render={({ field }) => <Input {...field} placeholder="E.g. Under-bed storage, Side drawers, etc." size="large" />} />
+                        <Form.Item label="Storage *" validateStatus={errors.storage ? "error" : ""} help={errors.storage?.message}>
+                            <Controller name="storage" control={control} render={({ field }) => <Input {...field} placeholder="E.g. Side drawers" size="large" />} />
                         </Form.Item>
 
                         <Form.Item label="Description *" validateStatus={errors.description ? "error" : ""} help={errors.description?.message} className="full-width">
@@ -199,67 +190,69 @@ const EditProduct = () => {
                         <Form.Item label="Inventory Status *" validateStatus={errors.in_stock ? "error" : ""} help={errors.in_stock?.message} className="full-width">
                             <Controller name="in_stock" control={control} render={({ field }) => (
                                 <Select {...field} size="large">
-                                    <Option value={true}>In Stock (Available for Order)</Option>
-                                    <Option value={false}>Out of Stock (Hidden Badge)</Option>
+                                    <Option value={true}>In Stock (Publicly Available)</Option>
+                                    <Option value={false}>Out of Stock (Hidden/Badge)</Option>
                                 </Select>
                             )} />
                         </Form.Item>
 
-                        <div className="image-edit-master-section full-width">
-                            <h3 className="section-title">Product Imagery</h3>
-                            <p className="section-instruction">Review and update your masterpiece's visual collection.</p>
+                        <div className="edit-imagery-section full-width">
+                            <h3 className="edit-section-title">Product Imagery</h3>
+                            <p className="edit-section-desc">Manage your masterpiece's visuals. Upload new images to replace current ones.</p>
 
-                            <div className="edit-main-image-block">
-                                <label className="edit-block-label">MAIN IMAGE</label>
-                                <div className="edit-image-card">
-                                    <div className="current-image-preview">
-                                        {currentImages.main ? (
-                                            <img src={currentImages.main} alt="Current" />
-                                        ) : (
-                                            <div className="no-image-placeholder">No Image</div>
-                                        )}
-                                    </div>
-                                    <div className="upload-replacement">
-                                        <Controller name="mainImage" control={control} render={({ field }) => (
-                                            <Upload {...field} listType="picture-card" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)}>
-                                                {field.value?.fileList?.length >= 1 ? null : <div><UploadOutlined /><div style={{ marginTop: 8 }}>Replace</div></div>}
-                                            </Upload>
-                                        )} />
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="edit-gallery-grid">
-                                {[1, 2, 3, 4].map(idx => (
-                                    <div key={idx} className="edit-gallery-item">
-                                        <label className="edit-block-label">{`GALLERY ${idx}`}</label>
-                                        <div className="edit-image-card">
-                                            <div className="current-image-preview small">
-                                                {currentImages[`image${idx + 1}`] ? (
-                                                    <img src={currentImages[`image${idx + 1}`]} alt={`Gallery ${idx}`} />
-                                                ) : (
-                                                    <div className="no-image-placeholder">Empty</div>
-                                                )}
-                                            </div>
-                                            <div className="upload-replacement mini">
-                                                <Controller name={`gallery${idx}`} control={control} render={({ field }) => (
-                                                    <Upload {...field} listType="picture-card" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)}>
-                                                        {field.value?.fileList?.length >= 1 ? null : <div><UploadOutlined /></div>}
-                                                    </Upload>
-                                                )} />
-                                            </div>
+                            <div className="edit-images-wrapper">
+                                <div className="edit-image-row">
+                                    <label className="edit-row-label">MAIN IMAGE</label>
+                                    <div className="edit-image-card-box">
+                                        <div className="edit-current-preview">
+                                            {currentImages.main ? (
+                                                <img src={currentImages.main} alt="Current" />
+                                            ) : (
+                                                <div className="no-image-placeholder">None</div>
+                                            )}
+                                        </div>
+                                        <div className="edit-upload-action">
+                                            <Controller name="mainImage" control={control} render={({ field }) => (
+                                                <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)}>
+                                                    <Button icon={<UploadOutlined />}>Replace Main Image</Button>
+                                                </Upload>
+                                            )} />
                                         </div>
                                     </div>
-                                ))}
+                                </div>
+
+                                <div className="gallery-scroller">
+                                    {[1, 2, 3, 4].map(idx => (
+                                        <div key={idx} className="edit-image-row">
+                                            <label className="edit-row-label">{`GALLERY IMAGE ${idx}`}</label>
+                                            <div className="edit-image-card-box">
+                                                <div className="edit-current-preview">
+                                                    {currentImages[`image${idx + 1}`] ? (
+                                                        <img src={currentImages[`image${idx + 1}`]} alt={`Gallery ${idx}`} />
+                                                    ) : (
+                                                        <div className="no-image-placeholder">Empty</div>
+                                                    )}
+                                                </div>
+                                                <div className="edit-upload-action">
+                                                    <Controller name={`gallery${idx}`} control={control} render={({ field }) => (
+                                                        <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)}>
+                                                            <Button size="small" icon={<UploadOutlined />}></Button>
+                                                        </Upload>
+                                                    )} />
+                                                </div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         </div>
                     </div>
 
-                    <Form.Item className="submit-section">
-                        <Button type="primary" htmlType="submit" size="large" className="submit-product-btn" loading={isSubmitting}>
+                    <div className="edit-submit-bar">
+                        <Button type="primary" htmlType="submit" size="large" className="edit-save-btn" loading={isSubmitting}>
                             SAVE CHANGES
                         </Button>
-                    </Form.Item>
+                    </div>
                 </Form>
             </div>
         </div>
