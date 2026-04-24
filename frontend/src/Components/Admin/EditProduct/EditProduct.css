@@ -58,7 +58,7 @@
     background: white;
     padding: 40px;
     border-radius: 24px;
-    box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.03);
 }
 
 .edit-form-grid {
@@ -135,12 +135,28 @@
 
 .edit-image-card-box {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    gap: 24px;
+    justify-content: center;
+    gap: 16px;
     background: #fcfaff;
-    padding: 20px;
-    border-radius: 16px;
+    padding: 24px;
+    border-radius: 20px;
     border: 1px solid #f3efff;
+    min-height: 280px !important;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.edit-image-card-box.clickable {
+    cursor: pointer;
+}
+
+.edit-image-card-box.clickable:hover {
+    background: #f5f3ff;
+    border-color: var(--admin-primary);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(124, 58, 237, 0.08);
 }
 
 .edit-current-preview {
@@ -151,6 +167,17 @@
     background: white;
     border: 1px solid #e2e8f0;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.no-image-placeholder {
+    font-size: 11px;
+    font-weight: 700;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
 }
 
 .edit-current-preview img {
@@ -160,17 +187,22 @@
 }
 
 .edit-upload-action {
-    flex-grow: 1;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .gallery-scroller {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
+    gap: 32px;
 }
 
 @media (max-width: 768px) {
-    .edit-form-grid, .gallery-scroller {
+
+    .edit-form-grid,
+    .gallery-scroller {
         grid-template-columns: 1fr;
     }
 }
@@ -196,4 +228,70 @@
 .edit-save-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 15px 30px rgba(124, 58, 237, 0.3) !important;
+}
+
+/* Click-to-Upload Pattern Styling */
+.full-card-upload {
+    width: 100%;
+}
+
+.upload-hint {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: var(--admin-primary);
+    transition: all 0.3s ease;
+}
+
+.upload-hint span {
+    font-size: 13px;
+    font-weight: 700;
+}
+
+.upload-hint.mini span {
+    font-size: 11px;
+}
+
+.edit-image-card-box:hover .upload-hint {
+    transform: scale(1.05);
+}
+
+/* Hide default Ant Design Upload list if desired, or style it */
+.full-card-upload .ant-upload-list {
+    margin-top: 12px;
+}
+
+
+/* Vertical Upload List Styling */
+.edit-upload-action .ant-upload-list {
+    width: 100%;
+}
+
+.edit-upload-action .ant-upload-list-item {
+    flex-direction: column !important;
+    height: auto !important;
+    padding: 12px !important;
+    align-items: center !important;
+    text-align: center !important;
+}
+
+.edit-upload-action .ant-upload-list-item-name {
+    margin: 8px 0 !important;
+    max-width: 180px !important;
+}
+
+
+/* Ant Design Upload List Fixes */
+.edit-upload-action .ant-upload-list-item {
+    margin-top: 8px !important;
+    background: white !important;
+    border-radius: 8px !important;
+    height: auto !important;
+    padding: 4px 8px !important;
+}
+
+.edit-upload-action .ant-upload-list-item-name {
+    font-size: 12px !important;
+    color: #64748b !important;
 }

@@ -198,49 +198,51 @@ const EditProduct = () => {
 
                         <div className="edit-imagery-section full-width">
                             <h3 className="edit-section-title">Product Imagery</h3>
-                            <p className="edit-section-desc">Manage your masterpiece's visuals. Upload new images to replace current ones.</p>
+                            <p className="edit-section-desc">Manage your masterpiece's visuals. Click on any image box to update it with a new file.</p>
 
                             <div className="edit-images-wrapper">
                                 <div className="edit-image-row">
                                     <label className="edit-row-label">MAIN IMAGE</label>
-                                    <div className="edit-image-card-box">
-                                        <div className="edit-current-preview">
-                                            {currentImages.main ? (
-                                                <img src={currentImages.main} alt="Current" />
-                                            ) : (
-                                                <div className="no-image-placeholder">None</div>
-                                            )}
-                                        </div>
-                                        <div className="edit-upload-action">
-                                            <Controller name="mainImage" control={control} render={({ field }) => (
-                                                <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)}>
-                                                    <Button icon={<UploadOutlined />}>Replace Main Image</Button>
-                                                </Upload>
-                                            )} />
-                                        </div>
-                                    </div>
+                                    <Controller name="mainImage" control={control} render={({ field }) => (
+                                        <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)} showUploadList={true} className="full-card-upload">
+                                            <div className="edit-image-card-box clickable">
+                                                <div className="edit-current-preview">
+                                                    {currentImages.main ? (
+                                                        <img src={currentImages.main} alt="Current" />
+                                                    ) : (
+                                                        <div className="no-image-placeholder">No Image</div>
+                                                    )}
+                                                </div>
+                                                <div className="upload-hint">
+                                                    <UploadOutlined />
+                                                    <span>Click to Replace Main Image</span>
+                                                </div>
+                                            </div>
+                                        </Upload>
+                                    )} />
                                 </div>
 
                                 <div className="gallery-scroller">
                                     {[1, 2, 3, 4].map(idx => (
                                         <div key={idx} className="edit-image-row">
                                             <label className="edit-row-label">{`GALLERY IMAGE ${idx}`}</label>
-                                            <div className="edit-image-card-box">
-                                                <div className="edit-current-preview">
-                                                    {currentImages[`image${idx + 1}`] ? (
-                                                        <img src={currentImages[`image${idx + 1}`]} alt={`Gallery ${idx}`} />
-                                                    ) : (
-                                                        <div className="no-image-placeholder">Empty</div>
-                                                    )}
-                                                </div>
-                                                <div className="edit-upload-action">
-                                                    <Controller name={`gallery${idx}`} control={control} render={({ field }) => (
-                                                        <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)}>
-                                                            <Button size="small" icon={<UploadOutlined />}></Button>
-                                                        </Upload>
-                                                    )} />
-                                                </div>
-                                            </div>
+                                            <Controller name={`gallery${idx}`} control={control} render={({ field }) => (
+                                                <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)} showUploadList={true} className="full-card-upload">
+                                                    <div className="edit-image-card-box clickable small-card">
+                                                        <div className="edit-current-preview">
+                                                            {currentImages[`image${idx + 1}`] ? (
+                                                                <img src={currentImages[`image${idx + 1}`]} alt={`Gallery ${idx}`} />
+                                                            ) : (
+                                                                <div className="no-image-placeholder">Empty</div>
+                                                            )}
+                                                        </div>
+                                                        <div className="upload-hint mini">
+                                                            <UploadOutlined />
+                                                            <span>Replace</span>
+                                                        </div>
+                                                    </div>
+                                                </Upload>
+                                            )} />
                                         </div>
                                     ))}
                                 </div>
