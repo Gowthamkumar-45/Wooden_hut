@@ -1,6 +1,6 @@
 from rest_framework import viewsets, permissions
 from products.models import Product, Category, SubCategory, Review, MediaItem, MakingVideo
-from .serializers import (
+from products.serializers import (
     ProductSerializer, ProductListSerializer, CategorySerializer, ReviewSerializer,
     MediaItemSerializer, MakingVideoSerializer
 )

@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import LoginAPIView, NotificationAPIView
+from api.views import LoginAPIView, NotificationAPIView
 from products.views import (
     ProductViewSet, CategoryViewSet, ReviewViewSet, 
     MediaItemViewSet, MakingVideoViewSet
