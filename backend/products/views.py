@@ -17,6 +17,18 @@ class MediaItemViewSet(viewsets.ModelViewSet):
             return [permissions.AllowAny()]
         return [permissions.IsAuthenticated()]
 
+    def create(self, request, *args, **kwargs):
+        try:
+            return super().create(request, *args, **kwargs)
+        except Exception as e:
+            print(f"Media Upload Error: {e}")
+            from rest_framework.response import Response
+            from rest_framework import status
+            return Response(
+                {"error": str(e)}, 
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
 class MakingVideoViewSet(viewsets.ModelViewSet):
     queryset = MakingVideo.objects.all().order_by('-created_at')
     serializer_class = MakingVideoSerializer

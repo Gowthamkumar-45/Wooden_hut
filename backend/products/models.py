@@ -86,7 +86,7 @@ class MediaItem(models.Model):
     ]
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    file = models.FileField(upload_to='media_assets/')
+    file = models.FileField(upload_to='media_assets/', validators=[validate_file_size])
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
     created_at = models.DateTimeField(auto_now_add=True)
 
