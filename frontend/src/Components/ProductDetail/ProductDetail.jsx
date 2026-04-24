@@ -78,7 +78,7 @@ const ProductDetail = () => {
         const nextIndex = (currentIndex + 1) % galleryImages.length;
         return galleryImages[nextIndex];
       });
-    }, 4000);
+    }, 3000);
 
     return () => clearInterval(interval);
   }, [galleryImages]);
