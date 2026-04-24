@@ -75,7 +75,8 @@ const MediaManager = () => {
                 form.resetFields();
                 fetchMedia();
             } else {
-                message.error("Error saving media item.");
+                const errorData = await res.json();
+                message.error(errorData.error || errorData.detail || "Error saving media item.");
             }
         } catch (err) {
             message.error("Network error.");

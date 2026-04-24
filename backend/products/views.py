@@ -21,6 +21,11 @@ class MediaItemViewSet(viewsets.ModelViewSet):
         try:
             return super().create(request, *args, **kwargs)
         except Exception as e:
+            # If it's already a DRF exception (like ValidationError), let it through
+            from rest_framework.exceptions import APIException
+            if isinstance(e, APIException):
+                raise e
+                
             print(f"Media Upload Error: {e}")
             from rest_framework.response import Response
             from rest_framework import status
