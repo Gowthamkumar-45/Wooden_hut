@@ -86,7 +86,11 @@ const Dashboard = () => {
           const notifyData = await notifyRes.json();
           const productsData = await productsRes.json();
           
-          setProducts(productsData.slice(0, 5));
+          // Handle paginated or non-paginated product data
+          const productItems = Array.isArray(productsData) ? productsData : (productsData.results || []);
+          const totalProductsCount = Array.isArray(productsData) ? productsData.length : (productsData.count || 0);
+          
+          setProducts(productItems.slice(0, 5));
           
           // Use real stats from the enhanced NotificationAPIView
           const backendStats = notifyData.stats || {};
@@ -96,15 +100,15 @@ const Dashboard = () => {
           }
           if (backendStats.sales_pipeline) {
              setProductSalesData([
-               { name: 'Not Started', value: backendStats.sales_pipeline.packed || 0, trend: '+5.7%' },
-               { name: 'In Production', value: backendStats.sales_pipeline.shipped || 0, trend: '+11.7%' },
-               { name: 'Delivered', value: backendStats.sales_pipeline.delivered || 0, trend: '+7.3%' },
-               { name: 'Cancelled', value: backendStats.sales_pipeline.cancelled || 0, trend: '-2.1%', isNegative: true },
+               { name: 'Not Started', value: backendStats.sales_pipeline.packed || 0, trend: '+0%' },
+               { name: 'In Production', value: backendStats.sales_pipeline.shipped || 0, trend: '+0%' },
+               { name: 'Delivered', value: backendStats.sales_pipeline.delivered || 0, trend: '+0%' },
+               { name: 'Cancelled', value: backendStats.sales_pipeline.cancelled || 0, trend: '+0%', isNegative: true },
              ]);
           }
           
           setStats({
-            products: backendStats.total_products || productsData.length,
+            products: backendStats.total_products || totalProductsCount,
             orders: backendStats.total_confirmed || 0,
             delivered: backendStats.total_delivered || 0,
             reviews: backendStats.total_reviews || 0,
