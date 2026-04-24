@@ -40,12 +40,24 @@ const Home = () => {
     }, [heroImages.length]);
 
     useEffect(() => {
+        // Load cached products instantly so the user never sees "Loading..."
+        const cached = localStorage.getItem('wh_products');
+        if (cached) {
+            try {
+                setProducts(JSON.parse(cached));
+                setLoading(false);
+            } catch (e) { /* ignore corrupt cache */ }
+        }
+
         const fetchProducts = async () => {
             try {
                 const response = await fetch(`${SITE_CONTENT.api.base}/api/products/`);
                 const data = await response.json();
                 // DRF pagination wraps results in { count, next, previous, results }
-                setProducts(Array.isArray(data) ? data : (data.results || []));
+                const items = Array.isArray(data) ? data : (data.results || []);
+                setProducts(items);
+                // Cache for instant load on next visit
+                localStorage.setItem('wh_products', JSON.stringify(items));
             } catch (error) {
                 console.error("Error fetching products:", error);
             } finally {

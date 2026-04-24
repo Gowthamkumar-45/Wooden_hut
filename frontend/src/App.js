@@ -37,6 +37,14 @@ function AppContent() {
     setIsAdmin(!!sessionStorage.getItem('token'));
   }, [location]);
 
+  // Wake up Render free-tier backend immediately on app load
+  useEffect(() => {
+    const API_BASE = window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://api.woodenhut.in';
+    fetch(API_BASE, { method: 'HEAD' }).catch(() => {});
+  }, []);
+
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (

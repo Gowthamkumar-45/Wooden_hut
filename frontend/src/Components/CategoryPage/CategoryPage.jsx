@@ -88,8 +88,19 @@ const CategoryPage = () => {
 
   useEffect(() => {
     window.scrollTo(0, 0);
+
+    // Load cached products for this category/subcategory instantly
+    const cacheKey = `wh_cat_${resolvedSlug}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+      try {
+        setProducts(JSON.parse(cached));
+        setLoading(false);
+      } catch (e) { /* ignore corrupt cache */ }
+    }
+
     const fetchProducts = async () => {
-      setLoading(true);
+      if (!cached) setLoading(true);
       try {
         // Query the database using the resolved slug
         const filterParam = isSubCategory ? `subcategory=${resolvedSlug}` : `category=${resolvedSlug}`;
@@ -97,7 +108,9 @@ const CategoryPage = () => {
         if (response.ok) {
           const data = await response.json();
           // DRF pagination wraps results in { count, next, previous, results }
-          setProducts(Array.isArray(data) ? data : (data.results || []));
+          const items = Array.isArray(data) ? data : (data.results || []);
+          setProducts(items);
+          localStorage.setItem(cacheKey, JSON.stringify(items));
         }
       } catch (err) {
         console.error("Fetch Error:", err);
