@@ -8,7 +8,7 @@ from products.views import (
 from contacts.views import WhatsAppContactViewSet, EnquiryViewSet
 
 router = DefaultRouter()
-router.register(r'products', ProductViewSet)
+router.register(r'products', ProductViewSet, basename='product')
 router.register(r'categories', CategoryViewSet)
 router.register(r'whatsapp-contacts', WhatsAppContactViewSet)
 router.register(r'enquiries', EnquiryViewSet)
