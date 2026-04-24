@@ -460,19 +460,21 @@
 
 .products-table th {
   text-align: left;
-  padding: 12px 16px;
-  font-size: 12px;
+  padding: 16px;
+  font-size: 11px;
   text-transform: uppercase;
-  color: #9ca3af;
-  font-weight: 600;
-  border-bottom: 1px solid #f9fafb;
+  color: #94a3b8;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border-bottom: 2px solid #f8fafc;
 }
 
 .products-table td {
-  padding: 16px;
+  padding: 20px 16px;
   font-size: 14px;
-  color: #374151;
-  border-bottom: 1px solid #f9fafb;
+  color: #334155;
+  border-bottom: 1px solid #f8fafc;
+  vertical-align: middle;
 }
 
 .products-table tbody tr {
@@ -499,32 +501,51 @@
 .product-info {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 16px;
   font-weight: 600;
+  color: #1e293b;
 }
 
 .product-info img {
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
   object-fit: cover;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.product-info span {
+  display: block;
+  max-width: 200px;
+  line-height: 1.4;
 }
 
 .status-tag {
-  padding: 4px 10px;
-  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 8px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .status-tag.in {
   background: #f5f3ff;
   color: #7c3aed;
+  border: 1px solid #ddd6fe;
 }
 
 .status-tag.out {
   background: #fff1f2;
   color: #e11d48;
+  border: 1px solid #fecdd3;
+}
+
+.stock-date {
+  color: #64748b;
+  font-weight: 500;
+  font-family: 'Inter', sans-serif;
 }
 
 /* Product Sales Chart */

@@ -351,7 +351,7 @@ const Dashboard = () => {
             <tbody>
               {products.map((p, i) => (
                 <tr key={i}>
-                  <td><span style={{ fontWeight: 'bold', color: '#9ca3af', width: '30px', display: 'inline-block' }}>{i + 1}</span></td>
+                  <td><span style={{ fontWeight: '700', color: '#cbd5e1', fontSize: '12px' }}>#{String(i + 1).padStart(2, '0')}</span></td>
                   <td className="product-info">
                     <img 
                       src={getImageUrl(p.main_image)} 
@@ -364,13 +364,13 @@ const Dashboard = () => {
                     />
                     <span>{p.name}</span>
                   </td>
-                  <td>{p.category_name}</td>
+                  <td style={{ fontWeight: '500', color: '#64748b' }}>{p.category_name}</td>
                   <td>
                     <span className={`status-tag ${p.in_stock ? 'in' : 'out'}`}>
                       {p.in_stock ? 'In Stock' : 'Out of Stock'}
                     </span>
                   </td>
-                  <td>{new Date(p.created_at).toLocaleDateString()}</td>
+                  <td className="stock-date">{new Date(p.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' })}</td>
                 </tr>
               ))}
             </tbody>
