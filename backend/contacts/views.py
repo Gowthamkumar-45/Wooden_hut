@@ -5,6 +5,7 @@ from .serializers import WhatsAppContactSerializer, EnquirySerializer
 class WhatsAppContactViewSet(viewsets.ModelViewSet):
     queryset = WhatsAppContact.objects.all().order_by('-timestamp')
     serializer_class = WhatsAppContactSerializer
+    pagination_class = None
     
     def get_permissions(self):
         if self.action == 'create':
@@ -14,6 +15,7 @@ class WhatsAppContactViewSet(viewsets.ModelViewSet):
 class EnquiryViewSet(viewsets.ModelViewSet):
     queryset = Enquiry.objects.all().order_by('-created_at')
     serializer_class = EnquirySerializer
+    pagination_class = None
 
     def get_permissions(self):
         if self.action == 'create':

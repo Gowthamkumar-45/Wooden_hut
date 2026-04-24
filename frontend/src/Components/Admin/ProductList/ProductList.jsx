@@ -23,7 +23,8 @@ const ProductList = () => {
             const response = await fetch(`${SITE_CONTENT.api.base}/api/products/`, { headers });
             if (response.ok) {
                 const data = await response.json();
-                setProducts(data);
+                // Handle paginated or non-paginated product data
+                setProducts(Array.isArray(data) ? data : (data.results || []));
             } else {
                 message.error("Failed to fetch products. Status: " + response.status);
             }

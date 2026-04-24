@@ -10,6 +10,7 @@ class MediaItemViewSet(viewsets.ModelViewSet):
     queryset = MediaItem.objects.all().order_by('-created_at')
     serializer_class = MediaItemSerializer
     parser_classes = [MultiPartParser, FormParser]
+    pagination_class = None
     
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -20,6 +21,7 @@ class MakingVideoViewSet(viewsets.ModelViewSet):
     queryset = MakingVideo.objects.all().order_by('-created_at')
     serializer_class = MakingVideoSerializer
     parser_classes = [MultiPartParser, FormParser]
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:
@@ -30,6 +32,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Category.objects.all().prefetch_related('subcategories')
     serializer_class = CategorySerializer
     permission_classes = [permissions.AllowAny]
+    pagination_class = None
 
 class ProductViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
@@ -86,6 +89,7 @@ class ProductViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     queryset = Review.objects.select_related('product').order_by('-created_at')
     serializer_class = ReviewSerializer
+    pagination_class = None
 
     def get_permissions(self):
         if self.action in ['create', 'list', 'retrieve']:
