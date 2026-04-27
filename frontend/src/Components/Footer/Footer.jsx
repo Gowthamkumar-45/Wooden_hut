@@ -6,7 +6,7 @@ const Footer = () => {
     <footer>
       <div className="footer-top">
         <div className="footer-logo">
-          <img src="/Woodenhut_logo_transparent.png" alt={SITE_CONTENT.brand.name} className="footer-logo-img" />
+          <img src="/Woodenhut_logo.jpeg" alt={SITE_CONTENT.brand.name} className="footer-logo-img" />
           <div className="footer-logo-text">
             <span className="brand-name">{SITE_CONTENT.brand.name}</span>
             <span className="brand-sub">{SITE_CONTENT.brand.subName} · {SITE_CONTENT.brand.est}</span>
