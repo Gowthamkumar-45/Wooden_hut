@@ -20,8 +20,8 @@ export const SITE_CONTENT = {
             : "https://api.woodenhut.in"
     },
     contact: {
-        email: "marutham@gmail.com",
-        phone: "+91 90034 61125",
+        emails: ["woodenhutfurnitures@gmail.com", "Srisabarisawmill1987@gmail.com"],
+        phones: ["+91 92594 00700", "+91 73053 52192"],
         whatsapp: WHATSAPP_NUMBER,
         workingHours: "Mon – Sat: 9:00 AM – 7:00 PM",
         sunday: "Sunday: By Appointment"

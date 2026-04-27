@@ -57,11 +57,19 @@ const Footer = () => {
             <div className="footer-contact-info">
               <div className="contact-item">
                 <span className="contact-label">Email:</span>
-                <a href={`mailto:${SITE_CONTENT.contact.email}`}>{SITE_CONTENT.contact.email}</a>
+                <div className="contact-links-list">
+                  {SITE_CONTENT.contact.emails.map((email, idx) => (
+                    <a key={idx} href={`mailto:${email}`}>{email}</a>
+                  ))}
+                </div>
               </div>
               <div className="contact-item">
                 <span className="contact-label">Phone:</span>
-                <a href={`tel:${SITE_CONTENT.contact.phone.replace(/\s/g, '')}`}>{SITE_CONTENT.contact.phone}</a>
+                <div className="contact-links-list">
+                  {SITE_CONTENT.contact.phones.map((phone, idx) => (
+                    <a key={idx} href={`tel:${phone.replace(/\s/g, '')}`}>{phone}</a>
+                  ))}
+                </div>
               </div>
               <div className="contact-item">
                 <span className="contact-label">Hours:</span>

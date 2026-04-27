@@ -88,13 +88,18 @@ const Contact = () => {
 
             <main className="contact-container">
                 <div className="contact-layout">
-                    
+
                     {/* LEFT SIDE: CONTACT INFO & MAPS */}
                     <div className="contact-info-section">
                         <div className="info-group">
-                            <span className="info-label">Direct Contact</span>
-                            <h3 className="info-value">{SITE_CONTENT.contact.email}</h3>
-                            <h3 className="info-value">{SITE_CONTENT.contact.phone}</h3>
+                            <span className="info-label">Coimbatore</span>
+                            <h3 className="info-value">{SITE_CONTENT.contact.emails[0]}</h3>
+                            <h3 className="info-value">{SITE_CONTENT.contact.phones[0]}</h3>
+                        </div>
+                        <div className="info-group">
+                            <span className="info-label">Thanjavur</span>
+                            <h3 className="info-value">{SITE_CONTENT.contact.emails[1]}</h3>
+                            <h3 className="info-value">{SITE_CONTENT.contact.phones[1]}</h3>
                         </div>
 
                         <div className="location-divider"></div>
@@ -103,15 +108,15 @@ const Contact = () => {
                             <div className="location-card" key={loc.id}>
                                 <h2 className="location-title">{loc.name} — <em>{loc.type}</em></h2>
                                 <p className="location-addr">
-                                    {loc.address1} <br/>
-                                    {loc.address2}<br/>
+                                    {loc.address1} <br />
+                                    {loc.address2}<br />
                                     {loc.cityZip}
                                 </p>
                                 <div className="map-holder">
-                                    <iframe 
+                                    <iframe
                                         title={loc.name}
                                         src={loc.mapEmbed}
-                                        width="100%" height="250" style={{border:0}} allowFullScreen="" loading="lazy"></iframe>
+                                        width="100%" height="250" style={{ border: 0 }} allowFullScreen="" loading="lazy"></iframe>
                                 </div>
                             </div>
                         ))}
@@ -122,7 +127,7 @@ const Contact = () => {
                         <div className="form-card">
                             <h2 className="form-title">Get In Touch</h2>
                             <p className="form-subtitle">Have a question or looking for a custom piece? Send us a message and our team will get back to you shortly.</p>
-                            
+
                             <Form layout="vertical" onFinish={handleSubmit(onSubmit)} className="main-contact-form">
                                 <div className="contact-form-grid">
                                     <Form.Item
@@ -148,7 +153,7 @@ const Contact = () => {
                                             name="phone"
                                             control={control}
                                             render={({ field }) => (
-                                                <Input {...field} placeholder={SITE_CONTENT.contact.phone} size="large" />
+                                                <Input {...field} placeholder="+91 98765 43210" size="large" />
                                             )}
                                         />
                                     </Form.Item>

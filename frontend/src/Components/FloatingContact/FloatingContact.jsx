@@ -23,7 +23,7 @@ const FloatingContact = () => {
 
       {/* PHONE BUTTON */}
       <a 
-        href={`tel:${SITE_CONTENT.contact.phone.replace(/\s/g, '')}`} 
+        href={`tel:${SITE_CONTENT.contact.phones[0].replace(/\s/g, '')}`} 
         className="contact-bubble-btn phone-action"
         aria-label="Call Us"
         style={{ backgroundColor: '#004b8d', display: 'flex' }}
