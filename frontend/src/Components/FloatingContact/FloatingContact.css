@@ -9,8 +9,8 @@
 }
 
 .contact-bubble-btn {
-  width: 50px;
-  height: 50px;
+  width: 45px;
+  height: 45px;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -31,7 +31,7 @@
 
 /* PHONE ACTION */
 .sticky-contact-wrapper .contact-bubble-btn.phone-action {
-  border-radius: 50%;
+  border-radius: 12px;
 }
 
 /* WHATSAPP ACTION */
