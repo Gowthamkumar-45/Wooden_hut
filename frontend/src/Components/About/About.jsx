@@ -1,4 +1,5 @@
 import React, { useEffect } from 'react';
+import { ArrowDownOutlined } from '@ant-design/icons';
 import './About.css';
 
 const About = () => {
@@ -35,6 +36,12 @@ const About = () => {
                     <div className="about-hero-eyebrow fade-up">Our Story</div>
                     <h1 className="about-hero-title fade-up">The Roots of <br /><em>Our Legacy</em></h1>
                     <p className="about-hero-desc fade-up">Crafting timeless stories from timber, preserving the soul of fine woodworking since 1963.</p>
+                </div>
+                <div className="scroll-indicator">
+                    <span>Explore Our Story</span>
+                    <div className="scroll-arrow">
+                        <ArrowDownOutlined />
+                    </div>
                 </div>
             </section>
 

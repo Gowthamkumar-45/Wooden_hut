@@ -87,6 +87,57 @@
     animation-delay: 0.4s;
 }
 
+.scroll-indicator {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    color: var(--gold) !important;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.4em;
+    text-transform: uppercase;
+    z-index: 4;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.6);
+    /* Custom fade-up that doesn't break centering */
+    animation: fadeUpCentered 3s cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+    opacity: 0;
+}
+
+@keyframes fadeUpCentered {
+    from {
+        opacity: 0;
+        transform: translate(-50%, 40px);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, 0);
+    }
+}
+
+.scroll-arrow {
+    animation: floatArrow 2s infinite ease-in-out;
+    font-size: 18px;
+    color: var(--gold);
+}
+
+@keyframes floatArrow {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(8px); }
+}
+
+@media screen and (max-width: 768px) {
+    .scroll-indicator {
+        bottom: 30px;
+        font-size: 9px;
+        letter-spacing: 0.25em;
+    }
+}
+
 /* TALE SECTION */
 .tale-section {
     padding: 120px 80px;
