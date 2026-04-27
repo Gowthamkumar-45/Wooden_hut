@@ -10,6 +10,7 @@ import Reviews from './Components/Reviews/Reviews';
 import Contact from './Components/Contact/Contact';
 import SearchResults from './Components/SearchResults/SearchResults';
 import Footer from './Components/Footer/Footer';
+import FloatingContact from './Components/FloatingContact/FloatingContact';
 
 import About from './Components/About/About';
 import Login from './Components/Login/Login';
@@ -90,6 +91,7 @@ function AppContent() {
         } />
       </Routes>
       {!isLoginPage && !isAdminRoute && <Footer />}
+      {!isLoginPage && !isAdminRoute && <FloatingContact />}
     </>
   );
 }

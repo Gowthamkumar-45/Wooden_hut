@@ -104,16 +104,27 @@
 
   .footer-social {
     display: flex;
-    gap: 20px;
+    gap: 15px;
   }
 
-  .social-link {
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
+  .social-icon-link {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: rgba(196, 149, 58, 0.1);
     color: var(--gold);
+    transition: all 0.3s ease;
     text-decoration: none;
-    transition: color 0.3s;
+  }
+
+
+  .social-icon-link:hover {
+    background: var(--gold);
+    color: var(--brown-deep);
+    transform: translateY(-3px);
   }
 
   .social-link:hover {
@@ -163,7 +174,8 @@
     opacity: 0.8;
   }
 
-  .contact-item a, .contact-item p {
+  .contact-item a,
+  .contact-item p {
     font-size: 14px;
     color: rgba(253, 250, 245, 0.7);
     text-decoration: none;
@@ -198,24 +210,31 @@
     .footer-modern {
       padding: 60px 0 40px;
     }
+
     .footer-grid {
       grid-template-columns: 1fr;
       text-align: center;
     }
-    .brand-col, .contact-col {
+
+    .brand-col,
+    .contact-col {
       align-items: center;
       display: flex;
       flex-direction: column;
     }
+
     .footer-brand-desc {
       margin: 0 auto 30px;
     }
+
     .footer-social {
       justify-content: center;
     }
+
     .footer-links a:hover {
       transform: none;
     }
+
     .footer-bottom {
       flex-direction: column;
       gap: 15px;
