@@ -1,6 +1,6 @@
  :root {
    --cream: #F5F0E8;
-   --cream-dark: #EDE5D6;
+   --cream-dark: #bc8216;
    --parchment: #E8DECE;
    --brown-deep: #2C1A0E;
    --brown-mid: #5C3A1E;
@@ -239,18 +239,19 @@
    
   }
 
- .search-btn {
-   background: transparent;
-   border: none;
-   color: var(--brown-deep);
-   cursor: pointer;
-   display: flex;
-   align-items: center;
-   justify-content: center;
-   transition: all 0.3s ease;
-   padding: 6px;
-   border-radius: 50%; 
- }
+  .search-btn {
+    background: var(--cream-dark);
+    border: none;
+    color: var(--brown-deep);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    padding: 8px;
+    border-radius: 50%;
+    border: 1px solid rgba(200, 137, 11, 0.1);
+  }
 
   .search-btn:hover {
     color: var(--gold);
