@@ -40,21 +40,41 @@
   }
 
   .footer-logo {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
-    font-weight: 300;
-    color: var(--gold-light);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 15px;
   }
 
-  .footer-logo span {
-    display: block;
-    font-size: 10px;
-    font-family: 'Jost', sans-serif;
-    font-weight: 300;
-    letter-spacing: 0.22em;
-    color: rgba(226, 185, 106, 0.45);
+  .footer-logo-img {
+    height: 55px;
+    width: auto;
+    object-fit: contain;
+  }
+
+  .footer-logo-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .footer-logo-text .brand-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 24px;
+    font-weight: 400;
+    color: var(--gold-light);
     text-transform: uppercase;
-    margin-top: 4px;
+    letter-spacing: 0.08em;
+  }
+
+  .footer-logo-text .brand-sub {
+    font-family: 'Jost', sans-serif;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.12em;
+    color: rgba(226, 185, 106, 0.5);
+    text-transform: uppercase;
   }
 
   .footer-nav {

@@ -31,9 +31,6 @@
   transition: all 0.3s ease;
 }
 
-.admin-layout.collapsed .admin-main {
-  /* No margin needed as sidebar pushes content naturally in flexbox */
-}
 
 .admin-content {
   flex: 1;

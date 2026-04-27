@@ -119,7 +119,7 @@ const Home = () => {
                     {/* Mobile optimized auto-sliding background */}
                     <div className="hero-mobile-slider">
                         {heroImages.map((img, index) => (
-                            <div 
+                            <div
                                 key={index}
                                 className={`hero-mobile-slide ${index === currentHeroIndex ? 'active' : ''}`}
                                 style={{ backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.45), rgba(0, 0, 0, 0.45)), url(${img})` }}
@@ -163,7 +163,7 @@ const Home = () => {
                         <div className="marquee-item"><span className="marquee-dot"></span>Rosewood</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Office Furniture</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Modular Kitchen</div>
-                        
+
                         {/* Duplicate for seamless loop */}
                         <div className="marquee-item"><span className="marquee-dot"></span>Timber Supply</div>
                         <div className="marquee-item"><span className="marquee-dot"></span>Custom Furniture</div>
@@ -219,9 +219,9 @@ const Home = () => {
                                         className="service-card product-item fade-up"
                                         onClick={() => navigate(`/product/${product.slug || product.id}`)}
                                     >
-                                        <img 
-                                            src={getImageUrl(product.main_image)} 
-                                            alt={product.name} 
+                                        <img
+                                            src={getImageUrl(product.main_image)}
+                                            alt={product.name}
                                             onError={(e) => {
                                                 if (e.target.src !== 'https://via.placeholder.com/600x400?text=Masterpiece') {
                                                     e.target.src = 'https://via.placeholder.com/600x400?text=Masterpiece';

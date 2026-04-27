@@ -5,7 +5,13 @@ const Footer = () => {
   return (
     <footer>
       <div className="footer-top">
-        <div className="footer-logo">{SITE_CONTENT.brand.name} Sawmill<span>{SITE_CONTENT.brand.subName} · {SITE_CONTENT.brand.est}</span></div>
+        <div className="footer-logo">
+          <img src="/Woodenhut_logo_transparent.png" alt={SITE_CONTENT.brand.name} className="footer-logo-img" />
+          <div className="footer-logo-text">
+            <span className="brand-name">{SITE_CONTENT.brand.name}</span>
+            <span className="brand-sub">{SITE_CONTENT.brand.subName} · {SITE_CONTENT.brand.est}</span>
+          </div>
+        </div>
         <nav className="footer-nav">
           {NAV_LINKS.filter(link => ["About Us", "Furniture Making", "Media", "Contact Us"].includes(link.name)).map(link => (
             <a key={link.name} href={link.path}>{link.name.replace(" Us", "")}</a>

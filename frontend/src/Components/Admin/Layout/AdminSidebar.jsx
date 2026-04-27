@@ -21,7 +21,7 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
     <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
         <Link to="/" className="sidebar-logo">
-          <div className="logo-icon">X</div>
+          <div className="logo-icon">W</div>
           <span>{SITE_CONTENT.brand.name}</span>
         </Link>
         <button className="collapse-btn" onClick={toggleSidebar}>

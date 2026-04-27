@@ -111,8 +111,8 @@ const AddProduct = () => {
         <div className="track-orders-container add-product-page">
             <div className="track-header">
                 <div>
-                    <Link to="/admin/products" style={{display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--admin-primary)', textDecoration: 'none', fontSize: '12px', marginBottom: '12px', fontWeight: 800}}>
-                        <ArrowLeft size={14}/> BACK TO INVENTORY
+                    <Link to="/admin/products" style={{ display: 'flex', alignItems: 'center', gap: '8px', color: 'var(--admin-primary)', textDecoration: 'none', fontSize: '12px', marginBottom: '12px', fontWeight: 800 }}>
+                        <ArrowLeft size={14} /> BACK TO INVENTORY
                     </Link>
                 </div>
             </div>
@@ -191,14 +191,14 @@ const AddProduct = () => {
 
                 <div className="upload-modern-grid">
                     <label className="upload-box-main">
-                        <input type="file" hidden onChange={(e) => handleImageChange(e, 'main')} />
+                        <input type="file" hidden accept=".webp" onChange={(e) => handleImageChange(e, 'main')} />
                         {previews.main ? (
                             <img src={previews.main} className="preview-img" alt="Main" />
                         ) : (
                             <div className="upload-inner">
                                 <Upload size={32} />
                                 <span>MAIN IMAGE</span>
-                                <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>Maximum Impact</p>
+                                <p style={{ fontSize: '10px', color: '#94a3b8', margin: 0 }}>.webp only</p>
                             </div>
                         )}
                     </label>
@@ -206,7 +206,7 @@ const AddProduct = () => {
                     <div className="gallery-modern">
                         {['g1', 'g2', 'g3', 'g4'].map((key) => (
                             <label key={key} className="upload-box-small">
-                                <input type="file" hidden onChange={(e) => handleImageChange(e, key)} />
+                                <input type="file" hidden accept=".webp" onChange={(e) => handleImageChange(e, key)} />
                                 {previews[key] ? (
                                     <img src={previews[key]} className="preview-img" alt="Gallery" />
                                 ) : (

@@ -2,9 +2,9 @@ const WHATSAPP_NUMBER = "9259400700";
 
 export const SITE_CONTENT = {
     brand: {
-        name: "Marutham",
+        name: "Wooden Hut",
         subName: "Timbers & Furnitures",
-        fullName: "Marutham Timbers & Furnitures",
+        fullName: "Wooden Hut Timbers & Furnitures",
         tagline: "Where Timber Becomes Legacy",
         est: "Est. with Pride",
         experience: "25+ ",

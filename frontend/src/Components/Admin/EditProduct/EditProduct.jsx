@@ -204,7 +204,7 @@ const EditProduct = () => {
                                 <div className="edit-image-row">
                                     <label className="edit-row-label">MAIN IMAGE</label>
                                     <Controller name="mainImage" control={control} render={({ field }) => (
-                                        <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)} showUploadList={true} className="full-card-upload">
+                                        <Upload {...field} accept=".webp" listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)} showUploadList={true} className="full-card-upload">
                                             <div className="edit-image-card-box clickable">
                                                 <div className="edit-current-preview">
                                                     {currentImages.main ? (
@@ -215,7 +215,7 @@ const EditProduct = () => {
                                                 </div>
                                                 <div className="upload-hint">
                                                     <UploadOutlined />
-                                                    <span>Click to Replace Main Image</span>
+                                                    <span>Click to Replace (.webp only)</span>
                                                 </div>
                                             </div>
                                         </Upload>
@@ -227,7 +227,7 @@ const EditProduct = () => {
                                         <div key={idx} className="edit-image-row">
                                             <label className="edit-row-label">{`GALLERY IMAGE ${idx}`}</label>
                                             <Controller name={`gallery${idx}`} control={control} render={({ field }) => (
-                                                <Upload {...field} listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)} showUploadList={true} className="full-card-upload">
+                                                <Upload {...field} accept=".webp" listType="picture" maxCount={1} beforeUpload={() => false} onChange={(info) => field.onChange(info)} showUploadList={true} className="full-card-upload">
                                                     <div className="edit-image-card-box clickable small-card">
                                                         <div className="edit-current-preview">
                                                             {currentImages[`image${idx + 1}`] ? (
@@ -238,7 +238,7 @@ const EditProduct = () => {
                                                         </div>
                                                         <div className="upload-hint mini">
                                                             <UploadOutlined />
-                                                            <span>Replace</span>
+                                                            <span>.webp only</span>
                                                         </div>
                                                     </div>
                                                 </Upload>

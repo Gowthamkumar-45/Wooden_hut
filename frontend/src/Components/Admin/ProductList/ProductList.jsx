@@ -86,9 +86,9 @@ const ProductList = () => {
                     style={{ width: 50, height: 50, objectFit: 'cover', borderRadius: '4px' }}
                     onError={(e) => {
                         if (e.target.src !== 'https://via.placeholder.com/50x50?text=No+Image') {
-                          e.target.src = 'https://via.placeholder.com/50x50?text=No+Image';
+                            e.target.src = 'https://via.placeholder.com/50x50?text=No+Image';
                         }
-                      }}
+                    }}
                 />
             )
         },
@@ -178,13 +178,14 @@ const ProductList = () => {
                             placeholder="Search masterpieces..."
                             prefix={<SearchOutlined />}
                             onChange={(e) => setSearchText(e.target.value)}
-                            style={{ width: 350, borderRadius: '8px' }}
+                            className="modern-input-search"
                             size="large"
                         />
                     </div>
                     <div className="filter-wrap">
                         <Select
                             defaultValue="All"
+                            className="modern-select-filter"
                             style={{ width: 220 }}
                             size="large"
                             onChange={(val) => setSelectedSubCategory(val)}

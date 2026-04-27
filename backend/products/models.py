@@ -1,7 +1,18 @@
 from django.db import models
 from django.utils.text import slugify
 from django.core.exceptions import ValidationError
-from cloudinary_storage.storage import RawMediaCloudinaryStorage
+from cloudinary_storage.storage import VideoMediaCloudinaryStorage, MediaCloudinaryStorage
+
+class MultiMediaCloudinaryStorage(MediaCloudinaryStorage):
+    """
+    Custom storage that detects if the file is a video or image
+    and sets the correct Cloudinary resource_type.
+    """
+    def _get_resource_type(self, name):
+        extension = name.split('.')[-1].lower()
+        if extension in ['mp4', 'mov', 'avi', 'mkv', 'wmv']:
+            return 'video'
+        return 'image'
 
 def validate_file_size(value):
     filesize = value.size
@@ -86,7 +97,7 @@ class MediaItem(models.Model):
     ]
     title = models.CharField(max_length=255)
     description = models.TextField(blank=True, null=True)
-    file = models.FileField(upload_to='media_assets/', storage=RawMediaCloudinaryStorage(), validators=[validate_file_size])
+    file = models.FileField(upload_to='media_assets/', storage=MultiMediaCloudinaryStorage(), validators=[validate_file_size])
     media_type = models.CharField(max_length=10, choices=MEDIA_TYPES)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -96,7 +107,7 @@ class MediaItem(models.Model):
 class MakingVideo(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField()
-    video_file = models.FileField(upload_to='making_videos/', storage=RawMediaCloudinaryStorage(), validators=[validate_file_size], null=True, blank=True)
+    video_file = models.FileField(upload_to='making_videos/', storage=MultiMediaCloudinaryStorage(), validators=[validate_file_size], null=True, blank=True)
     youtube_url = models.URLField(max_length=500, null=True, blank=True)
     thumbnail = models.ImageField(upload_to='making_thumbnails/', null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)

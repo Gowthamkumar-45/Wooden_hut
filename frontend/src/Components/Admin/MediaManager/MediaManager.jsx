@@ -16,8 +16,13 @@ const MediaManager = () => {
     const [mediaItems, setMediaItems] = useState([]);
     const [loading, setLoading] = useState(false);
     const [isModalVisible, setIsModalVisible] = useState(false);
-    const [activeTab, setActiveTab] = useState('photo');
+    const [activeTab, setActiveTab] = useState(() => localStorage.getItem('adminMediaTab') || 'photo');
     const [editingItem, setEditingItem] = useState(null);
+
+    const handleTabChange = (key) => {
+        setActiveTab(key);
+        localStorage.setItem('adminMediaTab', key);
+    };
     const [form] = Form.useForm();
     const [fileList, setFileList] = useState([]);
 
@@ -107,17 +112,100 @@ const MediaManager = () => {
         });
     };
 
+    const getImageUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        const base = SITE_CONTENT.api.base.endsWith('/') ? SITE_CONTENT.api.base.slice(0, -1) : SITE_CONTENT.api.base;
+        const imgPath = path.startsWith('/') ? path : `/${path}`;
+        return `${base}${imgPath}`;
+    };
+
+    const transformCloudinary = (url, transformations, mediaType, isPoster = false) => {
+        if (!url || !url.includes('res.cloudinary.com')) return url;
+        
+        let newUrl = url;
+        // 1. Force correct resource type based on media_type
+        if (mediaType === 'video') {
+            newUrl = newUrl.replace('/image/upload/', '/video/upload/');
+        } else {
+            newUrl = newUrl.replace('/video/upload/', '/image/upload/');
+        }
+
+        // 2. Insert transformations after /upload/
+        newUrl = newUrl.replace('/upload/', `/upload/${transformations}/`);
+
+        // 3. Handle extensions carefully (don't break on dates with dots)
+        // Check for common media extensions
+        const extMatch = /\.(mp4|webm|ogg|mov|webp|jpg|jpeg|png|gif|avif)$/i.test(newUrl);
+        
+        if (isPoster) {
+            if (extMatch) {
+                newUrl = newUrl.replace(/\.[^/.]+$/, '.jpg');
+            } else {
+                newUrl = `${newUrl}.jpg`;
+            }
+        } else if (!extMatch) {
+            // Only append if it's clearly missing a known extension
+            newUrl = `${newUrl}.${mediaType === 'video' ? 'mp4' : 'webp'}`;
+        }
+        
+        return newUrl;
+    };
+
+    const getDisplayUrl = (record) => {
+        let url = getImageUrl(record.file);
+        if (!url) return 'https://via.placeholder.com/120x80?text=No+Media';
+
+        if (record.media_type === 'video') {
+            if (url.includes('res.cloudinary.com')) {
+                return transformCloudinary(url, 'f_auto,q_auto,so_0,w_400,c_limit', 'video', true);
+            }
+            return 'https://via.placeholder.com/120x80?text=Video+Asset';
+        }
+        return url;
+    };
+
+    const getVideoPreviewUrl = (record) => {
+        let url = getImageUrl(record.file);
+        if (record.media_type === 'video' && url.includes('res.cloudinary.com')) {
+            return transformCloudinary(url, 'e_preview:duration_5.0,f_auto,q_auto', 'video');
+        }
+        return url;
+    };
+
     const columns = [
         {
             title: 'Preview',
             key: 'preview',
             width: 150,
-            render: (_, record) => (
-                <div style={{ position: 'relative', width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #eee', backgroundColor: '#fafafa' }}>
-                    <img src={record.file} alt={record.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                    {record.media_type === 'video' && <PlaySquareOutlined style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', color: '#fff', fontSize: '24px' }} />}
-                </div>
-            )
+            render: (_, record) => {
+                const posterUrl = getDisplayUrl(record);
+                const previewUrl = getVideoPreviewUrl(record);
+
+                return (
+                    <div className="product-thumb-container" style={{ width: '120px', height: '80px', position: 'relative', background: '#f8fafc', overflow: 'hidden', borderRadius: '8px', border: '1px solid #eee' }}>
+                        {record.media_type === 'video' ? (
+                            <video
+                                key={previewUrl}
+                                src={previewUrl}
+                                poster={posterUrl}
+                                muted
+                                loop
+                                autoPlay
+                                playsInline
+                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                            />
+                        ) : (
+                            <img src={posterUrl} alt={record.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        )}
+                        {record.media_type === 'video' && (
+                            <div style={{ position: 'absolute', top: '5px', left: '5px', background: 'rgba(0,0,0,0.5)', borderRadius: '4px', padding: '2px' }}>
+                                <PlaySquareOutlined style={{ color: '#fff', fontSize: '14px' }} />
+                            </div>
+                        )}
+                    </div>
+                );
+            }
         },
         {
             title: 'Media Details',
@@ -131,9 +219,11 @@ const MediaManager = () => {
         },
         {
             title: 'Asset Link',
-            dataIndex: 'file',
             key: 'file',
-            render: (text) => <a href={text} target="_blank" rel="noreferrer" style={{ color: '#7c3aed' }}>View Original File</a>
+            render: (_, record) => {
+                const correctedUrl = transformCloudinary(getImageUrl(record.file), 'f_auto,q_auto', record.media_type);
+                return <a href={correctedUrl} target="_blank" rel="noreferrer" style={{ color: '#7c3aed' }}>View Original File</a>
+            }
         },
         {
             title: 'Date',
@@ -184,7 +274,7 @@ const MediaManager = () => {
                     </Button>
                 </header>
 
-                <Tabs defaultActiveKey="photo" className="premium-tabs" onChange={(key) => setActiveTab(key)}>
+                <Tabs activeKey={activeTab} className="premium-tabs" onChange={handleTabChange}>
                     <TabPane 
                         tab={<span><PictureOutlined /> Photos & Press</span>} 
                         key="photo"

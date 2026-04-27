@@ -1,44 +1,92 @@
 import React, { useState, useEffect } from 'react';
+import { Spin } from 'antd';
+import { SITE_CONTENT } from '../../constants/content';
 import './Media.css';
 
 const Media = () => {
-    const [filter, setFilter] = useState('all');
+    const [filter, setFilter] = useState(() => localStorage.getItem('mediaFilter') || 'all');
+
+    const handleFilterChange = (newFilter) => {
+        setFilter(newFilter);
+        localStorage.setItem('mediaFilter', newFilter);
+    };
 
     const [galleryData, setGalleryData] = useState([]);
+    const [loading, setLoading] = useState(true);
+
+    const getImageUrl = (path) => {
+        if (!path) return '';
+        if (path.startsWith('http')) return path;
+        const base = SITE_CONTENT.api.base.endsWith('/') ? SITE_CONTENT.api.base.slice(0, -1) : SITE_CONTENT.api.base;
+        const imgPath = path.startsWith('/') ? path : `/${path}`;
+        return `${base}${imgPath}`;
+    };
 
     useEffect(() => {
-        const savedPhotos = JSON.parse(localStorage.getItem('admin_media_photos') || '[]');
-        const savedVideos = JSON.parse(localStorage.getItem('admin_media_videos') || '[]');
-        
-        // Map common fields
-        const formattedPhotos = savedPhotos.map(p => ({ ...p, src: p.url }));
-        const formattedVideos = savedVideos.map(v => ({ ...v, src: v.thumbnail || v.thumb }));
-        
-        const combined = [...formattedPhotos, ...formattedVideos].sort((a, b) => b.id - a.id);
-        
-        if (combined.length > 0) {
-            setGalleryData(combined);
-        } else {
-            // Default sample data
-            setGalleryData([
-                { 
-                    id: 1, 
-                    type: 'photo', 
-                    src: 'https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80', 
-                    title: 'Precision Cutting',
-                    desc: 'Where raw timber meets masterful dimensioning.' 
-                },
-                { 
-                    id: 2, 
-                    type: 'video', 
-                    src: 'https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg', 
-                    title: 'Luxury Polishing', 
-                    desc: 'The meticulous process of bringing out the natural glow of teak.',
-                    duration: '2:45', 
-                    url: 'https://www.youtube.com/watch?v=dQw4w9WgXcQ' 
+        const fetchMedia = async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`${SITE_CONTENT.api.base}/api/media-items/`);
+                if (res.ok) {
+                    const data = await res.json();
+                    // Format backend data for the gallery UI
+                    const formatted = data.map(item => {
+                        const originalUrl = getImageUrl(item.file);
+                        
+                        // Extension-aware Cloudinary URL builder
+                        const fixUrl = (url, transformations, type, isPoster = false) => {
+                            if (!url || !url.includes('res.cloudinary.com')) return url;
+                            let newUrl = url;
+                            // 1. Force correct resource type
+                            if (type === 'video') {
+                                newUrl = newUrl.replace('/image/upload/', '/video/upload/');
+                            } else {
+                                newUrl = newUrl.replace('/image/upload/', '/image/upload/');
+                            }
+                            // 2. Insert transformations
+                            newUrl = newUrl.replace('/upload/', `/upload/${transformations}/`);
+                            // 3. Handle extensions carefully (don't break on dots in filenames)
+                            const extMatch = /\.(mp4|webm|ogg|mov|webp|jpg|jpeg|png|gif|avif)$/i.test(newUrl);
+                            if (isPoster) {
+                                newUrl = extMatch ? newUrl.replace(/\.[^/.]+$/, '.jpg') : `${newUrl}.jpg`;
+                            } else if (!extMatch) {
+                                newUrl = `${newUrl}.${type === 'video' ? 'mp4' : 'webp'}`;
+                            }
+                            return newUrl;
+                        };
+
+                        let poster = originalUrl;
+                        let preview = originalUrl;
+
+                        if (item.media_type === 'video' && originalUrl.includes('res.cloudinary.com')) {
+                            // Robust previews for all videos
+                            poster = fixUrl(originalUrl, 'f_auto,q_auto,so_0,w_800,c_limit', 'video', true);
+                            preview = fixUrl(originalUrl, 'e_preview:duration_5.0,f_auto,q_auto', 'video');
+                        } else if (item.media_type === 'photo' && originalUrl.includes('res.cloudinary.com')) {
+                            poster = fixUrl(originalUrl, 'f_auto,q_auto', 'photo');
+                            preview = poster;
+                        }
+                        
+                        return {
+                            id: item.id,
+                            type: item.media_type,
+                            poster: poster,
+                            preview: preview,
+                            title: item.title,
+                            desc: item.description,
+                            url: originalUrl
+                        };
+                    });
+                    setGalleryData(formatted);
                 }
-            ]);
-        }
+            } catch (err) {
+                console.error("Failed to load media:", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchMedia();
     }, []);
 
     const filteredData = filter === 'all' ? galleryData : galleryData.filter(item => item.type === filter);
@@ -52,12 +100,12 @@ const Media = () => {
             {/* VIDEO HERO SECTION */}
             <section className="media-hero">
                 <div className="video-hero-container">
-                    <video 
+                    <video
                         className="background-video"
-                        autoPlay 
-                        muted 
-                        loop 
-                        playsInline 
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
                         poster="https://images.unsplash.com/photo-1542621334-a254cf47733d?q=80&w=2000"
                     >
                         <source src="https://assets.mixkit.co/videos/download/mixkit-carpenter-measuring-a-piece-of-wood-4950.mp4" type="video/mp4" />
@@ -77,39 +125,56 @@ const Media = () => {
                 <div className="gallery-header">
                     <h2 className="section-title">Our <em>Media Gallery</em></h2>
                     <div className="filter-controls">
-                        <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>All</button>
-                        <button className={filter === 'photo' ? 'active' : ''} onClick={() => setFilter('photo')}>Photos</button>
-                        <button className={filter === 'video' ? 'active' : ''} onClick={() => setFilter('video')}>Videos</button>
+                        <button className={filter === 'all' ? 'active' : ''} onClick={() => handleFilterChange('all')}>All</button>
+                        <button className={filter === 'photo' ? 'active' : ''} onClick={() => handleFilterChange('photo')}>Photos</button>
+                        <button className={filter === 'video' ? 'active' : ''} onClick={() => handleFilterChange('video')}>Videos</button>
                     </div>
                 </div>
 
                 <div className="media-grid">
-                    {filteredData.map(item => (
-                        <div key={item.id} className="media-item" onClick={() => {
-                            if (item.type === 'video') {
-                                const videoId = item.url?.split('v=')[1]?.split('&')[0] || item.url?.split('/').pop();
-                                window.open(`https://www.youtube.com/watch?v=${videoId}`, '_blank');
-                            } else {
-                                window.open(item.src, '_blank');
-                            }
-                        }} style={{ cursor: 'pointer' }}>
-                            <div className="media-wrap">
-                                <img src={item.src} alt={item.title} />
-                                <div className="media-overlay">
-                                    {item.type === 'video' && (
-                                        <div className="play-icon">
-                                            <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
-                                                <path d="M8 5v14l11-7z" />
-                                            </svg>
-                                        </div>
+                    {loading ? (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px 0' }}>
+                            <Spin size="large" />
+                            <p style={{ marginTop: '20px', color: '#999' }}>Loading our gallery...</p>
+                        </div>
+                    ) : filteredData.length > 0 ? (
+                        filteredData.map(item => (
+                            <div key={item.id} className="media-item" onClick={() => window.open(item.type === 'video' ? item.preview.replace('e_preview:duration_5.0,', '') : item.url, '_blank')} style={{ cursor: 'pointer' }}>
+                                <div className="media-wrap">
+                                    {item.type === 'video' ? (
+                                        <video
+                                            src={item.preview}
+                                            poster={item.poster}
+                                            className="gallery-media"
+                                            muted
+                                            loop
+                                            autoPlay
+                                            playsInline
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <img src={item.poster} alt={item.title} className="gallery-media" />
                                     )}
-                                    <h3 className="media-title">{item.title}</h3>
-                                    <p className="media-desc">{item.desc}</p>
-                                    {item.type === 'video' && <span className="duration">{item.duration || 'Play Video'}</span>}
+                                    <div className="media-overlay">
+                                        {item.type === 'video' && (
+                                            <div className="play-icon">
+                                                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                                                    <path d="M8 5v14l11-7z" />
+                                                </svg>
+                                            </div>
+                                        )}
+                                        <h3 className="media-title">{item.title}</h3>
+                                        <p className="media-desc">{item.desc}</p>
+                                        {item.type === 'video' && <span className="duration">Play Video</span>}
+                                    </div>
                                 </div>
                             </div>
+                        ))
+                    ) : (
+                        <div style={{ gridColumn: '1/-1', textAlign: 'center', padding: '100px 0' }}>
+                            <p style={{ color: '#999' }}>No media items found yet.</p>
                         </div>
-                    ))}
+                    )}
                 </div>
             </section>
         </div>

@@ -95,11 +95,22 @@ class ProductViewSet(viewsets.ModelViewSet):
 
         category_slug = self.request.query_params.get('category', None)
         subcategory_slug = self.request.query_params.get('subcategory', None)
+        search_query = self.request.query_params.get('search', None)
         
         if category_slug:
             queryset = queryset.filter(category__slug=category_slug)
         if subcategory_slug:
             queryset = queryset.filter(sub_category__slug=subcategory_slug)
+            
+        if search_query:
+            from django.db.models import Q
+            queryset = queryset.filter(
+                Q(name__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(material__icontains=search_query) |
+                Q(category__name__icontains=search_query) |
+                Q(sub_category__name__icontains=search_query)
+            )
             
         return queryset
 

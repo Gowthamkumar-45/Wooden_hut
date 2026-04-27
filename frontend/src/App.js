@@ -8,6 +8,7 @@ import FurnitureMaking from './Components/FurnitureMaking/FurnitureMaking';
 import Media from './Components/Media/Media';
 import Reviews from './Components/Reviews/Reviews';
 import Contact from './Components/Contact/Contact';
+import SearchResults from './Components/SearchResults/SearchResults';
 import Footer from './Components/Footer/Footer';
 
 import About from './Components/About/About';
@@ -61,6 +62,7 @@ function AppContent() {
         <Route path="/media" element={<Media />} />
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/contact" element={<Contact />} />
+        <Route path="/search" element={<SearchResults />} />
         <Route path="/login" element={<Login />} />
         
         {/* Admin Routes wrapped in AdminLayout with Auth Protection */}
