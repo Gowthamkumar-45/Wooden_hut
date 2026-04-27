@@ -205,6 +205,30 @@
     padding: 30px;
 }
 
+/* VIDEO ITEMS: Always show overlay info */
+.video-item .media-overlay {
+    opacity: 1;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.8) 0%, transparent 60%);
+    justify-content: flex-end;
+    align-items: flex-start;
+    text-align: left;
+}
+
+.video-item .media-title {
+    font-size: 18px;
+    margin-bottom: 4px;
+}
+
+.video-item .media-desc {
+    text-align: left;
+    font-size: 13px;
+    margin-bottom: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
 .media-wrap:hover .media-overlay {
     opacity: 1;
 }

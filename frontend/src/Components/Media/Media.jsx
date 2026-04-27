@@ -139,7 +139,7 @@ const Media = () => {
                         </div>
                     ) : filteredData.length > 0 ? (
                         filteredData.map(item => (
-                            <div key={item.id} className="media-item" onClick={() => window.open(item.type === 'video' ? item.preview.replace('e_preview:duration_5.0,', '') : item.url, '_blank')} style={{ cursor: 'pointer' }}>
+                            <div key={item.id} className={`media-item ${item.type === 'video' ? 'video-item' : ''}`} onClick={() => window.open(item.type === 'video' ? item.preview.replace('e_preview:duration_5.0,', '') : item.url, '_blank')} style={{ cursor: 'pointer' }}>
                                 <div className="media-wrap">
                                     {item.type === 'video' ? (
                                         <video
