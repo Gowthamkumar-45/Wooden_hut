@@ -1,11 +1,99 @@
 .sticky-contact-wrapper {
   position: fixed;
-  bottom: 50px;
+  bottom: 110px; /* Positioned above the teardrop icon */
   right: 40px;
   display: flex;
   flex-direction: column;
   gap: 15px;
-  z-index: 999999; /* Ultra high z-index to stay on top */
+  z-index: 999999;
+}
+
+/* BRANCH SELECTOR MENU */
+.branch-selector-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 20px;
+  background: white;
+  padding: 18px;
+  border-radius: 20px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+  width: 220px;
+  animation: slideUp 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  z-index: 1000;
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+@keyframes slideUp {
+  from { 
+    opacity: 0; 
+    transform: translateY(15px) scale(0.95); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0) scale(1); 
+  }
+}
+
+.menu-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin-bottom: 15px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.branch-options {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.branch-opt-btn {
+  background: #f8f9fa;
+  border: 1px solid #eee;
+  padding: 12px;
+  border-radius: 12px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+  text-align: center;
+}
+
+.branch-opt-btn:hover {
+  background: #004b8d;
+  color: white;
+  border-color: #004b8d;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 75, 141, 0.2);
+}
+
+.contact-bubble-btn.active {
+  transform: scale(1.1) rotate(15deg);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* HIDE DEFAULT FRESHWORKS LAUNCHER FALLBACK */
+#freshworks-frame, 
+.fc-launcher, 
+#fc_frame {
+  display: block !important;
+  transform: scale(0.80) !important; /* Shrinks the teardrop to match your buttons */
+  transform-origin: bottom right !important;
+  right: 33px !important; /* Aligns with the buttons above */
+  bottom: 40px !important; 
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+}
+
+#freshworks-frame:hover, 
+.fc-launcher:hover, 
+#fc_frame:hover {
+  transform: scale(0.9) translateY(-5px) !important;
 }
 
 .contact-bubble-btn {
@@ -29,15 +117,14 @@
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
 }
 
-/* PHONE ACTION */
-.sticky-contact-wrapper .contact-bubble-btn.phone-action {
-  border-radius: 12px;
+/* ACTIONS SHAPE & SIZE */
+.sticky-contact-wrapper .contact-bubble-btn {
+  width: 45px;
+  height: 45px;
+  border-radius: 12px !important; /* Rounded square shape */
 }
 
-/* WHATSAPP ACTION */
-.sticky-contact-wrapper .contact-bubble-btn.whatsapp-action {
-  border-radius: 12px;
-}
+
 
 /* Animation */
 @keyframes fadeInUpSticky {
@@ -45,6 +132,7 @@
     opacity: 0;
     transform: translateY(20px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -58,12 +146,13 @@
 /* Mobile Adjustments */
 @media (max-width: 768px) {
   .sticky-contact-wrapper {
-    bottom: 20px; /* Higher up to avoid mobile browser bars */
+    bottom: 20px;
+    /* Higher up to avoid mobile browser bars */
     right: 20px;
     gap: 12px;
     z-index: 1000000;
   }
-  
+
   .contact-bubble-btn {
     width: 48px;
     height: 48px;

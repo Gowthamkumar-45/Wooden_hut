@@ -28,8 +28,11 @@ export const SITE_CONTENT = {
     },
     locations: [
         {
-            id: 'ottangadu',
-            name: "Ottangadu",
+            id: 'tanjavur',
+            name: "Tanjavur",
+            branchName: "Ottangadu (Tanjavur)",
+            phone: "+91 73053 52192",
+            whatsapp: "7305352192",
             type: "Retail Showroom",
             address1: "205/10G,",
             address2: "Ottangadu Main road Pattukkottai,",
@@ -37,8 +40,11 @@ export const SITE_CONTENT = {
             mapEmbed: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3976.078792571251!2d79.24205397509422!3d10.344093389779584!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3b0005f0a5a8abed%3A0xe3f14e213f1a0e76!2sSri%20Sabari%20SawMill%20Timbers%20and%20Furnitures%20(Wholesale%20and%20Retail%20furniture)!5e1!3m2!1sen!2sin!4v1774947135582!5m2!1sen!2sin"
         },
         {
-            id: 'chettipalayam',
-            name: "Chettipalayam",
+            id: 'coimbatore',
+            name: "Coimbatore",
+            branchName: "Chettipalayam (Coimbatore)",
+            phone: "+91 92594 00700",
+            whatsapp: "9259400700",
             type: "Factory & Retail Showroom",
             address1: "9W2GM+RRX,",
             address2: "Chettipalayam,",
