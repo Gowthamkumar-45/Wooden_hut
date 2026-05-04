@@ -20,6 +20,7 @@ class WhatsAppContact(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New')
     is_order_confirmed = models.BooleanField(default=False)
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Not Started')
+    branch = models.CharField(max_length=100, blank=True, null=True)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
@@ -47,6 +48,7 @@ class Enquiry(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='New')
     is_order_confirmed = models.BooleanField(default=False)
     order_status = models.CharField(max_length=20, choices=ORDER_STATUS_CHOICES, default='Not Started')
+    branch = models.CharField(max_length=100, blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

@@ -14,6 +14,7 @@ const contactSchema = yup.object().shape({
         .required("Phone number is required"),
     email: yup.string().email("Invalid email address").required("Email is required"),
     subject: yup.string().required("Subject is required"),
+    branch: yup.string().required("Please select a branch"),
     message: yup.string().min(10, "Message should be at least 10 characters")
 });
 
@@ -173,15 +174,19 @@ const Contact = () => {
                                     </Form.Item>
 
                                     <Form.Item
-                                        label="Subject *"
-                                        validateStatus={errors.subject ? "error" : ""}
-                                        help={errors.subject?.message}
+                                        label="Nearest Branch *"
+                                        validateStatus={errors.branch ? "error" : ""}
+                                        help={errors.branch?.message}
                                     >
                                         <Controller
-                                            name="subject"
+                                            name="branch"
                                             control={control}
                                             render={({ field }) => (
-                                                <Input {...field} placeholder="Customization / Inquiry" size="large" />
+                                                <select {...field} className="form-select-custom">
+                                                    <option value="">Select Branch</option>
+                                                    <option value="Coimbatore">Coimbatore</option>
+                                                    <option value="Tanjavur">Tanjavur</option>
+                                                </select>
                                             )}
                                         />
                                     </Form.Item>

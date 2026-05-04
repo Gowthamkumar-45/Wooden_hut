@@ -15,6 +15,7 @@ const enquirySchema = yup.object().shape({
         .required("Phone number is required"),
     email: yup.string().email("Please enter a valid email address").required("Email address is required"),
     service: yup.string().required("Please select a service"),
+    branch: yup.string().required("Please select a branch"),
     message: yup.string().min(10, "Message should be at least 10 characters")
 });
 
@@ -381,6 +382,23 @@ const Home = () => {
                                         <Option value="Dining Table">Dining Table</Option>
                                         <Option value="Wood Finishing">Wood Finishing</Option>
                                         <Option value="Other">Other</Option>
+                                    </Select>
+                                )}
+                            />
+                        </Form.Item>
+
+                        <Form.Item
+                            label="Nearest Branch"
+                            validateStatus={errors.branch ? "error" : ""}
+                            help={errors.branch?.message}
+                        >
+                            <Controller
+                                name="branch"
+                                control={control}
+                                render={({ field }) => (
+                                    <Select {...field} placeholder="Select your nearest branch" size="large">
+                                        <Option value="Coimbatore">Coimbatore</Option>
+                                        <Option value="Tanjavur">Tanjavur</Option>
                                     </Select>
                                 )}
                             />

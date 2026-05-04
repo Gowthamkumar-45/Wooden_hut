@@ -17,7 +17,23 @@ const FloatingContact = () => {
     }
   };
 
+  const logContact = async (location, action) => {
+    try {
+      await fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          product_name: action === 'whatsapp' ? 'WhatsApp Chat' : 'Phone Call',
+          branch: location.name 
+        })
+      });
+    } catch (err) {
+      console.error("Failed to log contact:", err);
+    }
+  };
+
   const handleBranchSelect = (location) => {
+    logContact(location, activeAction);
     if (activeAction === 'whatsapp') {
       window.open(`https://wa.me/${location.whatsapp}`, '_blank');
     } else {

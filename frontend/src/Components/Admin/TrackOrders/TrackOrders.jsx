@@ -19,6 +19,7 @@ import { SITE_CONTENT } from '../../../constants/content';
 import './TrackOrders.css';
 
 const TrackOrders = () => {
+  const [selectedBranch, setSelectedBranch] = useState('Coimbatore');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('confirmed');
@@ -98,10 +99,14 @@ const TrackOrders = () => {
     else if (activeTab === 'cancelled') data = orders.filter(o => o.order_status === 'Cancelled' || o.status === 'Rejected');
     else data = orders.filter(o => o.order_status === 'Delivered');
 
-    return data.filter(o =>
-      (o.customer_name || o.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (o.id.toString()).includes(searchQuery)
-    );
+    return data.filter(o => {
+      const matchSearch = (o.customer_name || o.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+                          (o.id.toString()).includes(searchQuery);
+      
+      const matchBranch = !o.branch || o.branch === selectedBranch;
+
+      return matchSearch && matchBranch;
+    });
   };
 
   const getPaginatedOrders = () => {
@@ -123,11 +128,28 @@ const TrackOrders = () => {
 
   return (
     <div className="track-orders-container">
-      <div className="track-header">
-        <button className="refresh-btn-main" onClick={fetchOrders} title="Refresh Tracker">
-          <RefreshCw size={18} />
-          <span>Refresh</span>
-        </button>
+      <div className="admin-page-header">
+        <div className="branch-nav-pill">
+          <button 
+            className={`nav-pill-item ${selectedBranch === 'Coimbatore' ? 'active' : ''}`}
+            onClick={() => setSelectedBranch('Coimbatore')}
+          >
+            Coimbatore
+          </button>
+          <button 
+            className={`nav-pill-item ${selectedBranch === 'Tanjavur' ? 'active' : ''}`}
+            onClick={() => setSelectedBranch('Tanjavur')}
+          >
+            Tanjavur
+          </button>
+        </div>
+
+        <div className="header-right">
+          <button className="admin-refresh-btn" onClick={fetchOrders}>
+            <RefreshCw size={16} className={loading ? 'spinning' : ''} />
+            <span>Refresh Queue</span>
+          </button>
+        </div>
       </div>
       <div className="track-tabs-row">
         <div className="tabs-group">
@@ -136,9 +158,9 @@ const TrackOrders = () => {
           <button className={`track-tab ${activeTab === 'delivered' ? 'active' : ''}`} onClick={() => { setActiveTab('delivered'); setCurrentPage(1); }}><CheckCircle size={18} /> Delivered Orders</button>
         </div>
       </div>
-      {activeTab === 'confirmed' && (<div className="active-count-pill">Active Orders: {getFilteredOrders().length}</div>)}
-      {activeTab === 'delivered' && (<div className="active-count-pill" style={{ color: 'var(--admin-success)', borderColor: 'var(--admin-success)', background: '#ecfdf5' }}>Total Delivered: {getFilteredOrders().length}</div>)}
-      {activeTab === 'cancelled' && (<div className="active-count-pill" style={{ color: 'var(--admin-danger)', borderColor: 'var(--admin-danger)', background: '#fef2f2' }}>Total Cancelled: {getFilteredOrders().length}</div>)}
+      {activeTab === 'confirmed' && (<div className="active-count-pill">{selectedBranch} Active Orders: {getFilteredOrders().length}</div>)}
+      {activeTab === 'delivered' && (<div className="active-count-pill" style={{ color: 'var(--admin-success)', borderColor: 'var(--admin-success)', background: '#ecfdf5' }}>{selectedBranch} Delivered: {getFilteredOrders().length}</div>)}
+      {activeTab === 'cancelled' && (<div className="active-count-pill" style={{ color: 'var(--admin-danger)', borderColor: 'var(--admin-danger)', background: '#fef2f2' }}>{selectedBranch} Cancelled: {getFilteredOrders().length}</div>)}
 
       <div className="table-wrapper">
         <table className="orders-table">

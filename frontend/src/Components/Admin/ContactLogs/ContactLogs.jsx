@@ -18,6 +18,7 @@ import { SITE_CONTENT } from '../../../constants/content';
 import './ContactLogs.css';
 
 const ContactLogs = () => {
+  const [selectedBranch, setSelectedBranch] = useState('Coimbatore');
   const [activeTab, setActiveTab] = useState('whatsapp');
   const [whatsappContacts, setWhatsappContacts] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
@@ -131,7 +132,11 @@ const ContactLogs = () => {
       const search = searchQuery.toLowerCase();
       const matchSearch = (i.customer_name || i.name || '').toLowerCase().includes(search) || (i.phone_number || i.phone || '').includes(search);
       const matchStatus = statusFilter === 'all' || i.status === statusFilter;
-      return matchSearch && matchStatus;
+      
+      // BRANCH FILTER
+      const matchBranch = !i.branch || i.branch === selectedBranch;
+      
+      return matchSearch && matchStatus && matchBranch;
     });
   };
 
@@ -145,7 +150,7 @@ const ContactLogs = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [activeTab, searchQuery, statusFilter]);
+  }, [activeTab, searchQuery, statusFilter, selectedBranch]);
 
   const getStatusIcon = (status) => {
     const cls = `status-indicator ${status?.toLowerCase() || 'new'}`;
@@ -156,11 +161,28 @@ const ContactLogs = () => {
 
   return (
     <div className="contact-logs-container">
-      <div className="track-header">
-        <button className="refresh-btn-main" onClick={fetchData} title="Refresh Logs">
-          <RefreshCw size={18} />
-          <span>Refresh</span>
-        </button>
+      <div className="admin-page-header">
+        <div className="branch-nav-pill">
+          <button 
+            className={`nav-pill-item ${selectedBranch === 'Coimbatore' ? 'active' : ''}`}
+            onClick={() => setSelectedBranch('Coimbatore')}
+          >
+            Coimbatore
+          </button>
+          <button 
+            className={`nav-pill-item ${selectedBranch === 'Tanjavur' ? 'active' : ''}`}
+            onClick={() => setSelectedBranch('Tanjavur')}
+          >
+            Tanjavur
+          </button>
+        </div>
+
+        <div className="header-right">
+          <button className="admin-refresh-btn" onClick={fetchData}>
+            <RefreshCw size={16} className={loading ? 'spinning' : ''} />
+            <span>Sync Logs</span>
+          </button>
+        </div>
       </div>
 
       <div className="track-tabs-row">
@@ -172,7 +194,7 @@ const ContactLogs = () => {
       </div>
 
       <div className="active-count-pill" style={{marginBottom: '24px'}}>
-        {activeTab === 'whatsapp' ? 'New Leads: ' : activeTab === 'enquiries' ? 'New Enquiries: ' : 'Total Pending: '}
+        {selectedBranch} {activeTab === 'whatsapp' ? 'New Leads: ' : activeTab === 'enquiries' ? 'New Enquiries: ' : 'Total Pending: '}
         {filteredData().length}
       </div>
 
