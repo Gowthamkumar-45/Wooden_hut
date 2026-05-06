@@ -146,9 +146,9 @@
 /* Mobile Adjustments */
 @media (max-width: 768px) {
   .sticky-contact-wrapper {
-    bottom: 83px; /* Adjusted to create a consistent 12px gap above Freshchat */
+    bottom: 85px; /* Adjusted for larger button size */
     right: 18px;
-    gap: 17px;
+    gap: 15px;
     z-index: 1000000;
   }
 
@@ -156,22 +156,22 @@
   #freshworks-frame, 
   .fc-launcher, 
   #fc_frame {
-    bottom: 18px !important;
-    right: 13px !important; /* Visual alignment for the teardrop shape */
-    transform: scale(0.8) !important;
+    bottom: 15px !important;
+    right: 12px !important;
+    transform: scale(0.95) !important; /* Increased scale for better visibility */
     transform-origin: bottom right !important;
   }
 
   .contact-bubble-btn {
-    width: 48px;
-    height: 48px;
-    border-radius: 14px !important;
+    width: 55px; /* Increased from 48px */
+    height: 55px;
+    border-radius: 16px !important;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
   }
 
   .contact-bubble-btn svg {
-    width: 20px !important;
-    height: 20px !important;
+    width: 30px !important; /* Increased from 20px for better visibility */
+    height: 30px !important;
   }
 
   /* Remove hover effects on mobile for better touch experience */
@@ -183,7 +183,7 @@
   #freshworks-frame:hover, 
   .fc-launcher:hover, 
   #fc_frame:hover {
-    transform: scale(0.8) !important;
+    transform: scale(0.95) !important;
     transform-origin: bottom right !important;
   }
 }
