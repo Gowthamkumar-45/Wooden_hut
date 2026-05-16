@@ -132,10 +132,11 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
-if not DEBUG:
-    # Use CompressedStaticFilesStorage instead of CompressedManifestStaticFilesStorage
-    # to avoid errors when static files (like admin icons) are missing from the manifest.
-    STATICFILES_STORAGE = 'whitenoise.storage.CompressedStaticFilesStorage'
+# Static storage: use Django's default (plain copy, no build-time compression).
+# WhiteNoise's CompressedStaticFilesStorage crashes intermittently during
+# collectstatic post-processing, so STATICFILES_STORAGE is left unset.
+# The WhiteNoise middleware + GZipMiddleware still compress responses at
+# request time, so pre-compression is not needed.
 
 
 
