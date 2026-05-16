@@ -43,20 +43,24 @@ const Login = () => {
                 }),
             });
 
-            const result = await response.json();
+            const contentType = response.headers.get('content-type') || '';
+            const result = contentType.includes('application/json')
+                ? await response.json()
+                : null;
 
-            if (response.ok) {
+            if (response.ok && result) {
                 message.success("Successfully logged in!");
                 sessionStorage.setItem('isAuthenticated', 'true');
                 sessionStorage.setItem('token', result.token);
                 sessionStorage.setItem('user', JSON.stringify(result.user));
-                
-                // Small delay to ensure message is seen before redirect
+
                 setTimeout(() => {
-                    window.location.href = '/'; 
+                    window.location.href = '/';
                 }, 500);
+            } else if (response.status >= 500) {
+                message.error("Server is unavailable. Please try again in a few minutes.");
             } else {
-                message.error(result.error || "Login failed. Please check your credentials.");
+                message.error((result && result.error) || "Login failed. Please check your credentials.");
             }
         } catch (error) {
             console.error("Login Error:", error);
