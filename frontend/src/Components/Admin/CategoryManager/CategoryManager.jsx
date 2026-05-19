@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { message, Collapse, List } from 'antd';
-import { FolderPlus, Layers } from 'lucide-react';
+import { message, Collapse, List, Popconfirm, Button } from 'antd';
+import { FolderPlus, Layers, Trash2 } from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
 import './CategoryManager.css';
 
@@ -90,6 +90,54 @@ const CategoryManager = () => {
         }
     };
 
+    const handleDeleteCategory = async (id) => {
+        setLoading(true);
+        try {
+            const token = sessionStorage.getItem('token');
+            const response = await fetch(`${SITE_CONTENT.api.base}/api/categories/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+
+            if (response.ok) {
+                message.success("Category deleted successfully!");
+                fetchCategories();
+            } else {
+                message.error("Failed to delete category.");
+            }
+        } catch (error) {
+            message.error("Network error.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleDeleteSubCategory = async (id) => {
+        setLoading(true);
+        try {
+            const token = sessionStorage.getItem('token');
+            const response = await fetch(`${SITE_CONTENT.api.base}/api/subcategories/${id}/`, {
+                method: 'DELETE',
+                headers: {
+                    'Authorization': `Token ${token}`
+                }
+            });
+
+            if (response.ok) {
+                message.success("Sub-Category deleted successfully!");
+                fetchCategories();
+            } else {
+                message.error("Failed to delete sub-category.");
+            }
+        } catch (error) {
+            message.error("Network error.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
     return (
         <div className="category-manager-container">
             <div className="forms-grid">
@@ -157,13 +205,44 @@ const CategoryManager = () => {
                 ) : (
                     <Collapse accordion>
                         {categories.map(category => (
-                            <Panel header={category.name} key={category.id}>
+                            <Panel 
+                                header={category.name} 
+                                key={category.id}
+                                extra={
+                                    <Popconfirm
+                                        title="Delete this category?"
+                                        description="All its sub-categories and products will be deleted. Are you sure?"
+                                        onConfirm={(e) => { e.stopPropagation(); handleDeleteCategory(category.id); }}
+                                        onCancel={(e) => e.stopPropagation()}
+                                        okText="Yes"
+                                        cancelText="No"
+                                    >
+                                        <Button type="text" danger size="small" icon={<Trash2 size={16} />} onClick={e => e.stopPropagation()} />
+                                    </Popconfirm>
+                                }
+                            >
                                 {category.subcategories && category.subcategories.length > 0 ? (
                                     <List
                                         size="small"
                                         bordered
                                         dataSource={category.subcategories}
-                                        renderItem={(sub) => <List.Item>{sub.name}</List.Item>}
+                                        renderItem={(sub) => (
+                                            <List.Item
+                                                actions={[
+                                                    <Popconfirm
+                                                        title="Delete sub-category?"
+                                                        description="All products under it will be deleted. Are you sure?"
+                                                        onConfirm={() => handleDeleteSubCategory(sub.id)}
+                                                        okText="Yes"
+                                                        cancelText="No"
+                                                    >
+                                                        <Button type="text" danger size="small" icon={<Trash2 size={16} />} />
+                                                    </Popconfirm>
+                                                ]}
+                                            >
+                                                {sub.name}
+                                            </List.Item>
+                                        )}
                                     />
                                 ) : (
                                     <p className="no-data-small">No sub-categories yet.</p>
