@@ -210,6 +210,7 @@ const CategoryManager = () => {
                                 key={category.id}
                                 extra={
                                     <Popconfirm
+                                        placement="left"
                                         title="Delete this category?"
                                         description="All its sub-categories and products will be deleted. Are you sure?"
                                         onConfirm={(e) => { e.stopPropagation(); handleDeleteCategory(category.id); }}
@@ -230,6 +231,7 @@ const CategoryManager = () => {
                                             <List.Item
                                                 actions={[
                                                     <Popconfirm
+                                                        placement="left"
                                                         title="Delete sub-category?"
                                                         description="All products under it will be deleted. Are you sure?"
                                                         onConfirm={() => handleDeleteSubCategory(sub.id)}
