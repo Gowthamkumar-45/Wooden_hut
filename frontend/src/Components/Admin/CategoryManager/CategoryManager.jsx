@@ -50,7 +50,20 @@ const CategoryManager = () => {
                 setNewCategoryName('');
                 fetchCategories();
             } else {
-                message.error("Failed to add category.");
+                try {
+                    const errorData = await response.json();
+                    if (errorData[0]) {
+                        message.error(errorData[0]);
+                    } else if (errorData.name) {
+                        message.error(errorData.name[0]);
+                    } else if (errorData.non_field_errors) {
+                        message.error(errorData.non_field_errors[0]);
+                    } else {
+                        message.error("Failed to add category.");
+                    }
+                } catch(e) {
+                    message.error("Failed to add category.");
+                }
             }
         } catch (error) {
             message.error("Network error.");
@@ -81,7 +94,20 @@ const CategoryManager = () => {
                 setSelectedCategoryId('');
                 fetchCategories();
             } else {
-                message.error("Failed to add sub-category.");
+                try {
+                    const errorData = await response.json();
+                    if (errorData[0]) {
+                        message.error(errorData[0]);
+                    } else if (errorData.name) {
+                        message.error(errorData.name[0]);
+                    } else if (errorData.non_field_errors) {
+                        message.error(errorData.non_field_errors[0]);
+                    } else {
+                        message.error("Failed to add sub-category.");
+                    }
+                } catch(e) {
+                    message.error("Failed to add sub-category.");
+                }
             }
         } catch (error) {
             message.error("Network error.");
