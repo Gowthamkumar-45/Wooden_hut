@@ -22,6 +22,7 @@ import TrackOrders from './Components/Admin/TrackOrders/TrackOrders';
 import MakingVideos from './Components/Admin/MakingVideos/MakingVideos';
 import MediaManager from './Components/Admin/MediaManager/MediaManager';
 import ReviewManagement from './Components/Admin/ReviewManagement/ReviewManagement';
+import CategoryManager from './Components/Admin/CategoryManager/CategoryManager';
 
 import Dashboard from './Components/Admin/Dashboard/Dashboard';
 import AdminLayout from './Components/Admin/Layout/AdminLayout';
@@ -74,6 +75,7 @@ function AppContent() {
                 <Route path="/" element={<Navigate to="dashboard" />} />
                 <Route path="dashboard" element={<Dashboard />} />
                 <Route path="add-products" element={<AddProduct />} />
+                <Route path="categories" element={<CategoryManager />} />
                 <Route path="products" element={<ProductList />} />
                 <Route path="edit-product/:productId" element={<EditProduct />} />
                 <Route path="whatsapp-contacts" element={<ContactLogs />} />

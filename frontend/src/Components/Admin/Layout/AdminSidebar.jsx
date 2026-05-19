@@ -11,7 +11,8 @@ import {
   Image,
   ChevronLeft,
   Plus,
-  User
+  User,
+  Layers
 } from 'lucide-react';
 import './AdminSidebar.css';
 import { SITE_CONTENT } from '../../../constants/content';
@@ -42,6 +43,11 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
           <NavLink to="/admin/add-products" className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}>
             <Plus size={20} />
             <span>Add Products</span>
+          </NavLink>
+
+          <NavLink to="/admin/categories" className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}>
+            <Layers size={20} />
+            <span>Categories</span>
           </NavLink>
 
           <NavLink to="/admin/products" className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}>

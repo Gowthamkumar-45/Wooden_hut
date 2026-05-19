@@ -2,7 +2,7 @@ from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from api.views import LoginAPIView, NotificationAPIView
 from products.views import (
-    ProductViewSet, CategoryViewSet, ReviewViewSet, 
+    ProductViewSet, CategoryViewSet, SubCategoryViewSet, ReviewViewSet, 
     MediaItemViewSet, MakingVideoViewSet
 )
 from contacts.views import WhatsAppContactViewSet, EnquiryViewSet
@@ -10,6 +10,7 @@ from contacts.views import WhatsAppContactViewSet, EnquiryViewSet
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
 router.register(r'categories', CategoryViewSet)
+router.register(r'subcategories', SubCategoryViewSet)
 router.register(r'whatsapp-contacts', WhatsAppContactViewSet)
 router.register(r'enquiries', EnquiryViewSet)
 router.register(r'reviews', ReviewViewSet)

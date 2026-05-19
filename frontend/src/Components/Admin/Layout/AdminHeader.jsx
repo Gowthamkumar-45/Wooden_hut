@@ -9,6 +9,7 @@ const AdminHeader = () => {
     if (pathname.includes('/admin/dashboard')) return 'Dashboard';
     if (pathname.includes('/admin/products')) return 'Product Inventory';
     if (pathname.includes('/admin/add-products')) return 'Add New Product';
+    if (pathname.includes('/admin/categories')) return 'Category Management';
     if (pathname.includes('/admin/track-orders')) return 'Order Tracking';
     if (pathname.includes('/admin/whatsapp-contacts')) return 'Customer Logs';
     if (pathname.includes('/admin/reviews')) return 'Review Moderation';
