@@ -70,7 +70,7 @@ MIDDLEWARE = [
 
 
 # URLS
-ROOT_URLCONF = 'Backend.urls'
+ROOT_URLCONF = 'core.urls'
 
 
 # TEMPLATES
@@ -92,7 +92,7 @@ TEMPLATES = [
 
 
 # WSGI
-WSGI_APPLICATION = 'Backend.wsgi.application'
+WSGI_APPLICATION = 'core.wsgi.application'
 
 
 # DATABASE (SQLite for local, PostgreSQL for Render)
