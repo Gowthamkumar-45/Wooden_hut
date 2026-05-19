@@ -15,12 +15,14 @@ class SubCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = SubCategory
         fields = ['id', 'name', 'slug', 'category']
+        read_only_fields = ['slug']
 
 class CategorySerializer(serializers.ModelSerializer):
     subcategories = SubCategorySerializer(many=True, read_only=True)
     class Meta:
         model = Category
         fields = ['id', 'name', 'slug', 'subcategories']
+        read_only_fields = ['slug']
 
 class ReviewSerializer(serializers.ModelSerializer):
     product_name = serializers.ReadOnlyField(source='product.name')
