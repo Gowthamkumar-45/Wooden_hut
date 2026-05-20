@@ -16,8 +16,9 @@ services:
         generateValue: true
 
   # Frontend (React)
-  - type: static
+  - type: web
     name: wooden-hut-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: build
