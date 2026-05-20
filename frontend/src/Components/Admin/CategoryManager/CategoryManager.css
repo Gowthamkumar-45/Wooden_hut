@@ -59,7 +59,7 @@
     box-shadow: 0 0 0 3px rgba(111, 78, 255, 0.1);
 }
 
-.btn-primary {
+.category-manager-container .btn-primary {
     width: 100%;
     padding: 12px;
     background: var(--admin-primary);
@@ -71,11 +71,11 @@
     transition: all 0.2s;
 }
 
-.btn-primary:hover:not(:disabled) {
+.category-manager-container .btn-primary:hover:not(:disabled) {
     background: var(--admin-primary-dark, #5a3ee0);
 }
 
-.btn-primary:disabled {
+.category-manager-container .btn-primary:disabled {
     background: #cbd5e1;
     cursor: not-allowed;
 }

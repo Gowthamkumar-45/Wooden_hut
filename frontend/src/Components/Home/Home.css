@@ -72,16 +72,17 @@
   background: var(--brown-deep);
   color: var(--gold-light);
   text-decoration: none;
-  padding: 16px 40px;
-  font-size: 12px;
-  letter-spacing: 0.18em;
+  padding: 12px 24px;
+  font-size: 11px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   transition: background 0.3s;
   display: inline-block;
+  text-align: center;
 }
 
 .home-container .btn-primary:hover {
-  background: var(--brown-mid);
+  background: var(--brown-mid) !important;
 }
 
 .home-container .btn-ghost {
@@ -877,9 +878,9 @@
 }
 
 .gallery-section {
-    padding: 60px 40px;
-    max-width: 1400px;
-    margin: 0 auto;
+  padding: 60px 40px;
+  max-width: 1400px;
+  margin: 0 auto;
 }
 
 .services-header-left {
@@ -1136,7 +1137,7 @@
     background: var(--gold);
     color: var(--brown-deep);
     text-align: center;
-    width: 100%;
+    width: 50%;
     font-weight: 600;
   }
 

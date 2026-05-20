@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { BrowserRouter as Router, Routes, Route, useLocation, Navigate } from 'react-router-dom';
 import Header from './Components/Header/Header';
 import Home from './Components/Home/Home';
@@ -26,11 +26,26 @@ import CategoryManager from './Components/Admin/CategoryManager/CategoryManager'
 
 import Dashboard from './Components/Admin/Dashboard/Dashboard';
 import AdminLayout from './Components/Admin/Layout/AdminLayout';
+import Loader from './Components/Loader/Loader';
+
+// Helper to check if the network/internet connection is slow
+const isConnectionSlow = () => {
+  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
+  if (!conn) return false; // Assume fast connection by default if API is unsupported
+  
+  const isSlowType = ['slow-2g', '2g', '3g'].includes(conn.effectiveType);
+  const isLowDownlink = typeof conn.downlink === 'number' && conn.downlink < 2.0; // Less than 2 Mbps
+  const isHighRtt = typeof conn.rtt === 'number' && conn.rtt > 150; // Latency more than 150ms
+  
+  return isSlowType || isLowDownlink || isHighRtt;
+};
 
 function AppContent() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
   const [isAdmin, setIsAdmin] = useState(!!sessionStorage.getItem('token'));
+  const [pageLoading, setPageLoading] = useState(isConnectionSlow());
+  const isInitialLoad = useRef(true);
   
   // Check if we are in "Preview Mode"
   const isPreview = new URLSearchParams(location.search).get('preview') === 'true' || localStorage.getItem('admin_preview') === 'true';
@@ -39,6 +54,22 @@ function AppContent() {
   useEffect(() => {
     setIsAdmin(!!sessionStorage.getItem('token'));
   }, [location]);
+
+  // Handle page transitions with loader
+  useEffect(() => {
+    if (isInitialLoad.current) {
+      isInitialLoad.current = false;
+      return;
+    }
+    // Only trigger transition loader for non-admin pages if network is slow
+    if (!location.pathname.startsWith('/admin') && isConnectionSlow()) {
+      setPageLoading(true);
+      window.scrollTo(0, 0);
+    } else {
+      // Still scroll to top on fast connection route changes
+      window.scrollTo(0, 0);
+    }
+  }, [location.pathname]);
 
   // Wake up Render free-tier backend immediately on app load
   useEffect(() => {
@@ -52,6 +83,7 @@ function AppContent() {
 
   return (
     <>
+      {pageLoading && <Loader onComplete={() => setPageLoading(false)} />}
       {!isLoginPage && !isAdminRoute && <Header />}
       <Routes>
         {/* If Admin is logged in AND NOT in preview mode, redirect to Admin area */}

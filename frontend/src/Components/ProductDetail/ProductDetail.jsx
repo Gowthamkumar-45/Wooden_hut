@@ -20,6 +20,8 @@ const ProductDetail = () => {
   const [product, setProduct] = useState(null);
   // const [reviews, setReviews] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [errorMsg, setErrorMsg] = useState('');
+  const [retryMessage, setRetryMessage] = useState('');
   const [activeImg, setActiveImg] = useState('');
   const [zoomPos, setZoomPos] = useState({ x: 0, y: 0 });
   const [isZooming, setIsZooming] = useState(false);
@@ -40,20 +42,48 @@ const ProductDetail = () => {
 
   const fetchProductAndReviews = useCallback(async () => {
     setLoading(true);
-    try {
-      // Single fetch — reviews are embedded in the product detail response
-      const productRes = await fetch(`${SITE_CONTENT.api.base}/api/products/${productSlug}/`);
-
-      if (productRes.ok) {
-        const prodData = await productRes.json();
-        setProduct(prodData);
-        setActiveImg(getImageUrl(prodData.main_image));
+    setErrorMsg('');
+    setRetryMessage('');
+    
+    const maxRetries = 5;
+    let attempt = 0;
+    let success = false;
+    
+    while (attempt < maxRetries && !success) {
+      try {
+        if (attempt > 0) {
+          setRetryMessage(`Connection slow or server warming up. Retrying... (Attempt ${attempt}/${maxRetries})`);
+        }
+        
+        const productRes = await fetch(`${SITE_CONTENT.api.base}/api/products/${productSlug}/`);
+        
+        if (productRes.ok) {
+          const prodData = await productRes.json();
+          setProduct(prodData);
+          setActiveImg(getImageUrl(prodData.main_image));
+          success = true;
+          setRetryMessage('');
+          setErrorMsg('');
+        } else {
+          if (productRes.status === 404) {
+            setErrorMsg("Product not found");
+            setProduct(null);
+            success = true;
+          } else {
+            throw new Error(`Server returned status ${productRes.status}`);
+          }
+        }
+      } catch (err) {
+        console.error(`Fetch attempt ${attempt + 1} failed:`, err);
+        attempt++;
+        if (attempt < maxRetries) {
+          await new Promise(resolve => setTimeout(resolve, 2500));
+        } else {
+          setErrorMsg("Failed to load product. The server might be temporarily down. Please try again.");
+        }
       }
-    } catch (err) {
-      console.error("Fetch Error:", err);
-    } finally {
-      setLoading(false);
     }
+    setLoading(false);
   }, [productSlug, getImageUrl]);
 
   useEffect(() => {
@@ -124,8 +154,40 @@ const ProductDetail = () => {
     }
   };
 
-  if (loading) return <div className="detail-loader"><Spin size="large" /><span>Preparing details...</span></div>;
-  if (!product) return <div className="not-found">Product not found</div>;
+  if (loading) {
+    return (
+      <div className="detail-loader">
+        <Spin size="large" />
+        <span className="loading-text">Preparing details...</span>
+        {retryMessage && <span className="retry-message">{retryMessage}</span>}
+      </div>
+    );
+  }
+
+  if (errorMsg) {
+    return (
+      <div className="detail-error-container">
+        <div className="error-icon">⚠️</div>
+        <h3>{errorMsg}</h3>
+        {errorMsg !== "Product not found" && (
+          <button onClick={fetchProductAndReviews} className="retry-btn">
+            Retry Loading
+          </button>
+        )}
+        <Link to="/" className="back-home-btn">Go Back Home</Link>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="detail-error-container">
+        <div className="error-icon">❓</div>
+        <h3>Product not found</h3>
+        <Link to="/" className="back-home-btn">Go Back Home</Link>
+      </div>
+    );
+  }
 
 
 
