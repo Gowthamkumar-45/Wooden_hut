@@ -14,6 +14,12 @@ services:
         value: "False"
       - key: SECRET_KEY
         generateValue: true
+      - key: SUPERUSER_USERNAME
+        sync: false
+      - key: SUPERUSER_EMAIL
+        sync: false
+      - key: SUPERUSER_PASSWORD
+        sync: false
 
   # Frontend (React)
   - type: web

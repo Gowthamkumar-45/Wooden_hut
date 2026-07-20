@@ -34,7 +34,7 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    font-size: 13px;
+    font-size: 14px;
     color: #475569;
 }
 
@@ -47,7 +47,7 @@
     padding: 12px;
     border: 1px solid #e2e8f0;
     border-radius: 8px;
-    font-size: 14px;
+    font-size: 15px;
     transition: all 0.2s;
     background: #f8fafc;
 }
@@ -104,6 +104,29 @@
     color: #94a3b8;
     font-style: italic;
     margin: 0;
+}
+
+.category-note {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+    color: #64748b;
+    font-size: 14px;
+    line-height: 1.5;
+    margin: 0 0 16px;
+}
+
+.locked-category-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #475569;
+}
+
+.locked-category-row svg {
+    color: #94a3b8;
+    flex-shrink: 0;
 }
 
 @media (max-width: 768px) {

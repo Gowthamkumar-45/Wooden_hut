@@ -46,9 +46,16 @@ class MakingVideoViewSet(viewsets.ModelViewSet):
         return [permissions.IsAuthenticated()]
 
 class CategoryViewSet(viewsets.ModelViewSet):
+    """
+    Main categories are a fixed default set (Living, Dining, Bedroom, Office,
+    Doors & Windows) that the public site's nav and category pages are built
+    around. They are seeded by migration and must not be created/deleted
+    through the API — only sub-categories are dynamic.
+    """
     queryset = Category.objects.all().prefetch_related('subcategories')
     serializer_class = CategorySerializer
     pagination_class = None
+    http_method_names = ['get', 'head', 'options']
 
     def get_permissions(self):
         if self.action in ['list', 'retrieve']:

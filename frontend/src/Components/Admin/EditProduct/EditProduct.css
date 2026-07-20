@@ -21,7 +21,7 @@
     gap: 8px;
     color: #64748b;
     font-weight: 600;
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 16px;
     transition: all 0.2s;
 }
@@ -33,7 +33,7 @@
 
 .edit-header-label {
     display: block;
-    font-size: 12px;
+    font-size: 13px;
     font-weight: 800;
     color: #94a3b8;
     text-transform: uppercase;
@@ -42,7 +42,7 @@
 }
 
 .edit-header-title {
-    font-size: 32px;
+    font-size: 34px;
     font-weight: 900;
     color: #1e293b;
     margin: 0;
@@ -73,7 +73,7 @@
 
 /* Ant Design Overrides for Premium Look */
 .edit-premium-form-card .ant-form-item-label label {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
     color: #64748b;
 }
@@ -102,7 +102,7 @@
 }
 
 .edit-section-title {
-    font-size: 18px;
+    font-size: 19px;
     font-weight: 800;
     color: #1e293b;
     margin-bottom: 8px;
@@ -110,7 +110,7 @@
 
 .edit-section-desc {
     color: #94a3b8;
-    font-size: 14px;
+    font-size: 15px;
     margin-bottom: 32px;
 }
 
@@ -127,7 +127,7 @@
 }
 
 .edit-row-label {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 800;
     color: #94a3b8;
     letter-spacing: 0.1em;
@@ -173,7 +173,7 @@
 }
 
 .no-image-placeholder {
-    font-size: 11px;
+    font-size: 12px;
     font-weight: 700;
     color: #94a3b8;
     text-transform: uppercase;
@@ -245,12 +245,12 @@
 }
 
 .upload-hint span {
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 700;
 }
 
 .upload-hint.mini span {
-    font-size: 11px;
+    font-size: 12px;
 }
 
 .edit-image-card-box:hover .upload-hint {
@@ -292,6 +292,6 @@
 }
 
 .edit-upload-action .ant-upload-list-item-name {
-    font-size: 12px !important;
+    font-size: 13px !important;
     color: #64748b !important;
 }

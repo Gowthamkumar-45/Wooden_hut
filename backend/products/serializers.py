@@ -52,3 +52,12 @@ class ProductSerializer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
+
+    def validate(self, attrs):
+        category = attrs.get('category', getattr(self.instance, 'category', None))
+        sub_category = attrs.get('sub_category', getattr(self.instance, 'sub_category', None))
+        if category and sub_category and sub_category.category_id != category.id:
+            raise serializers.ValidationError({
+                'sub_category': f"'{sub_category.name}' does not belong to category '{category.name}'."
+            })
+        return attrs

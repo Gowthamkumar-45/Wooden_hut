@@ -28,7 +28,7 @@ const productSchema = yup.object().shape({
 
 const AddProduct = () => {
     const navigate = useNavigate();
-    const { register, handleSubmit, watch, setValue, formState: { errors, isSubmitting }, reset } = useForm({
+    const { register, handleSubmit, watch, setValue, getValues, formState: { errors, isSubmitting }, reset } = useForm({
         resolver: yupResolver(productSchema),
         defaultValues: { in_stock: true }
     });
@@ -57,11 +57,21 @@ const AddProduct = () => {
     useEffect(() => {
         if (selectedCategoryId) {
             const cat = categories.find(c => c.id.toString() === selectedCategoryId);
-            setSubCategoriesList(cat ? cat.subcategories : []);
+            const subs = cat ? cat.subcategories : [];
+            setSubCategoriesList(subs);
+
+            // If the currently selected sub-category doesn't belong to the newly
+            // chosen category, clear it — otherwise a stale sub-category from the
+            // previous category could be submitted with the new category.
+            const currentSub = getValues('subCategory');
+            if (currentSub && !subs.some(s => s.id.toString() === currentSub)) {
+                setValue('subCategory', '');
+            }
         } else {
             setSubCategoriesList([]);
+            setValue('subCategory', '');
         }
-    }, [selectedCategoryId, categories]);
+    }, [selectedCategoryId, categories, getValues, setValue]);
 
     const handleImageChange = (e, key) => {
         const file = e.target.files[0];

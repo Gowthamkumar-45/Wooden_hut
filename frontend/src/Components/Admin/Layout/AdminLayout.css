@@ -47,6 +47,22 @@
   animation: fadeIn 0.4s ease-out;
 }
 
+/* Bump Ant Design's default text sizing across the admin panel — the
+   library's own components (Table, Select, Input, Tabs, List, etc.)
+   ship at a smaller default that reads too small on larger screens. */
+.admin-layout .ant-table,
+.admin-layout .ant-select,
+.admin-layout .ant-input,
+.admin-layout .ant-input-affix-wrapper,
+.admin-layout .ant-picker,
+.admin-layout .ant-btn,
+.admin-layout .ant-tabs,
+.admin-layout .ant-list,
+.admin-layout .ant-collapse,
+.admin-layout .ant-form {
+  font-size: 15px;
+}
+
 /* Global Shared Header Actions */
 .track-header {
   display: flex;
@@ -66,7 +82,7 @@
   border: 1px solid var(--admin-primary);
   border-radius: 10px;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 14px;
   cursor: pointer;
   transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   box-shadow: 0 4px 10px rgba(124, 58, 237, 0.05);
@@ -143,7 +159,7 @@
   border: 1px solid var(--admin-border);
   border-radius: 12px;
   font-weight: 700;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--admin-text-light);
   cursor: pointer;
   transition: all 0.3s ease;

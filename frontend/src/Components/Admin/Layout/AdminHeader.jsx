@@ -7,13 +7,17 @@ const AdminHeader = () => {
   
   const getPageTitle = (pathname) => {
     if (pathname.includes('/admin/dashboard')) return 'Dashboard';
-    if (pathname.includes('/admin/products')) return 'Product Inventory';
     if (pathname.includes('/admin/add-products')) return 'Add New Product';
+    if (pathname.includes('/admin/edit-product')) return 'Edit Product';
+    if (pathname.includes('/admin/products')) return 'Product Inventory';
     if (pathname.includes('/admin/categories')) return 'Category Management';
     if (pathname.includes('/admin/track-orders')) return 'Order Tracking';
     if (pathname.includes('/admin/whatsapp-contacts')) return 'Customer Logs';
+    if (pathname.includes('/admin/making-videos')) return 'Making Videos';
+    if (pathname.includes('/admin/media')) return 'Media Manager';
     if (pathname.includes('/admin/reviews')) return 'Review Moderation';
     if (pathname.includes('/admin/settings')) return 'Settings';
+    if (pathname.includes('/admin/help')) return 'Help Center';
     return 'Dashboard';
   };
 

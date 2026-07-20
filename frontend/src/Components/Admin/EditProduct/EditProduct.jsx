@@ -30,7 +30,7 @@ const EditProduct = () => {
     const [subCategoriesList, setSubCategoriesList] = useState([]);
     const [currentImages, setCurrentImages] = useState({});
 
-    const { handleSubmit, control, reset, watch, formState: { errors, isSubmitting } } = useForm({
+    const { handleSubmit, control, reset, watch, setValue, getValues, formState: { errors, isSubmitting } } = useForm({
         resolver: yupResolver(productSchema)
     });
 
@@ -87,9 +87,18 @@ const EditProduct = () => {
     useEffect(() => {
         if (selectedCategoryId && categories.length > 0) {
             const cat = categories.find(c => c.id === selectedCategoryId);
-            setSubCategoriesList(cat ? cat.subcategories : []);
+            const subs = cat ? cat.subcategories : [];
+            setSubCategoriesList(subs);
+
+            // Only clear the sub-category if it no longer belongs to the selected
+            // category — this preserves the product's original sub-category on
+            // initial load, but drops it if the admin actively changes the category.
+            const currentSub = getValues('subCategory');
+            if (currentSub && !subs.some(s => s.id === currentSub)) {
+                setValue('subCategory', undefined);
+            }
         }
-    }, [selectedCategoryId, categories]);
+    }, [selectedCategoryId, categories, getValues, setValue]);
 
     const onSubmit = async (data) => {
         const formData = new FormData();

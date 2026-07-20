@@ -30,7 +30,7 @@
   border: 1px solid #f0f0f0;
   padding: 8px 16px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: #6b7280;
   cursor: pointer;
@@ -50,7 +50,7 @@
 }
 
 .valuation-date {
-  font-size: 13px;
+  font-size: 14px;
   color: #9ca3af;
 }
 
@@ -60,7 +60,7 @@
   border: none;
   padding: 8px 16px;
   border-radius: 8px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -204,14 +204,14 @@
 }
 
 .card-title {
-  font-size: 14px;
+  font-size: 15px;
   color: #6b7280;
   font-weight: 500;
   letter-spacing: -0.01em;
 }
 
 .card-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   color: #1e293b;
   letter-spacing: -0.02em;
@@ -222,7 +222,7 @@
   display: flex;
   align-items: center;
   gap: 4px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   padding: 4px 10px;
   border-radius: 100px;
@@ -239,7 +239,7 @@
 }
 
 .card-value {
-  font-size: 24px;
+  font-size: 26px;
   font-weight: 800;
   color: #1e293b;
   margin-bottom: 2px;
@@ -254,7 +254,7 @@
 }
 
 .sub-text {
-  font-size: 12px;
+  font-size: 13px;
   color: #9ca3af;
 }
 
@@ -303,14 +303,14 @@
 }
 
 .chart-header h3 {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: #111827;
   margin: 0;
 }
 
 .date-badge {
-  font-size: 12px;
+  font-size: 13px;
   color: #9ca3af;
   background: #f9fafb;
   padding: 4px 12px;
@@ -331,7 +331,7 @@
   border: none;
   background: transparent;
   padding: 6px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #6b7280;
   cursor: pointer;
@@ -381,7 +381,7 @@
 
 .bar-percent {
   color: white;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 700;
 }
 
@@ -395,7 +395,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  font-size: 12px;
+  font-size: 13px;
   color: #6b7280;
   font-weight: 500;
 }
@@ -464,7 +464,7 @@
   border: 1px solid #e5e7eb;
   padding: 8px 14px;
   border-radius: 8px;
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #374151;
   display: inline-flex;
@@ -495,7 +495,7 @@
 .products-table th {
   text-align: left;
   padding: 12px 16px;
-  font-size: 12px;
+  font-size: 13px;
   text-transform: uppercase;
   color: #9ca3af;
   font-weight: 600;
@@ -504,7 +504,7 @@
 
 .products-table td {
   padding: 16px;
-  font-size: 14px;
+  font-size: 15px;
   color: #374151;
   border-bottom: 1px solid #f9fafb;
 }
@@ -562,7 +562,7 @@
 .status-tag {
   padding: 4px 10px;
   border-radius: 6px;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
 }
 
@@ -594,7 +594,7 @@
 }
 
 .stat-label {
-  font-size: 11px;
+  font-size: 12px;
   color: #9ca3af;
   text-align: center;
   margin-top: 4px;
@@ -607,13 +607,13 @@
 }
 
 .stat-value {
-  font-size: 18px;
+  font-size: 19px;
   font-weight: 700;
   color: #111827;
 }
 
 .stat-trend {
-  font-size: 11px;
+  font-size: 12px;
   color: #10b981;
   background: #ecfdf5;
   padding: 2px 6px;
@@ -730,7 +730,7 @@
 }
 
 .loader-content span {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 600;
   color: #6b7280;
   letter-spacing: 0.02em;

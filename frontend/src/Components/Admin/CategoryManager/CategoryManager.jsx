@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { message, Collapse, List, Popconfirm, Button } from 'antd';
-import { FolderPlus, Layers, Trash2 } from 'lucide-react';
+import { message, Collapse, List, Popconfirm, Button, Tooltip } from 'antd';
+import { Layers, Trash2, Lock } from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
 import './CategoryManager.css';
 
@@ -8,7 +8,6 @@ const { Panel } = Collapse;
 
 const CategoryManager = () => {
     const [categories, setCategories] = useState([]);
-    const [newCategoryName, setNewCategoryName] = useState('');
     const [newSubCategoryName, setNewSubCategoryName] = useState('');
     const [selectedCategoryId, setSelectedCategoryId] = useState('');
     const [loading, setLoading] = useState(false);
@@ -28,49 +27,6 @@ const CategoryManager = () => {
     useEffect(() => {
         fetchCategories();
     }, []);
-
-    const handleAddCategory = async (e) => {
-        e.preventDefault();
-        if (!newCategoryName.trim()) return;
-        
-        setLoading(true);
-        try {
-            const token = sessionStorage.getItem('token');
-            const response = await fetch(`${SITE_CONTENT.api.base}/api/categories/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Token ${token}`
-                },
-                body: JSON.stringify({ name: newCategoryName })
-            });
-
-            if (response.ok) {
-                message.success("Category added successfully!");
-                setNewCategoryName('');
-                fetchCategories();
-            } else {
-                try {
-                    const errorData = await response.json();
-                    if (errorData[0]) {
-                        message.error(errorData[0]);
-                    } else if (errorData.name) {
-                        message.error(errorData.name[0]);
-                    } else if (errorData.non_field_errors) {
-                        message.error(errorData.non_field_errors[0]);
-                    } else {
-                        message.error("Failed to add category.");
-                    }
-                } catch(e) {
-                    message.error("Failed to add category.");
-                }
-            }
-        } catch (error) {
-            message.error("Network error.");
-        } finally {
-            setLoading(false);
-        }
-    };
 
     const handleAddSubCategory = async (e) => {
         e.preventDefault();
@@ -116,30 +72,6 @@ const CategoryManager = () => {
         }
     };
 
-    const handleDeleteCategory = async (id) => {
-        setLoading(true);
-        try {
-            const token = sessionStorage.getItem('token');
-            const response = await fetch(`${SITE_CONTENT.api.base}/api/categories/${id}/`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Token ${token}`
-                }
-            });
-
-            if (response.ok) {
-                message.success("Category deleted successfully!");
-                fetchCategories();
-            } else {
-                message.error("Failed to delete category.");
-            }
-        } catch (error) {
-            message.error("Network error.");
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const handleDeleteSubCategory = async (id) => {
         setLoading(true);
         try {
@@ -167,25 +99,26 @@ const CategoryManager = () => {
     return (
         <div className="category-manager-container">
             <div className="forms-grid">
-                {/* Add Category Form */}
+                {/* Main categories are a fixed default set — not editable here */}
                 <div className="form-card">
-                    <h3><FolderPlus size={18} /> Add Main Category</h3>
-                    <form onSubmit={handleAddCategory}>
-                        <div className="input-group">
-                            <label>Category Name <span className="required">*</span></label>
-                            <input 
-                                type="text" 
-                                className="modern-input" 
-                                placeholder="E.g. Living Room, Bedroom"
-                                value={newCategoryName}
-                                onChange={(e) => setNewCategoryName(e.target.value)}
-                                required
-                            />
-                        </div>
-                        <button type="submit" className="btn-primary" disabled={loading || !newCategoryName.trim()}>
-                            Add Category
-                        </button>
-                    </form>
+                    <h3><Lock size={18} /> Main Categories</h3>
+                    <p className="category-note">
+                        These {categories.length || 5} categories are fixed to match your website's menu. Add new product types as sub-categories instead.
+                    </p>
+                    <List
+                        size="small"
+                        bordered
+                        dataSource={categories}
+                        renderItem={(c) => (
+                            <List.Item>
+                                <Tooltip title="Fixed default category">
+                                    <span className="locked-category-row">
+                                        <Lock size={14} /> {c.name}
+                                    </span>
+                                </Tooltip>
+                            </List.Item>
+                        )}
+                    />
                 </div>
 
                 {/* Add Sub Category Form */}
@@ -231,22 +164,9 @@ const CategoryManager = () => {
                 ) : (
                     <Collapse accordion>
                         {categories.map(category => (
-                            <Panel 
-                                header={category.name} 
+                            <Panel
+                                header={category.name}
                                 key={category.id}
-                                extra={
-                                    <Popconfirm
-                                        placement="left"
-                                        title="Delete this category?"
-                                        description="All its sub-categories and products will be deleted. Are you sure?"
-                                        onConfirm={(e) => { e.stopPropagation(); handleDeleteCategory(category.id); }}
-                                        onCancel={(e) => e.stopPropagation()}
-                                        okText="Yes"
-                                        cancelText="No"
-                                    >
-                                        <Button type="text" danger size="small" icon={<Trash2 size={16} />} onClick={e => e.stopPropagation()} />
-                                    </Popconfirm>
-                                }
                             >
                                 {category.subcategories && category.subcategories.length > 0 ? (
                                     <List
