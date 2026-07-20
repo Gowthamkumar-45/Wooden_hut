@@ -655,6 +655,14 @@
      text-decoration: none;
    }
 
+   .mobile-modal-list li.mobile-modal-empty {
+     padding: 18px 0;
+     font-family: 'Jost', sans-serif;
+     font-size: 13px;
+     font-style: italic;
+     color: #94a3b8;
+   }
+
    @keyframes fadeIn {
      from {
        opacity: 0;

@@ -68,43 +68,17 @@ export const NAV_LINKS = [
     { name: "Contact Us", path: "/contact" }
 ];
 
-export const PRODUCTS_MENU = {
-    living: [
-        { name: "Sofa Sets", path: "/category/sofa-sets" },
-        { name: "Teapoy", path: "/category/teapoy" },
-        { name: "Pooja Unit", path: "/category/pooja-unit" },
-        { name: "Storage Unit", path: "/category/storage-unit" },
-        { name: "Swing", path: "/category/swing" },
-        { name: "TV Unit", path: "/category/tv-unit" },
-        { name: "Chairs", path: "/category/chairs" }
-    ],
-    dining: [
-        { name: "Dining Table Sets", path: "/category/dining-tables" },
-        { name: "Dining Chairs", path: "/category/dining-chairs" },
-        { name: "Crockery Units", path: "/category/crockery-units" },
-        { name: "Bar Cabinets", path: "/category/bar-cabinets" }
-    ],
-    bedroom: [
-        { name: "King Size Beds", path: "/category/king-size-beds" },
-        { name: "Queen Size Beds", path: "/category/queen-size-beds" },
-        { name: "Single Beds", path: "/category/single-beds" },
-        { name: "Cradle", path: "/category/cradle" },
-        { name: "Wardrobes", path: "/category/wardrobes" },
-        { name: "Dressing Tables", path: "/category/dressing-tables" },
-        { name: "Bedside Tables", path: "/category/bed-side-table" }
-    ],
-    office: [
-        { name: "Office Tables", path: "/category/office-tables" },
-        { name: "Office Chairs", path: "/category/office-chairs" },
-        { name: "Bookshelves", path: "/category/bookshelves" },
-        { name: "Office Storage Cabinets", path: "/category/office-storage-cabinets" }
-    ],
-    "doors-and-windows": [
-        { name: "Doors", path: "/category/doors" },
-        { name: "Windows", path: "/category/windows" },
-        { name: "Nilai", path: "/category/nilai" }
-    ]
-};
+// Main categories are a fixed default set (seeded on the backend and locked
+// from being added/removed via the admin panel), so the nav renders them
+// statically — they never depend on the categories API call. Only the
+// sub-category dropdown contents underneath each are fetched dynamically.
+export const MAIN_CATEGORIES = [
+    { slug: 'living', label: 'Living' },
+    { slug: 'dining', label: 'Dining' },
+    { slug: 'bedroom', label: 'Bedroom' },
+    { slug: 'office', label: 'Office' },
+    { slug: 'doors-and-windows', label: 'Doors & Windows' }
+];
 
 export const FURNITURE_MAKING_CONTENT = {
     heroSlides: [

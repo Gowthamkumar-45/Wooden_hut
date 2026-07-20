@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Search } from 'lucide-react';
-import { SITE_CONTENT, NAV_LINKS, PRODUCTS_MENU } from '../../constants/content';
+import { SITE_CONTENT, NAV_LINKS, MAIN_CATEGORIES } from '../../constants/content';
 import './Header.css';
 
 const Header = () => {
@@ -12,11 +12,28 @@ const Header = () => {
   const [mobileActiveDropdown, setMobileActiveDropdown] = useState(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categories, setCategories] = useState([]);
   const navigate = useNavigate();
 
+  // Main category tabs (Living, Dining, ...) are static — they're a fixed
+  // default set and must always render instantly, without waiting on a
+  // network call. Only the sub-category dropdown contents underneath each
+  // are fetched live, so they reflect whatever an admin has actually created.
+  useEffect(() => {
+    fetch(`${SITE_CONTENT.api.base}/api/categories/`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => setCategories(Array.isArray(data) ? data : []))
+      .catch(() => setCategories([]));
+  }, []);
+
+  const subCategoriesBySlug = categories.reduce((acc, cat) => {
+    acc[cat.slug] = (cat.subcategories || []).map(sub => ({ name: sub.name, path: `/category/${sub.slug}` }));
+    return acc;
+  }, {});
+
   // Flatten all products for searching
-  const allProducts = Object.entries(PRODUCTS_MENU).flatMap(([category, products]) => 
-    products.map(p => ({ ...p, category: category.replace(/-/g, ' ') }))
+  const allProducts = MAIN_CATEGORIES.flatMap(({ slug, label }) =>
+    (subCategoriesBySlug[slug] || []).map(p => ({ ...p, category: label }))
   );
 
   const filteredResults = searchQuery.trim() === '' 
@@ -110,25 +127,30 @@ const Header = () => {
         <li><Link to="/" onClick={closeMenus}>Home</Link></li>
         <li><Link to="/about" onClick={closeMenus}>About Us</Link></li>
 
-        {Object.entries(PRODUCTS_MENU).map(([category, products]) => (
-          <li key={category} className={`dropdown link-dropdown ${mobileActiveDropdown === category ? 'active-mobile' : ''}`}>
-            <Link
-              to={`/category/${category}`}
-              className="nav-dropdown-trigger"
-              onClick={(e) => toggleMobileDropdown(category, e)}
-            >
-              {category.replace(/-/g, ' ')} ▾
-            </Link>
-            {/* Desktop Only Dropdown */}
-            <ul className="simple-dropdown desktop-only">
-              {products.map((product) => (
-                <li key={product.name}>
-                  <Link to={product.path} onClick={closeMenus}>{product.name}</Link>
-                </li>
-              ))}
-            </ul>
-          </li>
-        ))}
+        {MAIN_CATEGORIES.map(({ slug, label }) => {
+          const items = subCategoriesBySlug[slug] || [];
+          return (
+            <li key={slug} className={`dropdown link-dropdown ${mobileActiveDropdown === slug ? 'active-mobile' : ''}`}>
+              <Link
+                to={`/category/${slug}`}
+                className="nav-dropdown-trigger"
+                onClick={(e) => toggleMobileDropdown(slug, e)}
+              >
+                {label} ▾
+              </Link>
+              {/* Desktop Only Dropdown */}
+              {items.length > 0 && (
+                <ul className="simple-dropdown desktop-only">
+                  {items.map((product) => (
+                    <li key={product.name}>
+                      <Link to={product.path} onClick={closeMenus}>{product.name}</Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </li>
+          );
+        })}
 
         {/* Explore More Dropdown */}
         <li className={`dropdown link-dropdown ${mobileActiveDropdown === 'explore-more' ? 'active-mobile' : ''}`}>
@@ -229,7 +251,7 @@ const Header = () => {
         <div className="mobile-modal-overlay" onClick={() => setMobileActiveDropdown(null)}>
           <div className="mobile-modal-content" onClick={(e) => e.stopPropagation()}>
             <div className="mobile-modal-header">
-              <span>{mobileActiveDropdown === 'explore-more' ? 'Explore More' : mobileActiveDropdown.replace(/-/g, ' ')}</span>
+              <span>{mobileActiveDropdown === 'explore-more' ? 'Explore More' : MAIN_CATEGORIES.find(c => c.slug === mobileActiveDropdown)?.label}</span>
               <button className="close-modal-btn" onClick={() => setMobileActiveDropdown(null)}>×</button>
             </div>
             <ul className="mobile-modal-list">
@@ -240,11 +262,15 @@ const Header = () => {
                   <li><Link to="/reviews" onClick={closeMenus}>Reviews</Link></li>
                 </>
               ) : (
-                PRODUCTS_MENU[mobileActiveDropdown]?.map((product) => (
-                  <li key={product.name}>
-                    <Link to={product.path} onClick={closeMenus}>{product.name}</Link>
-                  </li>
-                ))
+                (subCategoriesBySlug[mobileActiveDropdown] || []).length > 0 ? (
+                  subCategoriesBySlug[mobileActiveDropdown].map((product) => (
+                    <li key={product.name}>
+                      <Link to={product.path} onClick={closeMenus}>{product.name}</Link>
+                    </li>
+                  ))
+                ) : (
+                  <li className="mobile-modal-empty">No sub-categories yet.</li>
+                )
               )}
             </ul>
           </div>
