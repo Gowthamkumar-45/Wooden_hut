@@ -2,10 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { WhatsAppOutlined, ArrowDownOutlined } from '@ant-design/icons';
 import { categoryData } from '../../constants/data';
-import { SITE_CONTENT } from '../../constants/content';
+import { SITE_CONTENT, MAIN_CATEGORIES } from '../../constants/content';
 import './CategoryPage.css';
 
-// Maps sub-category slugs to their parent category for hero/branding inheritance
+// The only slugs that are ever main categories — anything else is a
+// sub-category (main categories are a fixed set; sub-categories are the
+// only thing admins create dynamically).
+const MAIN_CATEGORY_SLUGS = MAIN_CATEGORIES.map(c => c.slug);
+
+// Maps sub-category slugs to their parent category, purely for hero/branding
+// inheritance (which banner image/description to show). Not used to decide
+// whether something IS a sub-category — that's derived from
+// MAIN_CATEGORY_SLUGS above, so newly created sub-categories route correctly
+// without needing an entry here.
 const SUB_TO_CAT_MAP = {
   'king-size-beds': 'bedroom',
   'queen-size-beds': 'bedroom',
@@ -73,9 +82,11 @@ const CategoryPage = () => {
   // Resolve actual slug from alias (e.g. 'sofa' -> 'sofa-sets')
   const resolvedSlug = ALIAS_MAP[categoryId] || categoryId;
   
-  // Check if it's a sub-category that points to a parent for branding
+  // Anything that isn't one of the fixed main category slugs is a
+  // sub-category — this covers sub-categories admins create on the fly,
+  // not just the ones with a known SUB_TO_CAT_MAP entry.
+  const isSubCategory = !MAIN_CATEGORY_SLUGS.includes(resolvedSlug);
   const parentCategorySlug = SUB_TO_CAT_MAP[resolvedSlug];
-  const isSubCategory = !!parentCategorySlug;
   const dbCategorySlug = parentCategorySlug || resolvedSlug;
 
   const categoryInfo = categoryData[resolvedSlug] || categoryData[dbCategorySlug] || {
