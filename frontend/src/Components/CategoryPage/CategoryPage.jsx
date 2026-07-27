@@ -10,62 +10,28 @@ import './CategoryPage.css';
 // only thing admins create dynamically).
 const MAIN_CATEGORY_SLUGS = MAIN_CATEGORIES.map(c => c.slug);
 
-// Maps sub-category slugs to their parent category, purely for hero/branding
-// inheritance (which banner image/description to show). Not used to decide
-// whether something IS a sub-category — that's derived from
-// MAIN_CATEGORY_SLUGS above, so newly created sub-categories route correctly
-// without needing an entry here.
-const SUB_TO_CAT_MAP = {
-  'king-size-beds': 'bedroom',
-  'queen-size-beds': 'bedroom',
-  'single-beds': 'bedroom',
-  'cradle': 'bedroom',
-  'wardrobes': 'bedroom',
-  'dressing-tables': 'bedroom',
-  'sofa-sets': 'living',
-  'teapoy': 'living',
-  'pooja-unit': 'living',
-  'dining-tables': 'dining',
-  'dining-chairs': 'dining',
-  'crockery-units': 'dining',
-  'bar-cabinets': 'dining',
-  'dinning': 'dining',
-  'office-tables': 'office',
-  'office-chairs': 'office',
-  'bookshelves': 'office',
-  'office-storage': 'office',
-  'office-storage-cabinets': 'office',
-  'storage-cabinets': 'office',
-  'bed-side-table': 'bedroom',
-  'tv-unit': 'living',
-  'storage-unit': 'living',
-  'swing': 'living',
-  'chairs': 'living',
-  'doors': 'doors-and-windows',
-  'windows': 'doors-and-windows',
-  'nilai': 'doors-and-windows'
-};
-
-// Maps common aliases to the actual database slugs
-const ALIAS_MAP = {
-  'sofa': 'sofa-sets',
-  'living-room': 'living',
-  'dining-room': 'dining',
-  'cots': 'bedroom',
-  'beds': 'bedroom',
-  'swings': 'swing',
-  'pooja': 'pooja-unit',
-  'side-table': 'bed-side-table',
-  'tv-cabinet': 'tv-unit',
-  'dining-table-sets': 'dining-tables',
-  'office-storage-cabinets': 'office-storage-cabinets',
-  'doors-windows': 'doors-and-windows'  
-};
-
 const CategoryPage = () => {
   const { categoryId } = useParams();
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
+  // Maps a sub-category slug to its real parent category slug, fetched live
+  // — used purely for hero/branding inheritance (which banner to show) so a
+  // sub-category with no custom hero of its own falls back to its actual
+  // parent's banner instead of a hardcoded, unmaintained list.
+  const [subCategoryParents, setSubCategoryParents] = useState({});
+
+  useEffect(() => {
+    fetch(`${SITE_CONTENT.api.base}/api/categories/`)
+      .then(res => res.ok ? res.json() : [])
+      .then(data => {
+        const map = {};
+        (Array.isArray(data) ? data : []).forEach(cat => {
+          (cat.subcategories || []).forEach(sub => { map[sub.slug] = cat.slug; });
+        });
+        setSubCategoryParents(map);
+      })
+      .catch(() => setSubCategoryParents({}));
+  }, []);
 
   const logWhatsAppContact = async (productName) => {
     try {
@@ -79,14 +45,15 @@ const CategoryPage = () => {
     }
   };
 
-  // Resolve actual slug from alias (e.g. 'sofa' -> 'sofa-sets')
-  const resolvedSlug = ALIAS_MAP[categoryId] || categoryId;
-  
+  // Nav links always carry the real, current slug (no aliasing needed —
+  // an alias table here would risk hijacking a legitimate admin-created
+  // sub-category slug that happens to collide with an old alias key).
+  const resolvedSlug = categoryId;
+
   // Anything that isn't one of the fixed main category slugs is a
-  // sub-category — this covers sub-categories admins create on the fly,
-  // not just the ones with a known SUB_TO_CAT_MAP entry.
+  // sub-category — this covers sub-categories admins create on the fly.
   const isSubCategory = !MAIN_CATEGORY_SLUGS.includes(resolvedSlug);
-  const parentCategorySlug = SUB_TO_CAT_MAP[resolvedSlug];
+  const parentCategorySlug = subCategoryParents[resolvedSlug];
   const dbCategorySlug = parentCategorySlug || resolvedSlug;
 
   const categoryInfo = categoryData[resolvedSlug] || categoryData[dbCategorySlug] || {
