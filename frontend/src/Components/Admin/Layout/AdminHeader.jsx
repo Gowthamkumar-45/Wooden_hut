@@ -16,6 +16,7 @@ const AdminHeader = () => {
     if (pathname.includes('/admin/making-videos')) return 'Making Videos';
     if (pathname.includes('/admin/media')) return 'Media Manager';
     if (pathname.includes('/admin/reviews')) return 'Review Moderation';
+    if (pathname.includes('/admin/users')) return 'User Management';
     if (pathname.includes('/admin/settings')) return 'Settings';
     if (pathname.includes('/admin/help')) return 'Help Center';
     return 'Dashboard';

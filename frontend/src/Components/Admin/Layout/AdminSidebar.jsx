@@ -1,23 +1,30 @@
 import React from 'react';
 import { NavLink, Link } from 'react-router-dom';
-import { 
-  LayoutDashboard, 
-  Package, 
-  ShoppingCart, 
-  Users, 
-  Star, 
-  Settings, 
+import {
+  LayoutDashboard,
+  Package,
+  ShoppingCart,
+  Users,
+  Star,
+  Settings,
   Video,
   Image,
   ChevronLeft,
   Plus,
   User,
-  Layers
+  Layers,
+  UserCog
 } from 'lucide-react';
 import './AdminSidebar.css';
 import { SITE_CONTENT } from '../../../constants/content';
 
 const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
+  const currentUser = (() => {
+    try { return JSON.parse(sessionStorage.getItem('user') || '{}'); } catch { return {}; }
+  })();
+  const isSuperUser = currentUser.is_superuser === true;
+  const roleLabel = currentUser.branch ? `${currentUser.branch} Branch` : 'Super Admin';
+
   return (
     <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
       <div className="sidebar-header">
@@ -79,6 +86,13 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
             <Image size={20} />
             <span>Media</span>
           </NavLink>
+
+          {isSuperUser && (
+            <NavLink to="/admin/users" className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}>
+              <UserCog size={20} />
+              <span>Create User</span>
+            </NavLink>
+          )}
         </div>
       </nav>
 
@@ -88,8 +102,8 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
             <User size={20} />
           </div>
           <div className="user-info">
-            <span className="user-name">Marutham Admin</span>
-            <span className="user-role">Super Admin</span>
+            <span className="user-name">{currentUser.username || 'Admin'}</span>
+            <span className="user-role">{roleLabel}</span>
           </div>
         </div>
         

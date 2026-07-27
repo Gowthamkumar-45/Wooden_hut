@@ -18,8 +18,20 @@ import {
 import { SITE_CONTENT } from '../../../constants/content';
 import './TrackOrders.css';
 
+// Branch-restricted users (Coimbatore/Tanjavur logins) only ever get their
+// own branch's data back from the API — their branch view can't be switched.
+// Super Admins (no branch on their account) can toggle between both.
+const getCurrentUserBranch = () => {
+  try {
+    return JSON.parse(sessionStorage.getItem('user') || '{}').branch || null;
+  } catch {
+    return null;
+  }
+};
+
 const TrackOrders = () => {
-  const [selectedBranch, setSelectedBranch] = useState('Coimbatore');
+  const userBranch = getCurrentUserBranch();
+  const [selectedBranch, setSelectedBranch] = useState(userBranch || 'Coimbatore');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('confirmed');
@@ -129,20 +141,26 @@ const TrackOrders = () => {
   return (
     <div className="track-orders-container">
       <div className="admin-page-header">
-        <div className="branch-nav-pill">
-          <button 
-            className={`nav-pill-item ${selectedBranch === 'Coimbatore' ? 'active' : ''}`}
-            onClick={() => setSelectedBranch('Coimbatore')}
-          >
-            Coimbatore
-          </button>
-          <button 
-            className={`nav-pill-item ${selectedBranch === 'Tanjavur' ? 'active' : ''}`}
-            onClick={() => setSelectedBranch('Tanjavur')}
-          >
-            Tanjavur
-          </button>
-        </div>
+        {userBranch ? (
+          <div className="branch-nav-pill">
+            <button className="nav-pill-item active" disabled>{userBranch}</button>
+          </div>
+        ) : (
+          <div className="branch-nav-pill">
+            <button
+              className={`nav-pill-item ${selectedBranch === 'Coimbatore' ? 'active' : ''}`}
+              onClick={() => setSelectedBranch('Coimbatore')}
+            >
+              Coimbatore
+            </button>
+            <button
+              className={`nav-pill-item ${selectedBranch === 'Tanjavur' ? 'active' : ''}`}
+              onClick={() => setSelectedBranch('Tanjavur')}
+            >
+              Tanjavur
+            </button>
+          </div>
+        )}
 
         <div className="header-right">
           <button className="admin-refresh-btn" onClick={fetchOrders}>

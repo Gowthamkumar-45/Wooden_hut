@@ -146,7 +146,10 @@
 }
 
 /* RIGHT CONTENT: FORM */
-.form-card {
+/* Scoped to .contact-form-section — "form-card" is a generic name reused by
+   several admin panel components, and this rule's position/z-index (needed
+   for the sticky contact form) must not leak into those. */
+.contact-form-section .form-card {
     background: #fdfaf5;
     padding: 0px 50px;
     border-radius: 4px;
@@ -337,7 +340,7 @@
         text-align: center;
     }
 
-    .form-card {
+    .contact-form-section .form-card {
         position: static;
         padding: 0px 20px 0px 20px;
         background: transparent;
