@@ -1,4 +1,4 @@
-const WHATSAPP_NUMBER = "9259400700";
+const WHATSAPP_NUMBER = "9259000300";
 
 export const SITE_CONTENT = {
     brand: {
@@ -21,7 +21,7 @@ export const SITE_CONTENT = {
     },
     contact: {
         emails: ["woodenhutfurnitures@gmail.com", "Srisabarisawmill1987@gmail.com"],
-        phones: ["+91 92594 00700", "+91 73053 52192"],
+        phones: ["+91 92590 00300", "+91 73053 52192"],
         whatsapp: WHATSAPP_NUMBER,
         workingHours: "Mon – Sat: 9:00 AM – 7:00 PM",
         sunday: "Sunday: By Appointment"
@@ -43,8 +43,8 @@ export const SITE_CONTENT = {
             id: 'coimbatore',
             name: "Coimbatore",
             branchName: "Chettipalayam (Coimbatore)",
-            phone: "+91 92594 00700",
-            whatsapp: "9259400700",
+            phone: "+91 92590 00300",
+            whatsapp: "9259000300",
             type: "Factory & Retail Showroom",
             address1: "9W2GM+RRX,",
             address2: "Chettipalayam,",
