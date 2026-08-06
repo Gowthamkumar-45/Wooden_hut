@@ -117,7 +117,6 @@ function AppContent() {
                 <Route path="media" element={<MediaManager />} />
                 <Route path="reviews" element={<ReviewManagement />} />
                 <Route path="users" element={<UserManager />} />
-                <Route path="settings" element={<div>Settings Page (Coming Soon)</div>} />
                 <Route path="help" element={<div>Help Center (Coming Soon)</div>} />
               </Routes>
             </AdminLayout>

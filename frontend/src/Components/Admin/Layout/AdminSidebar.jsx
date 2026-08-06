@@ -6,7 +6,6 @@ import {
   ShoppingCart,
   Users,
   Star,
-  Settings,
   Video,
   Image,
   ChevronLeft,
@@ -106,11 +105,6 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
             <span className="user-role">{roleLabel}</span>
           </div>
         </div>
-        
-        <NavLink to="/admin/settings" className={({isActive}) => `nav-item ${isActive ? 'active' : ''}`}>
-          <Settings size={20} />
-          <span>Settings</span>
-        </NavLink>
 
       </div>
     </aside>
