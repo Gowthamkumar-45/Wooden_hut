@@ -94,6 +94,15 @@
     text-transform: uppercase;
   }
 
+  .footer-manufacturer-credit {
+    font-size: 12px;
+    font-style: italic;
+    letter-spacing: 0.02em;
+    color: rgba(226, 185, 106, 0.6);
+    margin: 0 0 14px;
+    max-width: 320px;
+  }
+
   .footer-brand-desc {
     font-size: 14px;
     line-height: 1.7;

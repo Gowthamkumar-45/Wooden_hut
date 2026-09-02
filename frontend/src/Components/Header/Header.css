@@ -87,6 +87,19 @@
    margin-top: 2px;
  }
 
+ .brand-manufacturer {
+   font-family: 'Jost', sans-serif;
+   font-size: 7px;
+   font-style: italic;
+   letter-spacing: 0.01em;
+   color: var(--text-muted);
+   font-weight: 400;
+   margin-top: 2px;
+   max-width: 170px;
+   white-space: normal;
+   line-height: 1.3;
+ }
+
  .nav-links {
    order: 2;
    display: flex;

@@ -252,31 +252,31 @@ const Home = () => {
                 <h1 className="gallery-section-title">Our <em>Gallery</em></h1>
                 <div className="gallery-strip">
                     <div className="gallery-pane" onClick={() => navigate('/category/timber-supply')}>
-                        <img src="https://images.unsplash.com/photo-1542621334-a254cf47733d?w=500&q=80&fit=crop" alt="Teak Timber" />
+                        <img src="https://images.unsplash.com/photo-1783779858962-5ec92319583c?w=500&q=80&fit=crop" alt="Teak Timber" />
                         <div className="gallery-g-overlay"></div>
                         <div className="gallery-pane-tag">Wood</div>
                         <div className="gallery-pane-label">Teak Timber</div>
                     </div>
                     <div className="gallery-pane" onClick={() => navigate('/category/custom-furniture')}>
-                        <img src="https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=500&q=80&fit=crop" alt="Craftsman" />
+                        <img src="https://images.unsplash.com/photo-1679797850019-3d0d8659a695?w=500&q=80&fit=crop" alt="Craftsman" />
                         <div className="gallery-g-overlay"></div>
                         <div className="gallery-pane-tag">Craft</div>
                         <div className="gallery-pane-label">Master Craftsmen</div>
                     </div>
                     <div className="gallery-pane" onClick={() => navigate('/category/sofa-sets')}>
-                        <img src="https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=500&q=80&fit=crop" alt="Sofa" />
+                        <img src="https://images.unsplash.com/photo-1759722668253-1767030ad9b2?w=500&q=80&fit=crop" alt="Sofa" />
                         <div className="gallery-g-overlay"></div>
                         <div className="gallery-pane-tag">Living</div>
                         <div className="gallery-pane-label">Sofa Collection</div>
                     </div>
                     <div className="gallery-pane" onClick={() => navigate('/category/dining-tables')}>
-                        <img src="https://images.unsplash.com/photo-1617806118233-18e1de247200?w=500&q=80&fit=crop" alt="Dining" />
+                        <img src="https://images.unsplash.com/photo-1764076327046-fe35f955cba1?w=500&q=80&fit=crop" alt="Dining" />
                         <div className="gallery-g-overlay"></div>
                         <div className="gallery-pane-tag">Dining</div>
                         <div className="gallery-pane-label">Dining Sets</div>
                     </div>
                     <div className="gallery-pane" onClick={() => navigate('/category/bedroom')}>
-                        <img src="https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=500&q=80&fit=crop" alt="Bedroom" />
+                        <img src="https://images.unsplash.com/photo-1758072328635-586f3c121af2?w=500&q=80&fit=crop" alt="Bedroom" />
                         <div className="gallery-g-overlay"></div>
                         <div className="gallery-pane-tag">Bedroom</div>
                         <div className="gallery-pane-label">Bedroom Sets</div>
@@ -313,8 +313,19 @@ const Home = () => {
                     <div className="section-label">Get in Touch</div>
                     <h2 className="section-title">Let's Build<br /><em>Something Together</em></h2>
                     <div className="contact-divider"></div>
-                    <div className="contact-detail"><div className="contact-detail-label">Location</div><div className="contact-detail-value">{SITE_CONTENT.brand.name} Sawmill<br />{SITE_CONTENT.brand.subName}<br />Tamil Nadu, India</div></div>
-                    <div className="contact-detail"><div className="contact-detail-label">Phone</div><div className="contact-detail-value">{SITE_CONTENT.contact.phone}</div></div>
+                    <div className="contact-detail">
+                        <div className="contact-detail-label">Location</div>
+                        <div className="contact-detail-value">
+                            {SITE_CONTENT.locations.map((loc, idx) => (
+                                <div key={loc.id} style={idx > 0 ? { marginTop: 12 } : undefined}>
+                                    <strong>{loc.branchName}</strong><br />
+                                    {loc.address1} {loc.address2}<br />
+                                    {loc.cityZip}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="contact-detail"><div className="contact-detail-label">Phone</div><div className="contact-detail-value">{SITE_CONTENT.contact.phones.join(' / ')}</div></div>
                     <div className="contact-detail"><div className="contact-detail-label">Working Hours</div><div className="contact-detail-value">{SITE_CONTENT.contact.workingHours}<br />{SITE_CONTENT.contact.sunday}</div></div>
                     <div className="contact-detail"><div className="contact-detail-label">Services</div><div className="contact-detail-value">Timber · Custom Furniture<br />Sofas · Cots · Dining Tables</div></div>
                 </div>
@@ -346,7 +357,7 @@ const Home = () => {
                                 name="phone"
                                 control={control}
                                 render={({ field }) => (
-                                    <Input {...field} placeholder={SITE_CONTENT.contact.phone} size="large" />
+                                    <Input {...field} placeholder={SITE_CONTENT.contact.phones[0]} size="large" />
                                 )}
                             />
                         </Form.Item>

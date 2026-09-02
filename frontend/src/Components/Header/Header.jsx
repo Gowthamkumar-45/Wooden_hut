@@ -114,6 +114,7 @@ const Header = () => {
         <div className="nav-logo-text">
           <span className="brand-name">{SITE_CONTENT.brand.name}</span>
           <span className="brand-sub">{SITE_CONTENT.brand.subName}</span>
+          <span className="brand-manufacturer">Manufactured by Sri Sabari Sawmill &amp; Marutham Timbers and Furniture</span>
         </div>
       </Link>
 
@@ -125,7 +126,6 @@ const Header = () => {
 
       <ul className={`nav-links ${isMobileMenuOpen ? 'mobile-active' : ''}`}>
         <li><Link to="/" onClick={closeMenus}>Home</Link></li>
-        <li><Link to="/about" onClick={closeMenus}>About Us</Link></li>
 
         {MAIN_CATEGORIES.map(({ slug, label }) => {
           const items = subCategoriesBySlug[slug] || [];
@@ -165,6 +165,7 @@ const Header = () => {
             <li><Link to="/furniture-making" onClick={closeMenus}>Furniture Making</Link></li>
             <li><Link to="/media" onClick={closeMenus}>Media</Link></li>
             <li><Link to="/reviews" onClick={closeMenus}>Reviews</Link></li>
+            <li><Link to="/about" onClick={closeMenus}>About Us</Link></li>
           </ul>
         </li>
 
@@ -260,6 +261,7 @@ const Header = () => {
                   <li><Link to="/furniture-making" onClick={closeMenus}>Furniture Making</Link></li>
                   <li><Link to="/media" onClick={closeMenus}>Media</Link></li>
                   <li><Link to="/reviews" onClick={closeMenus}>Reviews</Link></li>
+                  <li><Link to="/about" onClick={closeMenus}>About Us</Link></li>
                 </>
               ) : (
                 (subCategoriesBySlug[mobileActiveDropdown] || []).length > 0 ? (

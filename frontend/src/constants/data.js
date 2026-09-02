@@ -220,6 +220,15 @@ export const categoryData = {
     description: 'First impressions last longer with our handcrafted solid wood doors and windows. Built for security, elegance, and durability.',
     products: []
   },
+  // PHOTO FRAMES
+  'photo-frames': {
+    name: 'Photo Frames',
+    accentName: 'Handcrafted',
+    heroImage: 'https://images.unsplash.com/photo-1513519245088-0e12902e5a38?w=1600&q=80&fit=crop',
+    label: 'Framed Memories',
+    description: 'Solid wood photo frames finished by hand, made to hold the moments that matter most.',
+    products: []
+  },
   'doors': {
     name: 'Doors',
     accentName: 'Grand Entrance',

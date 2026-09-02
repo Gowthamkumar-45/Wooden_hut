@@ -61,18 +61,26 @@ const Contact = () => {
         }
     };
 
+    // Real showroom/factory photos should replace these once uploaded via the
+    // admin Media panel. Every URL below was individually downloaded and
+    // visually confirmed before use — the previous set (including some
+    // reused from FURNITURE_MAKING_CONTENT elsewhere in this codebase) looked
+    // plausible from their labels/context but several actually depicted a
+    // 3D printer, a wall clock, and blank stationery — completely unrelated
+    // to wood or furniture. Don't reuse an Unsplash URL here without
+    // downloading and looking at it first.
     const showroomGallery = [
-        "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&q=80",
-        "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&q=80",
-        "https://images.unsplash.com/photo-1524758631624-e2822e304c36?w=800&q=80",
-        "https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=800&q=80"
+        "https://images.unsplash.com/photo-1613906800797-d5d4fb2f7bbb?w=800&q=80", // wooden furniture lounge interior
+        "https://images.unsplash.com/photo-1740759546813-6b58d44f5dce?w=800&q=80", // dining table set at a furniture showroom
+        "https://images.unsplash.com/photo-1587006158786-7b79525a2147?w=800&q=80", // furniture store interior, wooden chairs
+        "https://images.unsplash.com/photo-1732801134112-23827e7cbd0d?w=800&q=80"  // wooden chairs wall display
     ];
 
     const factoryGallery = [
-        "https://images.unsplash.com/photo-1581539250439-c96689b516dd?w=800&q=80",
-        "https://images.unsplash.com/photo-1542621334-a254cf47733d?w=800&q=80",
-        "https://images.unsplash.com/photo-1510674485131-dc88d96369b4?w=800&q=80",
-        "https://images.unsplash.com/photo-1497366216548-37526070297c?w=800&q=80"
+        "https://images.unsplash.com/photo-1779031242515-205111711b23?w=800&q=80", // carpenter planing a wood plank
+        "https://images.unsplash.com/photo-1749572855201-feb5cf658479?w=800&q=80", // sawmill cutting a log
+        "https://images.unsplash.com/photo-1667689815944-9f72c0f59e74?w=800&q=80", // stacked rough-cut timber
+        "https://images.unsplash.com/photo-1783779858962-5ec92319583c?w=800&q=80"  // worker in a lumber storage yard
     ];
 
     return (

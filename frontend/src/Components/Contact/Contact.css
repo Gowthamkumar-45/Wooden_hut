@@ -7,7 +7,7 @@
 .contact-hero {
     position: relative;
     padding: 0;
-    background: #2c1a0e url('https://images.unsplash.com/photo-1540574163026-643ea20ade25?w=1600&q=80') center 30%/cover no-repeat;
+    background: #2c1a0e url('https://images.unsplash.com/photo-1613906800797-d5d4fb2f7bbb?w=1920&q=80') center 40%/cover no-repeat;
     min-height: 80vh;
     width: 100%;
 }
@@ -206,6 +206,38 @@
 .main-contact-form .ant-form-item-explain-error {
     font-size: 12px !important;
     margin-top: 4px !important;
+}
+
+/* Nearest Branch is a plain native <select>, not an antd Input, so it needs
+   its own rule to match the height/border/padding of the fields beside it. */
+.form-select-custom {
+    width: 100%;
+    height: 48px;
+    border-radius: 4px;
+    border: 1px solid rgba(196, 149, 58, 0.25);
+    padding: 0 18px;
+    font-family: inherit;
+    background: #fff;
+    font-size: 15px;
+    color: var(--brown-deep);
+    cursor: pointer;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'><path d='M1 1l5 5 5-5' stroke='%23c4953a' stroke-width='1.5' fill='none' fill-rule='evenodd'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 18px center;
+    transition: border-color 0.2s;
+}
+
+.form-select-custom:focus {
+    outline: none;
+    border-color: var(--gold);
+    box-shadow: 0 0 0 2px rgba(196, 149, 58, 0.1);
+}
+
+.form-select-custom:invalid,
+.form-select-custom option[value=""][disabled] {
+    color: #999;
 }
 
 .contact-submit-btn {

@@ -15,6 +15,7 @@ const Footer = () => {
                 <span className="brand-sub">{SITE_CONTENT.brand.subName}</span>
               </div>
             </div>
+            <p className="footer-manufacturer-credit">Manufactured by Sri Sabari Sawmill &amp; Marutham Timbers and Furniture</p>
             <p className="footer-brand-desc">{SITE_CONTENT.brand.tagline}. Handcrafted pieces that tell a story of time and nature.</p>
             <div className="footer-social">
               <a href={SITE_CONTENT.social.whatsapp} target="_blank" rel="noreferrer" className="social-icon-link" aria-label="WhatsApp">

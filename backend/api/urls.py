@@ -5,7 +5,7 @@ from products.views import (
     ProductViewSet, CategoryViewSet, SubCategoryViewSet, ReviewViewSet,
     MediaItemViewSet, MakingVideoViewSet
 )
-from contacts.views import WhatsAppContactViewSet, EnquiryViewSet
+from contacts.views import WhatsAppContactViewSet, EnquiryViewSet, WhatsAppWebhookView
 
 router = DefaultRouter()
 router.register(r'products', ProductViewSet, basename='product')
@@ -21,5 +21,6 @@ router.register(r'users', AdminUserViewSet, basename='admin-user')
 urlpatterns = [
     path('login/', LoginAPIView.as_view(), name='api-login'),
     path('notifications/', NotificationAPIView.as_view(), name='api-notifications'),
+    path('whatsapp-webhook/', WhatsAppWebhookView.as_view(), name='whatsapp-webhook'),
     path('', include(router.urls)),
 ]

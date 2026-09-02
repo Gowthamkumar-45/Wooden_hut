@@ -77,7 +77,8 @@ export const MAIN_CATEGORIES = [
     { slug: 'dining', label: 'Dining' },
     { slug: 'bedroom', label: 'Bedroom' },
     { slug: 'office', label: 'Office' },
-    { slug: 'doors-and-windows', label: 'Doors & Windows' }
+    { slug: 'doors-and-windows', label: 'Doors & Windows' },
+    { slug: 'photo-frames', label: 'Photo Frames' }
 ];
 
 export const FURNITURE_MAKING_CONTENT = {
