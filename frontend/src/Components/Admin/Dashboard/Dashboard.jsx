@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 
 import {
-  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend,
+  LineChart, Line, PieChart, Pie, Cell, BarChart, Bar
 } from 'recharts';
 import {
   ArrowUpRight,
@@ -9,10 +10,19 @@ import {
   Download,
   Filter,
   Package,
+  PackageCheck,
   ShoppingCart,
   Truck,
   Users,
-  MessageSquare
+  MessageSquare,
+  Inbox,
+  Smartphone,
+  CircleX,
+  PackageX,
+  TrendingUp,
+  Factory,
+  Clock,
+  PackagePlus
 } from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
 import './Dashboard.css';
@@ -25,6 +35,12 @@ const Dashboard = () => {
     contacts: 0,
     inStock: 0,
     delivered: 0,
+    cancelled: 0,
+    newEnquiries: 0,
+    newWhatsapp: 0,
+    pendingReviews: 0,
+    notStarted: 0,
+    inProduction: 0,
     product_trend: 0,
     order_trend: 0,
     delivery_trend: 0,
@@ -32,6 +48,11 @@ const Dashboard = () => {
     review_trend: 0
   });
   const [timeFilter, setTimeFilter] = useState('all');
+  // Each card row gets its own independent period filter — changing one
+  // only re-fetches and updates that row's cards, not the others.
+  const [generalFilter, setGeneralFilter] = useState('all');
+  const [enquiryFilter, setEnquiryFilter] = useState('all');
+  const [orderFilter, setOrderFilter] = useState('all');
   const [sortOrder, setSortOrder] = useState('desc');
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
@@ -57,6 +78,26 @@ const Dashboard = () => {
     { name: 'Cancelled', value: 0, trend: '+0%', isNegative: true },
   ]);
 
+  // Product count per category, for the "Products by Category" bar chart —
+  // computed client-side from the full product list, since the API doesn't
+  // return a pre-aggregated breakdown.
+  const [categoryDistribution, setCategoryDistribution] = useState([]);
+
+  // Shared by the global fetch and each row's own filter fetch — hits the
+  // same endpoint with whatever period that caller cares about.
+  const fetchNotifications = async (filterType) => {
+    const token = sessionStorage.getItem('token');
+    const headers = token ? { 'Authorization': `Token ${token}` } : {};
+    const res = await fetch(`${SITE_CONTENT.api.base}/api/notifications/?filter=${filterType}`, { headers });
+    if (res.status === 401) {
+      sessionStorage.clear();
+      localStorage.clear();
+      window.location.href = '/login';
+      return null;
+    }
+    return res.ok ? res.json() : null;
+  };
+
   const getImageUrl = (path) => {
     if (!path) return 'https://via.placeholder.com/600x400?text=No+Image';
     if (path.startsWith('http')) return path;
@@ -71,10 +112,10 @@ const Dashboard = () => {
         const token = sessionStorage.getItem('token');
         const headers = token ? { 'Authorization': `Token ${token}` } : {};
 
-        const notifyRes = await fetch(`${SITE_CONTENT.api.base}/api/notifications/?filter=${timeFilter}`, { headers });
+        const notifyData = await fetchNotifications(timeFilter);
         const productsRes = await fetch(`${SITE_CONTENT.api.base}/api/products/`, { headers });
 
-        if (notifyRes.status === 401 || productsRes.status === 401) {
+        if (productsRes.status === 401) {
           // Stale token from different environment (e.g. Render vs Local)
           sessionStorage.clear();
           localStorage.clear();
@@ -82,8 +123,7 @@ const Dashboard = () => {
           return;
         }
 
-        if (notifyRes.ok && productsRes.ok) {
-          const notifyData = await notifyRes.json();
+        if (notifyData && productsRes.ok) {
           const productsData = await productsRes.json();
 
           // Handle paginated or non-paginated product data
@@ -91,6 +131,20 @@ const Dashboard = () => {
           const totalProductsCount = Array.isArray(productsData) ? productsData.length : (productsData.count || 0);
 
           setProducts(productItems.slice(0, 5));
+
+          // Group the full product list by category for the bar chart —
+          // done from productItems (pre-slice), so it reflects everything,
+          // not just the 5 rows shown in Top Selling.
+          const categoryCounts = productItems.reduce((acc, p) => {
+            const name = p.category_name || 'Uncategorized';
+            acc[name] = (acc[name] || 0) + 1;
+            return acc;
+          }, {});
+          setCategoryDistribution(
+            Object.entries(categoryCounts)
+              .map(([name, count]) => ({ name, count }))
+              .sort((a, b) => b.count - a.count)
+          );
 
           // Use real stats from the enhanced NotificationAPIView
           const backendStats = notifyData.stats || {};
@@ -112,8 +166,17 @@ const Dashboard = () => {
             orders: backendStats.total_confirmed || 0,
             delivered: backendStats.total_delivered || 0,
             reviews: backendStats.total_reviews || 0,
-            contacts: notifyData.total_notifications || 0,
+            // total_customers (real enquiry+WhatsApp count for the period) is
+            // what this card is meant to show — total_notifications is the
+            // *unread* count, which was being shown here by mistake.
+            contacts: backendStats.total_customers ?? notifyData.total_notifications ?? 0,
             inStock: backendStats.in_stock || 0,
+            cancelled: (backendStats.sales_pipeline && backendStats.sales_pipeline.cancelled) || 0,
+            notStarted: (backendStats.sales_pipeline && backendStats.sales_pipeline.packed) || 0,
+            inProduction: (backendStats.sales_pipeline && backendStats.sales_pipeline.shipped) || 0,
+            newEnquiries: notifyData.enquiries || 0,
+            newWhatsapp: notifyData.whatsapp_contacts || 0,
+            pendingReviews: notifyData.reviews || 0,
             product_trend: backendStats.product_trend || 0,
             order_trend: backendStats.order_trend || 0,
             delivery_trend: backendStats.delivery_trend || 0,
@@ -130,6 +193,62 @@ const Dashboard = () => {
 
     fetchDashboardData();
   }, [timeFilter]);
+
+  // General row's own filter — updates only the General cards.
+  useEffect(() => {
+    let cancelled = false;
+    fetchNotifications(generalFilter).then((data) => {
+      if (cancelled || !data) return;
+      const s = data.stats || {};
+      setStats((prev) => ({
+        ...prev,
+        products: s.total_products ?? prev.products,
+        product_trend: s.product_trend ?? prev.product_trend,
+        inStock: s.in_stock ?? prev.inStock,
+        reviews: s.total_reviews ?? prev.reviews,
+        review_trend: s.review_trend ?? prev.review_trend,
+        pendingReviews: data.reviews ?? prev.pendingReviews
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [generalFilter]);
+
+  // Enquiries row's own filter — updates only the Enquiries cards.
+  useEffect(() => {
+    let cancelled = false;
+    fetchNotifications(enquiryFilter).then((data) => {
+      if (cancelled || !data) return;
+      const s = data.stats || {};
+      setStats((prev) => ({
+        ...prev,
+        contacts: s.total_customers ?? data.total_notifications ?? prev.contacts,
+        customer_trend: s.customer_trend ?? prev.customer_trend,
+        newEnquiries: data.enquiries ?? prev.newEnquiries,
+        newWhatsapp: data.whatsapp_contacts ?? prev.newWhatsapp
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [enquiryFilter]);
+
+  // Orders row's own filter — updates only the Orders cards.
+  useEffect(() => {
+    let cancelled = false;
+    fetchNotifications(orderFilter).then((data) => {
+      if (cancelled || !data) return;
+      const s = data.stats || {};
+      setStats((prev) => ({
+        ...prev,
+        orders: s.total_confirmed ?? prev.orders,
+        order_trend: s.order_trend ?? prev.order_trend,
+        delivered: s.total_delivered ?? prev.delivered,
+        delivery_trend: s.delivery_trend ?? prev.delivery_trend,
+        cancelled: (s.sales_pipeline && s.sales_pipeline.cancelled) ?? prev.cancelled,
+        notStarted: (s.sales_pipeline && s.sales_pipeline.packed) ?? prev.notStarted,
+        inProduction: (s.sales_pipeline && s.sales_pipeline.shipped) ?? prev.inProduction
+      }));
+    });
+    return () => { cancelled = true; };
+  }, [orderFilter]);
 
   const handleSort = () => {
     const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
@@ -154,7 +273,10 @@ const Dashboard = () => {
     document.body.removeChild(link);
   };
 
-  const statCards = [
+  // Cards are grouped into three sections (General → Enquiries → Orders) so
+  // the dashboard reads top-to-bottom as: the business at a glance, who's
+  // reaching out, then what's actually being sold/fulfilled.
+  const generalCards = [
     {
       title: 'Total Products',
       value: stats.products,
@@ -162,6 +284,108 @@ const Dashboard = () => {
       isUp: stats.product_trend >= 0,
       icon: <Package size={20} />,
       color: '#7c3aed'
+    },
+    {
+      title: 'In Stock',
+      value: stats.inStock,
+      trend: '+0%',
+      isUp: true,
+      icon: <PackageCheck size={20} />,
+      color: '#10b981'
+    },
+    {
+      title: 'Out of Stock',
+      value: Math.max(stats.products - stats.inStock, 0),
+      trend: '+0%',
+      isUp: false,
+      icon: <PackageX size={20} />,
+      color: '#ef4444'
+    },
+    {
+      title: 'Client Reviews',
+      value: stats.reviews,
+      trend: `${stats.review_trend > 0 ? '+' : ''}${stats.review_trend}%`,
+      isUp: stats.review_trend >= 0,
+      icon: <MessageSquare size={20} />,
+      color: '#8b5e3c'
+    },
+    {
+      title: 'Pending Reviews',
+      value: stats.pendingReviews,
+      trend: '+0%',
+      isUp: true,
+      icon: <Clock size={20} />,
+      color: '#f59e0b'
+    }
+  ];
+
+  const enquiryCards = [
+    {
+      title: 'Total Customers',
+      value: stats.contacts,
+      trend: `${stats.customer_trend > 0 ? '+' : ''}${stats.customer_trend}%`,
+      isUp: stats.customer_trend >= 0,
+      icon: <Users size={20} />,
+      color: '#3b82f6'
+    },
+    {
+      title: 'New Enquiries',
+      value: stats.newEnquiries,
+      trend: '+0%',
+      isUp: true,
+      icon: <Inbox size={20} />,
+      color: '#0ea5e9'
+    },
+    {
+      title: 'New WhatsApp Contacts',
+      value: stats.newWhatsapp,
+      trend: '+0%',
+      isUp: true,
+      icon: <Smartphone size={20} />,
+      color: '#22c55e'
+    },
+    {
+      title: 'Conversion Rate',
+      // Share of total customers (enquiries + WhatsApp) that turned into a
+      // confirmed order — the one figure that says whether enquiries are
+      // actually converting, not just how many came in.
+      value: stats.contacts > 0 ? Math.round((stats.orders / stats.contacts) * 100) : 0,
+      suffix: '%',
+      trend: '+0%',
+      isUp: true,
+      icon: <TrendingUp size={20} />,
+      color: '#a855f7'
+    },
+    {
+      title: 'WhatsApp Share',
+      // What fraction of all enquiry/feedback interactions came in over
+      // WhatsApp specifically — pulled straight from the same traffic
+      // breakdown the Enquiry Channels chart already shows.
+      value: (trafficData.find((t) => t.name === 'WhatsApp') || {}).value || 0,
+      suffix: '%',
+      trend: '+0%',
+      isUp: true,
+      icon: <Smartphone size={20} />,
+      color: '#22c55e'
+    }
+  ];
+
+  const orderCards = [
+    {
+      title: 'Not Started',
+      value: stats.notStarted,
+      trend: '+0%',
+      isUp: true,
+      icon: <PackagePlus size={20} />,
+      color: '#64748b'
+    },
+    {
+      title: 'In Production',
+      value: stats.inProduction,
+      trend: '+0%',
+      isUp: true,
+      icon: <Factory size={20} />,
+      color: '#3b82f6'
     },
     {
       title: 'Confirmed Orders',
@@ -180,22 +404,84 @@ const Dashboard = () => {
       color: '#f59e0b'
     },
     {
-      title: 'Total Customers',
-      value: stats.contacts,
-      trend: `${stats.customer_trend > 0 ? '+' : ''}${stats.customer_trend}%`,
-      isUp: stats.customer_trend >= 0,
-      icon: <Users size={20} />,
-      color: '#3b82f6'
-    },
-    {
-      title: 'Client Reviews',
-      value: stats.reviews,
-      trend: `${stats.review_trend > 0 ? '+' : ''}${stats.review_trend}%`,
-      isUp: stats.review_trend >= 0,
-      icon: <MessageSquare size={20} />,
-      color: '#8b5e3c'
+      title: 'Cancelled Orders',
+      value: stats.cancelled,
+      trend: '+0%',
+      isUp: false,
+      icon: <CircleX size={20} />,
+      color: '#ef4444'
     }
   ];
+
+  // Monthly total enquiry volume (Web + WhatsApp combined) for the line
+  // chart — analyticsData already carries Confirmed/Cancelled/Pending per
+  // month, and every enquiry sits in exactly one bucket, so the three sum
+  // to that month's total.
+  const monthlyEnquiryTrend = analyticsData.map((m) => ({
+    name: m.name,
+    total: (m.Confirmed || 0) + (m.Cancelled || 0) + (m.Pending || 0)
+  }));
+
+  // Same 4 pipeline stages as the Product Status bars, colored to match
+  // their card counterparts, for the pie chart.
+  const pipelineColors = {
+    'Not Started': '#64748b',
+    'In Production': '#3b82f6',
+    'Delivered': '#f59e0b',
+    'Cancelled': '#ef4444'
+  };
+
+  // Same look as the original top-right "All Time" dropdown, just
+  // recolored to match each section's eyebrow accent.
+  const filterSelectStyle = (bg) => ({
+    padding: '6px 26px 6px 12px',
+    background: bg,
+    color: 'white',
+    border: 'none',
+    borderRadius: '8px',
+    cursor: 'pointer',
+    fontWeight: 600,
+    fontSize: '13px',
+    marginLeft: 'auto',
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
+    backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 8px top 50%',
+    backgroundSize: '9px auto'
+  });
+
+  const PeriodFilterOptions = () => (
+    <>
+      <option value="all">All Time</option>
+      <option value="yearly">Yearly</option>
+      <option value="monthly">Monthly</option>
+      <option value="weekly">Weekly</option>
+      <option value="today">Today Date wise</option>
+    </>
+  );
+
+  const renderStatCard = (card, i) => (
+    <div className="stat-card" key={i}>
+      <div className="card-top">
+        <div
+          className="card-icon-wrapper"
+          style={{ backgroundColor: `${card.color}15`, color: card.color }}
+        >
+          {card.icon}
+        </div>
+        <div className={`trend-badge ${card.isUp ? 'up' : 'down'}`}>
+          {card.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+          {card.trend}
+        </div>
+      </div>
+      <div className="card-content">
+        <span className="card-title">{card.title}</span>
+        <div className="card-value">{card.value.toLocaleString()}{card.suffix || ''}</div>
+      </div>
+    </div>
+  );
 
   if (loading) return (
     <div className="dashboard-loading">
@@ -208,224 +494,308 @@ const Dashboard = () => {
 
   return (
     <div className="dashboard-container">
-      {/* Overview Section */}
-      <div className="overview-header">
+      {/* The old standalone "All Time" control here was removed — it sat
+          directly above the General row's own filter and duplicated it
+          visually. timeFilter (for the Analytics charts below) is still
+          adjustable from the Enquiry Channels Week/Month toggle and the
+          Product Status select, which already existed as their own
+          controls. */}
 
-        <div className="header-actions">
+      {/* CARD ROWS — General, then Enquiries, then Orders, all as plain
+          stat-card rows, one after another. Charts/tables come after all
+          three, not interleaved between them. */}
+      <section className="dash-section dash-section--general">
+        <div className="dash-section-head">
+          <span className="dash-eyebrow">General</span>
+          <span className="dash-section-sub">Business at a glance</span>
           <select
-            className="date-filter-select"
-            value={timeFilter}
-            onChange={(e) => setTimeFilter(e.target.value)}
-            style={{ padding: '8px 24px 8px 12px', background: '#7c3aed', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', appearance: 'none', WebkitAppearance: 'none', MozAppearance: 'none', backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")', backgroundRepeat: 'no-repeat', backgroundPosition: 'right 8px top 50%', backgroundSize: '10px auto' }}
+            value={generalFilter}
+            onChange={(e) => setGeneralFilter(e.target.value)}
+            style={filterSelectStyle('#7c3aed')}
           >
-            <option value="all">All Time</option>
-            <option value="yearly">Yearly</option>
-            <option value="monthly">Monthly</option>
-            <option value="weekly">Weekly</option>
-            <option value="today">Today Date wise</option>
+            <PeriodFilterOptions />
           </select>
         </div>
-      </div>
+        <div className="stats-grid">
+          {generalCards.map(renderStatCard)}
+        </div>
+      </section>
 
-      {/* Stats Cards Grid */}
-      <div className="stats-grid">
-        {statCards.map((card, i) => (
-          <div className="stat-card" key={i}>
-            <div className="card-top">
-              <div
-                className="card-icon-wrapper"
-                style={{ backgroundColor: `${card.color}15`, color: card.color }}
-              >
-                {card.icon}
-              </div>
-              <div className={`trend-badge ${card.isUp ? 'up' : 'down'}`}>
-                {card.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                {card.trend}
-              </div>
-            </div>
-            <div className="card-content">
-              <span className="card-title">{card.title}</span>
-              <div className="card-value">{card.value.toLocaleString()}</div>
-            </div>
-          </div>
-        ))}
-      </div>
+      <section className="dash-section dash-section--enquiry">
+        <div className="dash-section-head">
+          <span className="dash-eyebrow">Enquiries</span>
+          <span className="dash-section-sub">Who's reaching out</span>
+          <select
+            value={enquiryFilter}
+            onChange={(e) => setEnquiryFilter(e.target.value)}
+            style={filterSelectStyle('#10b981')}
+          >
+            <PeriodFilterOptions />
+          </select>
+        </div>
+        <div className="stats-grid">
+          {enquiryCards.map(renderStatCard)}
+        </div>
+      </section>
 
-      {/* Main Charts Row */}
-      <div className="charts-row">
-        <div className="chart-card analytics-card">
-          <div className="chart-header">
-            <h3>Order Analytics</h3>
-            <span className="date-badge">Data as of {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
-          </div>
-          <div className="chart-body">
-            <ResponsiveContainer width="100%" height={300}>
-              <AreaChart data={analyticsData}>
-                <defs>
-                  <linearGradient id="colorConfirmed" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
-                  </linearGradient>
-                  <linearGradient id="colorCancelled" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
-                    <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                  </linearGradient>
-                </defs>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
-                <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
-                <Tooltip />
-                <Legend verticalAlign="top" height={36} iconType="circle" />
-                <Area type="monotone" dataKey="Confirmed" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorConfirmed)" animationDuration={1500} />
-                <Area type="monotone" dataKey="Pending" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorPending)" animationDuration={1800} />
-                <Area type="monotone" dataKey="Cancelled" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorCancelled)" animationDuration={2000} />
-              </AreaChart>
-            </ResponsiveContainer>
-          </div>
+      <section className="dash-section dash-section--orders">
+        <div className="dash-section-head">
+          <span className="dash-eyebrow">Orders</span>
+          <span className="dash-section-sub">What's being sold and fulfilled</span>
+          <select
+            value={orderFilter}
+            onChange={(e) => setOrderFilter(e.target.value)}
+            style={filterSelectStyle('#f59e0b')}
+          >
+            <PeriodFilterOptions />
+          </select>
+        </div>
+        <div className="stats-grid">
+          {orderCards.map(renderStatCard)}
+        </div>
+      </section>
+
+      {/* ANALYTICS — every chart and table together, after all the card rows */}
+      <section className="dash-section dash-section--analytics">
+        <div className="dash-section-head">
+          <span className="dash-eyebrow">Analytics</span>
+          <span className="dash-section-sub">Trends and useful charts</span>
         </div>
 
-        <div className="chart-card traffic-card">
-          <div className="chart-header">
-            <h3>Enquirys</h3>
-          </div>
-          <div className="time-toggle">
-            <button
-              className={timeFilter === 'weekly' ? 'active' : ''}
-              onClick={() => setTimeFilter('weekly')}
-            >Week</button>
-            <button
-              className={timeFilter === 'monthly' ? 'active' : ''}
-              onClick={() => setTimeFilter('monthly')}
-            >Month</button>
-          </div>
-          <div className="traffic-bar-container">
-            {trafficData.map((item, i) => (
-              <div className="traffic-bar-row" key={i}>
-                <div className="bar-bg">
-                  <div className="bar-fill" style={{ width: `${item.value}%`, background: item.color }}>
-                    <span className="bar-percent">{item.value}%</span>
+        <div className="charts-row">
+          <div className="chart-card traffic-card">
+            <div className="chart-header">
+              <h3>Enquiry Channels</h3>
+              <div className="time-toggle">
+                <button
+                  className={timeFilter === 'weekly' ? 'active' : ''}
+                  onClick={() => setTimeFilter('weekly')}
+                >Week</button>
+                <button
+                  className={timeFilter === 'monthly' ? 'active' : ''}
+                  onClick={() => setTimeFilter('monthly')}
+                >Month</button>
+              </div>
+            </div>
+            <div className="traffic-bar-container">
+              {trafficData.map((item, i) => (
+                <div className="traffic-bar-row" key={i}>
+                  <div className="traffic-bar-label">
+                    <span className="dot" style={{ background: item.color }}></span>
+                    {item.name}
                   </div>
+                  <div className="bar-bg">
+                    <div className="bar-fill" style={{ width: `${Math.max(item.value, 2)}%`, background: item.color }}></div>
+                  </div>
+                  <span className="traffic-bar-value">{item.value}%</span>
                 </div>
-              </div>
-            ))}
-          </div>
-          <div className="traffic-legend">
-            {trafficData.map((item, i) => (
-              <div className="legend-item" key={i}>
-                <span className="dot" style={{ background: item.color }}></span>
-                {item.name}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Bottom Row */}
-      <div className="bottom-row">
-        <div className="table-card">
-          <div className="table-header">
-            <h3>Top Selling</h3>
-            <div className="table-actions">
-              <button className="filter-btn" onClick={handleSort}>
-                <Filter size={14} /> Sort by: {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
-              </button>
-              <button className="filter-btn" onClick={handleExportCSV}>
-                <Download size={14} /> Export CSV
-              </button>
+              ))}
             </div>
           </div>
-          <table className="products-table">
-            <thead>
-              <tr>
-                <th>Id</th>
-                <th>Product info</th>
-                <th>Category</th>
-                <th>Status</th>
-                <th>Stock Since</th>
-              </tr>
-            </thead>
-            <tbody>
-              {products.map((p, i) => (
-                <tr key={i}>
-                  <td><span style={{ fontWeight: 'bold', color: '#9ca3af', width: '30px', display: 'inline-block' }}>{i + 1}</span></td>
-                  <td className="product-info">
-                    <img
-                      src={getImageUrl(p.main_image)}
-                      alt=""
-                      onError={(e) => {
-                        if (e.target.src !== 'https://via.placeholder.com/50x50?text=No+Image') {
-                          e.target.src = 'https://via.placeholder.com/50x50?text=No+Image';
-                        }
-                      }}
-                    />
-                    <span>{p.name}</span>
-                  </td>
-                  <td>{p.category_name}</td>
-                  <td>
-                    <span className={`status-tag ${p.in_stock ? 'in' : 'out'}`}>
-                      {p.in_stock ? 'In Stock' : 'Out of Stock'}
-                    </span>
-                  </td>
-                  <td>{new Date(p.created_at).toLocaleDateString()}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+
+          <div className="chart-card analytics-card">
+            <div className="chart-header">
+              <h3>Order Analytics</h3>
+              <span className="date-badge">Data as of {new Date().toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}</span>
+            </div>
+            <div className="chart-body">
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={analyticsData}>
+                  <defs>
+                    <linearGradient id="colorConfirmed" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#7c3aed" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#7c3aed" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorPending" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#f59e0b" stopOpacity={0} />
+                    </linearGradient>
+                    <linearGradient id="colorCancelled" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.1} />
+                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <Tooltip />
+                  <Legend verticalAlign="top" height={36} iconType="circle" />
+                  <Area type="monotone" dataKey="Confirmed" stroke="#7c3aed" strokeWidth={3} fillOpacity={1} fill="url(#colorConfirmed)" animationDuration={1500} />
+                  <Area type="monotone" dataKey="Pending" stroke="#f59e0b" strokeWidth={3} fillOpacity={1} fill="url(#colorPending)" animationDuration={1800} />
+                  <Area type="monotone" dataKey="Cancelled" stroke="#ef4444" strokeWidth={3} fillOpacity={1} fill="url(#colorCancelled)" animationDuration={2000} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
 
-        <div className="product-sales-card">
-          <div className="chart-header">
-            <h3>Product Status</h3>
-            <select
-              className="date-select"
-              value={timeFilter}
-              onChange={(e) => setTimeFilter(e.target.value)}
-              style={{
-                padding: '6px 28px 6px 12px',
-                border: '1px solid #e5e7eb',
-                borderRadius: '8px',
-                fontSize: '13px',
-                fontWeight: '600',
-                color: '#374151',
-                cursor: 'pointer',
-                backgroundColor: '#fff',
-                boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
-                appearance: 'none',
-                WebkitAppearance: 'none',
-                MozAppearance: 'none',
-                backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
-                backgroundRepeat: 'no-repeat',
-                backgroundPosition: 'right 10px top 50%',
-                backgroundSize: '10px auto'
-              }}
-            >
-              <option value="all">All Time</option>
-              <option value="yearly">Yearly</option>
-              <option value="monthly">Monthly</option>
-              <option value="weekly">Weekly</option>
-              <option value="today">Today Date wise</option>
-            </select>
+        <div className="charts-row">
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3>Monthly Enquiry Trend</h3>
+              <span className="date-badge">{new Date().getFullYear()}</span>
+            </div>
+            <div className="chart-body">
+              <ResponsiveContainer width="100%" height={260}>
+                <LineChart data={monthlyEnquiryTrend}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="total" name="Enquiries" stroke="#0ea5e9" strokeWidth={3} dot={{ r: 4, fill: '#0ea5e9' }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div className="sales-stats">
-            {productSalesData.map((d, i) => (
-              <div className="sales-stat-item" key={i}>
-                <div className="stat-value-group">
-                  <span className="stat-value">{d.value}</span>
-                  <span className={`stat-trend ${d.isNegative ? 'negative' : ''}`}>{d.trend}</span>
-                </div>
-                <div className={`stat-bar-vertical ${d.isNegative ? 'negative' : ''}`}>
-                  <div className="bar-fill" style={{ height: `${Math.min((d.value / Math.max(...productSalesData.map(s => s.value), 1)) * 100, 100)}%` }}></div>
-                </div>
-                <span className="stat-label">{d.name}</span>
-              </div>
-            ))}
+
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3>Order Pipeline Split</h3>
+            </div>
+            <div className="chart-body">
+              <ResponsiveContainer width="100%" height={260}>
+                <PieChart>
+                  <Pie
+                    data={productSalesData}
+                    dataKey="value"
+                    nameKey="name"
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={55}
+                    outerRadius={90}
+                    paddingAngle={3}
+                  >
+                    {productSalesData.map((entry, i) => (
+                      <Cell key={i} fill={pipelineColors[entry.name] || '#9ca3af'} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                  <Legend verticalAlign="bottom" height={36} iconType="circle" />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="chart-card">
+            <div className="chart-header">
+              <h3>Products by Category</h3>
+            </div>
+            <div className="chart-body">
+              <ResponsiveContainer width="100%" height={260}>
+                <BarChart data={categoryDistribution}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />
+                  <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 11 }} interval={0} angle={-20} textAnchor="end" height={50} />
+                  <YAxis axisLine={false} tickLine={false} tick={{ fill: '#9ca3af', fontSize: 12 }} allowDecimals={false} />
+                  <Tooltip />
+                  <Bar dataKey="count" name="Products" fill="#7c3aed" radius={[6, 6, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
-      </div>
+
+        <div className="bottom-row">
+          <div className="table-card">
+            <div className="table-header">
+              <h3>Top Selling</h3>
+              <div className="table-actions">
+                <button className="filter-btn" onClick={handleSort}>
+                  <Filter size={14} /> Sort by: {sortOrder === 'desc' ? 'Newest' : 'Oldest'}
+                </button>
+                <button className="filter-btn" onClick={handleExportCSV}>
+                  <Download size={14} /> Export CSV
+                </button>
+              </div>
+            </div>
+            <table className="products-table">
+              <thead>
+                <tr>
+                  <th>Id</th>
+                  <th>Product info</th>
+                  <th>Category</th>
+                  <th>Status</th>
+                  <th>Stock Since</th>
+                </tr>
+              </thead>
+              <tbody>
+                {products.map((p, i) => (
+                  <tr key={i}>
+                    <td><span style={{ fontWeight: 'bold', color: '#9ca3af', width: '30px', display: 'inline-block' }}>{i + 1}</span></td>
+                    <td className="product-info">
+                      <img
+                        src={getImageUrl(p.main_image)}
+                        alt=""
+                        onError={(e) => {
+                          if (e.target.src !== 'https://via.placeholder.com/50x50?text=No+Image') {
+                            e.target.src = 'https://via.placeholder.com/50x50?text=No+Image';
+                          }
+                        }}
+                      />
+                      <span>{p.name}</span>
+                    </td>
+                    <td>{p.category_name}</td>
+                    <td>
+                      <span className={`status-tag ${p.in_stock ? 'in' : 'out'}`}>
+                        {p.in_stock ? 'In Stock' : 'Out of Stock'}
+                      </span>
+                    </td>
+                    <td>{new Date(p.created_at).toLocaleDateString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="product-sales-card">
+            <div className="chart-header">
+              <h3>Product Status</h3>
+              <select
+                className="date-select"
+                value={timeFilter}
+                onChange={(e) => setTimeFilter(e.target.value)}
+                style={{
+                  padding: '6px 28px 6px 12px',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '8px',
+                  fontSize: '13px',
+                  fontWeight: '600',
+                  color: '#374151',
+                  cursor: 'pointer',
+                  backgroundColor: '#fff',
+                  boxShadow: '0 1px 2px rgba(0, 0, 0, 0.05)',
+                  appearance: 'none',
+                  WebkitAppearance: 'none',
+                  MozAppearance: 'none',
+                  backgroundImage: 'url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%236b7280%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E")',
+                  backgroundRepeat: 'no-repeat',
+                  backgroundPosition: 'right 10px top 50%',
+                  backgroundSize: '10px auto'
+                }}
+              >
+                <option value="all">All Time</option>
+                <option value="yearly">Yearly</option>
+                <option value="monthly">Monthly</option>
+                <option value="weekly">Weekly</option>
+                <option value="today">Today Date wise</option>
+              </select>
+            </div>
+            <div className="sales-stats">
+              {productSalesData.map((d, i) => (
+                <div className="sales-stat-item" key={i}>
+                  <div className="stat-value-group">
+                    <span className="stat-value">{d.value}</span>
+                    <span className={`stat-trend ${d.isNegative ? 'negative' : ''}`}>{d.trend}</span>
+                  </div>
+                  <div className={`stat-bar-vertical ${d.isNegative ? 'negative' : ''}`}>
+                    <div className="bar-fill" style={{ height: `${Math.min((d.value / Math.max(...productSalesData.map(s => s.value), 1)) * 100, 100)}%` }}></div>
+                  </div>
+                  <span className="stat-label">{d.name}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };
