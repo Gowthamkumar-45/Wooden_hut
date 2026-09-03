@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import {
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend,
@@ -92,8 +93,27 @@ function CircleRing({ color, size = 46, loading, delay = 0 }) {
 // Dashboard's single render pass.
 function StatCard({ card, isLoading, index }) {
   const count = useCountUp(card.value, isLoading, index * 60);
+  const navigate = useNavigate();
+
+  // Every card links somewhere real — most via card.link (an internal
+  // admin route, navigated with react-router so it's a client-side
+  // transition, not a full reload), a couple via card.onClick for cases
+  // that aren't a plain route (Total Visitors opens the live storefront,
+  // the same way the header's own "Preview Store" button does).
+  const handleClick = () => {
+    if (card.onClick) card.onClick();
+    else if (card.link) navigate(card.link);
+  };
+  const clickable = !!(card.link || card.onClick);
+
   return (
-    <div className="stat-card">
+    <div
+      className={`stat-card ${clickable ? 'stat-card--clickable' : ''}`}
+      onClick={clickable ? handleClick : undefined}
+      role={clickable ? 'button' : undefined}
+      tabIndex={clickable ? 0 : undefined}
+      onKeyDown={clickable ? (e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleClick(); } } : undefined}
+    >
       <div className="card-top">
         <div className="card-icon-wrapper">
           <CircleRing color={card.color} loading={isLoading} delay={index * 60 + 80} />
@@ -410,7 +430,14 @@ const Dashboard = () => {
       trend: `${stats.visitor_trend > 0 ? '+' : ''}${stats.visitor_trend}%`,
       isUp: stats.visitor_trend >= 0,
       icon: <Eye size={20} />,
-      color: '#0891b2'
+      color: '#0891b2',
+      // Not an internal admin route — visitors are people on the live
+      // storefront, so this opens it the same way the header's own
+      // "Preview Store" button does.
+      onClick: () => {
+        localStorage.setItem('admin_preview', 'true');
+        window.open('/?preview=true', '_blank');
+      }
     },
     {
       title: 'Total Products',
@@ -418,7 +445,8 @@ const Dashboard = () => {
       trend: `${stats.product_trend > 0 ? '+' : ''}${stats.product_trend}%`,
       isUp: stats.product_trend >= 0,
       icon: <Package size={20} />,
-      color: '#7c3aed'
+      color: '#7c3aed',
+      link: '/admin/products'
     },
     {
       title: 'In Stock',
@@ -426,7 +454,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <PackageCheck size={20} />,
-      color: '#10b981'
+      color: '#10b981',
+      link: '/admin/products'
     },
     {
       title: 'Out of Stock',
@@ -434,7 +463,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: false,
       icon: <PackageX size={20} />,
-      color: '#ef4444'
+      color: '#ef4444',
+      link: '/admin/products'
     },
     {
       title: 'Client Reviews',
@@ -442,7 +472,8 @@ const Dashboard = () => {
       trend: `${stats.review_trend > 0 ? '+' : ''}${stats.review_trend}%`,
       isUp: stats.review_trend >= 0,
       icon: <MessageSquare size={20} />,
-      color: '#8b5e3c'
+      color: '#8b5e3c',
+      link: '/admin/reviews'
     },
     {
       title: 'Pending Reviews',
@@ -450,7 +481,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <Clock size={20} />,
-      color: '#f59e0b'
+      color: '#f59e0b',
+      link: '/admin/reviews'
     }
   ];
 
@@ -461,7 +493,8 @@ const Dashboard = () => {
       trend: `${stats.customer_trend > 0 ? '+' : ''}${stats.customer_trend}%`,
       isUp: stats.customer_trend >= 0,
       icon: <Users size={20} />,
-      color: '#3b82f6'
+      color: '#3b82f6',
+      link: '/admin/whatsapp-contacts'
     },
     {
       title: 'Total Enquiry',
@@ -472,7 +505,8 @@ const Dashboard = () => {
       trend: `${stats.enquiries_trend > 0 ? '+' : ''}${stats.enquiries_trend}%`,
       isUp: stats.enquiries_trend >= 0,
       icon: <ClipboardList size={20} />,
-      color: '#6366f1'
+      color: '#6366f1',
+      link: '/admin/whatsapp-contacts?tab=enquiries'
     },
     {
       title: 'New Enquiries',
@@ -480,7 +514,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <Inbox size={20} />,
-      color: '#0ea5e9'
+      color: '#0ea5e9',
+      link: '/admin/whatsapp-contacts?tab=enquiries'
     },
     {
       title: 'New WhatsApp Contacts',
@@ -488,7 +523,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <Smartphone size={20} />,
-      color: '#22c55e'
+      color: '#22c55e',
+      link: '/admin/whatsapp-contacts?tab=whatsapp'
     },
     {
       title: 'Conversion Rate',
@@ -500,7 +536,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <TrendingUp size={20} />,
-      color: '#a855f7'
+      color: '#a855f7',
+      link: '/admin/track-orders'
     },
     {
       title: 'WhatsApp Share',
@@ -512,7 +549,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <Smartphone size={20} />,
-      color: '#22c55e'
+      color: '#22c55e',
+      link: '/admin/whatsapp-contacts?tab=whatsapp'
     }
   ];
 
@@ -523,7 +561,12 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <PackagePlus size={20} />,
-      color: '#64748b'
+      color: '#64748b',
+      // TrackOrders only has 3 tabs (confirmed/delivered/cancelled) — Not
+      // Started and In Production are both part of "confirmed" there, so
+      // they share this same link. Not a gap: that page just doesn't
+      // split the pipeline any finer than the dashboard's own charts do.
+      link: '/admin/track-orders?tab=confirmed'
     },
     {
       title: 'In Production',
@@ -531,7 +574,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: true,
       icon: <Factory size={20} />,
-      color: '#3b82f6'
+      color: '#3b82f6',
+      link: '/admin/track-orders?tab=confirmed'
     },
     {
       title: 'Confirmed Orders',
@@ -539,7 +583,8 @@ const Dashboard = () => {
       trend: `${stats.order_trend > 0 ? '+' : ''}${stats.order_trend}%`,
       isUp: stats.order_trend >= 0,
       icon: <ShoppingCart size={20} />,
-      color: '#10b981'
+      color: '#10b981',
+      link: '/admin/track-orders?tab=confirmed'
     },
     {
       title: 'Orders Delivered',
@@ -547,7 +592,8 @@ const Dashboard = () => {
       trend: `${stats.delivery_trend > 0 ? '+' : ''}${stats.delivery_trend}%`,
       isUp: stats.delivery_trend >= 0,
       icon: <Truck size={20} />,
-      color: '#f59e0b'
+      color: '#f59e0b',
+      link: '/admin/track-orders?tab=delivered'
     },
     {
       title: 'Cancelled Orders',
@@ -555,7 +601,8 @@ const Dashboard = () => {
       trend: '+0%',
       isUp: false,
       icon: <CircleX size={20} />,
-      color: '#ef4444'
+      color: '#ef4444',
+      link: '/admin/track-orders?tab=cancelled'
     }
   ];
 

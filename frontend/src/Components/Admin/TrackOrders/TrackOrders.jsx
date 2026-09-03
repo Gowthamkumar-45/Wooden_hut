@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import {
   Trash2,
   Phone,
@@ -34,7 +35,10 @@ const TrackOrders = () => {
   const [selectedBranch, setSelectedBranch] = useState(userBranch || 'Coimbatore');
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('confirmed');
+  // Lets the dashboard's Orders cards deep-link straight to a tab
+  // (?tab=delivered etc.) instead of always landing on "confirmed".
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'confirmed');
   const [searchQuery] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 6;

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { 
+import { useSearchParams } from 'react-router-dom';
+import {
   MessageSquare, 
   Trash2, 
   Phone, 
@@ -31,7 +32,10 @@ const getCurrentUserBranch = () => {
 const ContactLogs = () => {
   const userBranch = getCurrentUserBranch();
   const [selectedBranch, setSelectedBranch] = useState(userBranch || 'Coimbatore');
-  const [activeTab, setActiveTab] = useState('whatsapp');
+  // Lets the dashboard's cards deep-link straight to a tab (?tab=enquiries
+  // etc.) instead of always landing on the default "whatsapp" one.
+  const [searchParams] = useSearchParams();
+  const [activeTab, setActiveTab] = useState(searchParams.get('tab') || 'whatsapp');
   const [whatsappContacts, setWhatsappContacts] = useState([]);
   const [enquiries, setEnquiries] = useState([]);
   const [loading, setLoading] = useState(true);

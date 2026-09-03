@@ -99,6 +99,18 @@
   /* Soft resting shadow */
 }
 
+/* Every card now links somewhere (see StatCard in Dashboard.jsx) — the
+   existing hover lift already gives a strong "this is interactive" cue,
+   this just adds the cursor and a keyboard focus ring to match. */
+.stat-card--clickable {
+  cursor: pointer;
+}
+
+.stat-card--clickable:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+}
+
 .stat-card:hover {
   transform: translateY(-8px);
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
