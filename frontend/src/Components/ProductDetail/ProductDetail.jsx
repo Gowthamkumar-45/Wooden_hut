@@ -98,7 +98,18 @@ const ProductDetail = () => {
         .map(img => getImageUrl(img))
     : [], [product, getImageUrl]);
 
-  // Auto-scroll logic
+  // Auto-scroll logic — runs on a plain interval independent of hover, but
+  // a not-yet-loaded image swapping in makes the change hard to notice
+  // right when it happens (and slow/no-op on a spotty connection), which
+  // reads as "it stopped" even though the state is genuinely advancing.
+  // Preloading every gallery image up front means each swap is instant.
+  useEffect(() => {
+    galleryImages.forEach((src) => {
+      const img = new Image();
+      img.src = src;
+    });
+  }, [galleryImages]);
+
   useEffect(() => {
     if (galleryImages.length <= 1) return;
 
@@ -113,14 +124,30 @@ const ProductDetail = () => {
     return () => clearInterval(interval);
   }, [galleryImages]);
 
+  // Throttled to once per animation frame via rAF — handleMouseMove was
+  // firing (and re-rendering the whole page) on every raw mousemove event,
+  // easily 100+/sec. That render pressure while actively hovering is the
+  // most likely real cause of the auto-scroll *feeling* stuck: its own
+  // state update has to fight through a queue of zoom-position renders.
+  const rafRef = useRef(null);
+  useEffect(() => () => {
+    if (rafRef.current) cancelAnimationFrame(rafRef.current);
+  }, []);
+
   const handleMouseMove = (e) => {
     if (!imgRef.current) return;
-    const { left, top, width, height } = imgRef.current.getBoundingClientRect();
-    let x = ((e.clientX - left) / width) * 100;
-    let y = ((e.clientY - top) / height) * 100;
-    x = Math.max(0, Math.min(100, x));
-    y = Math.max(0, Math.min(100, y));
-    setZoomPos({ x, y });
+    const { clientX, clientY } = e;
+    if (rafRef.current) return;
+    rafRef.current = requestAnimationFrame(() => {
+      rafRef.current = null;
+      if (!imgRef.current) return;
+      const { left, top, width, height } = imgRef.current.getBoundingClientRect();
+      let x = ((clientX - left) / width) * 100;
+      let y = ((clientY - top) / height) * 100;
+      x = Math.max(0, Math.min(100, x));
+      y = Math.max(0, Math.min(100, y));
+      setZoomPos({ x, y });
+    });
   };
 
   const onSubmit = async (data) => {

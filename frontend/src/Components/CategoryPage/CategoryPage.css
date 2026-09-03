@@ -301,6 +301,10 @@
 }
 
 .product-image-container {
+  /* Now a <Link> (see CategoryPage.jsx/SearchResults.jsx), so it needs an
+     explicit block display — an <a> defaults to inline, which would
+     collapse this container's height and break the layout below. */
+  display: block;
   height: 300px;
   position: relative;
   overflow: hidden;

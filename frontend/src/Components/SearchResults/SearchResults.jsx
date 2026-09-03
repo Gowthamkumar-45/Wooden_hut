@@ -83,7 +83,9 @@ const SearchResults = () => {
             {products.length > 0 ? (
               products.map(product => (
                 <div key={product.id} className="product-card">
-                  <div className="product-image-container">
+                  {/* Previously only the small "View Details" link below
+                      navigated — the image itself did nothing on click. */}
+                  <Link to={`/product/${product.slug}`} className="product-image-container">
                     <img
                       src={getImageUrl(product.main_image)}
                       alt={product.name}
@@ -94,7 +96,7 @@ const SearchResults = () => {
                     <div className={`product-badge ${!product.in_stock ? 'out-of-stock' : ''}`}>
                       {product.in_stock ? (product.sub_category_name || 'Premium') : 'Out of Stock'}
                     </div>
-                  </div>
+                  </Link>
                   <div className="product-details">
                     <div className="product-mat">{product.material}</div>
                     <h3 className="product-name">{product.name}</h3>
