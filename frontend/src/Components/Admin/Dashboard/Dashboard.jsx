@@ -15,17 +15,104 @@ import {
   Truck,
   Users,
   MessageSquare,
-  Inbox,
   Smartphone,
   CircleX,
   PackageX,
   TrendingUp,
   Factory,
+  ClipboardList,
+  Inbox,
   Clock,
-  PackagePlus
+  PackagePlus,
+  Eye
 } from 'lucide-react';
 import { SITE_CONTENT } from '../../../constants/content';
 import './Dashboard.css';
+
+// Counts a card's number up from 0 to its real value once that row's data
+// is ready — reset back to 0 while `loading` is true, so switching a row's
+// filter visibly drops the figure and counts it back up rather than
+// jumping straight to the new number.
+function useCountUp(target, loading, delay = 0) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (loading) { setCount(0); return; }
+    if (typeof target !== 'number' || target === 0) { setCount(target ?? 0); return; }
+    const timeout = setTimeout(() => {
+      const duration = 900;
+      const steps = 40;
+      const step = target / steps;
+      const interval = duration / steps;
+      let current = 0;
+      const timer = setInterval(() => {
+        current += step;
+        if (current >= target) { setCount(target); clearInterval(timer); }
+        else setCount(Math.floor(current));
+      }, interval);
+      return () => clearInterval(timer);
+    }, delay);
+    return () => clearTimeout(timeout);
+  }, [target, loading, delay]);
+  return count;
+}
+
+// The ring around a card's icon — an SVG circle whose stroke-dashoffset is
+// transitioned from "fully hidden" to "fully drawn" via a one-shot CSS
+// transition (not a looping @keyframes spinner), same as the reference.
+// Resets to empty the moment `loading` goes true, so it visibly re-fills
+// 0% -> 100% every time that row's filter re-fetches, not just on mount.
+function CircleRing({ color, size = 46, loading, delay = 0 }) {
+  const [filled, setFilled] = useState(false);
+  const r = (size / 2) - 3;
+  const circ = 2 * Math.PI * r;
+
+  useEffect(() => {
+    if (loading) { setFilled(false); return; }
+    const t = setTimeout(() => setFilled(true), delay);
+    return () => clearTimeout(t);
+  }, [loading, delay]);
+
+  return (
+    <svg width={size} height={size} className="card-ring-svg">
+      <circle cx={size / 2} cy={size / 2} r={r} fill="none" stroke={color + '22'} strokeWidth="2.5" />
+      <circle
+        cx={size / 2} cy={size / 2} r={r} fill="none"
+        stroke={color} strokeWidth="2.5" strokeLinecap="round"
+        strokeDasharray={circ}
+        strokeDashoffset={filled ? 0 : circ}
+        style={{ transition: filled ? 'stroke-dashoffset 1.2s ease' : 'none' }}
+      />
+    </svg>
+  );
+}
+
+// One dashboard stat card — a real component (not a plain function called
+// from .map()) specifically so useCountUp/CircleRing's hooks are legal:
+// each card gets its own hook instance instead of all of them sharing
+// Dashboard's single render pass.
+function StatCard({ card, isLoading, index }) {
+  const count = useCountUp(card.value, isLoading, index * 60);
+  return (
+    <div className="stat-card">
+      <div className="card-top">
+        <div className="card-icon-wrapper">
+          <CircleRing color={card.color} loading={isLoading} delay={index * 60 + 80} />
+          <div className="card-icon-inner" style={{ background: `${card.color}15`, color: card.color }}>
+            {card.icon}
+          </div>
+        </div>
+        <div className={`trend-badge ${card.isUp ? 'up' : 'down'}`}>
+          {card.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
+          {card.trend}
+        </div>
+      </div>
+      <div className="card-content">
+        <span className="card-title">{card.title}</span>
+        <div className="card-value">{count.toLocaleString()}{card.suffix || ''}</div>
+      </div>
+    </div>
+  );
+}
 
 const Dashboard = () => {
   const [stats, setStats] = useState({
@@ -38,14 +125,18 @@ const Dashboard = () => {
     cancelled: 0,
     newEnquiries: 0,
     newWhatsapp: 0,
+    totalEnquiries: 0,
     pendingReviews: 0,
     notStarted: 0,
     inProduction: 0,
+    totalVisitors: 0,
     product_trend: 0,
     order_trend: 0,
     delivery_trend: 0,
     customer_trend: 0,
-    review_trend: 0
+    review_trend: 0,
+    visitor_trend: 0,
+    enquiries_trend: 0
   });
   const [timeFilter, setTimeFilter] = useState('all');
   // Each card row gets its own independent period filter — changing one
@@ -53,6 +144,18 @@ const Dashboard = () => {
   const [generalFilter, setGeneralFilter] = useState('all');
   const [enquiryFilter, setEnquiryFilter] = useState('all');
   const [orderFilter, setOrderFilter] = useState('all');
+  // A specific month (1-12, current year) picked from that row's own month
+  // dropdown — '' means "not using it", so the period filter above applies
+  // instead. When set, it takes precedence over generalFilter/etc.
+  const [generalMonth, setGeneralMonth] = useState('');
+  const [enquiryMonth, setEnquiryMonth] = useState('');
+  const [orderMonth, setOrderMonth] = useState('');
+  // Per-row loading — true while that row's own filter fetch is in
+  // flight, so its cards can show a spinner/skeleton instead of sitting
+  // on stale numbers with no feedback during the network round-trip.
+  const [generalLoading, setGeneralLoading] = useState(true);
+  const [enquiryLoading, setEnquiryLoading] = useState(true);
+  const [orderLoading, setOrderLoading] = useState(true);
   const [sortOrder, setSortOrder] = useState('desc');
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState([]);
@@ -84,11 +187,13 @@ const Dashboard = () => {
   const [categoryDistribution, setCategoryDistribution] = useState([]);
 
   // Shared by the global fetch and each row's own filter fetch — hits the
-  // same endpoint with whatever period that caller cares about.
-  const fetchNotifications = async (filterType) => {
+  // same endpoint with whatever period that caller cares about. `month`
+  // (1-12), when given, overrides `filterType` entirely on the backend.
+  const fetchNotifications = async (filterType, month) => {
     const token = sessionStorage.getItem('token');
     const headers = token ? { 'Authorization': `Token ${token}` } : {};
-    const res = await fetch(`${SITE_CONTENT.api.base}/api/notifications/?filter=${filterType}`, { headers });
+    const monthParam = month ? `&month=${month}` : '';
+    const res = await fetch(`${SITE_CONTENT.api.base}/api/notifications/?filter=${filterType}${monthParam}`, { headers });
     if (res.status === 401) {
       sessionStorage.clear();
       localStorage.clear();
@@ -171,17 +276,21 @@ const Dashboard = () => {
             // *unread* count, which was being shown here by mistake.
             contacts: backendStats.total_customers ?? notifyData.total_notifications ?? 0,
             inStock: backendStats.in_stock || 0,
+            totalVisitors: backendStats.total_visitors || 0,
             cancelled: (backendStats.sales_pipeline && backendStats.sales_pipeline.cancelled) || 0,
             notStarted: (backendStats.sales_pipeline && backendStats.sales_pipeline.packed) || 0,
             inProduction: (backendStats.sales_pipeline && backendStats.sales_pipeline.shipped) || 0,
             newEnquiries: notifyData.enquiries || 0,
             newWhatsapp: notifyData.whatsapp_contacts || 0,
+            totalEnquiries: backendStats.total_enquiries || 0,
             pendingReviews: notifyData.reviews || 0,
             product_trend: backendStats.product_trend || 0,
             order_trend: backendStats.order_trend || 0,
             delivery_trend: backendStats.delivery_trend || 0,
             customer_trend: backendStats.customer_trend || 0,
-            review_trend: backendStats.review_trend || 0
+            review_trend: backendStats.review_trend || 0,
+            enquiries_trend: backendStats.enquiries_trend || 0,
+            visitor_trend: backendStats.visitor_trend || 0
           });
         }
       } catch (err) {
@@ -197,58 +306,74 @@ const Dashboard = () => {
   // General row's own filter — updates only the General cards.
   useEffect(() => {
     let cancelled = false;
-    fetchNotifications(generalFilter).then((data) => {
-      if (cancelled || !data) return;
-      const s = data.stats || {};
-      setStats((prev) => ({
-        ...prev,
-        products: s.total_products ?? prev.products,
-        product_trend: s.product_trend ?? prev.product_trend,
-        inStock: s.in_stock ?? prev.inStock,
-        reviews: s.total_reviews ?? prev.reviews,
-        review_trend: s.review_trend ?? prev.review_trend,
-        pendingReviews: data.reviews ?? prev.pendingReviews
-      }));
+    setGeneralLoading(true);
+    fetchNotifications(generalFilter, generalMonth).then((data) => {
+      if (cancelled) return;
+      if (data) {
+        const s = data.stats || {};
+        setStats((prev) => ({
+          ...prev,
+          products: s.total_products ?? prev.products,
+          product_trend: s.product_trend ?? prev.product_trend,
+          inStock: s.in_stock ?? prev.inStock,
+          reviews: s.total_reviews ?? prev.reviews,
+          review_trend: s.review_trend ?? prev.review_trend,
+          pendingReviews: data.reviews ?? prev.pendingReviews,
+          totalVisitors: s.total_visitors ?? prev.totalVisitors,
+          visitor_trend: s.visitor_trend ?? prev.visitor_trend
+        }));
+      }
+      setGeneralLoading(false);
     });
     return () => { cancelled = true; };
-  }, [generalFilter]);
+  }, [generalFilter, generalMonth]);
 
   // Enquiries row's own filter — updates only the Enquiries cards.
   useEffect(() => {
     let cancelled = false;
-    fetchNotifications(enquiryFilter).then((data) => {
-      if (cancelled || !data) return;
-      const s = data.stats || {};
-      setStats((prev) => ({
-        ...prev,
-        contacts: s.total_customers ?? data.total_notifications ?? prev.contacts,
-        customer_trend: s.customer_trend ?? prev.customer_trend,
-        newEnquiries: data.enquiries ?? prev.newEnquiries,
-        newWhatsapp: data.whatsapp_contacts ?? prev.newWhatsapp
-      }));
+    setEnquiryLoading(true);
+    fetchNotifications(enquiryFilter, enquiryMonth).then((data) => {
+      if (cancelled) return;
+      if (data) {
+        const s = data.stats || {};
+        setStats((prev) => ({
+          ...prev,
+          contacts: s.total_customers ?? data.total_notifications ?? prev.contacts,
+          customer_trend: s.customer_trend ?? prev.customer_trend,
+          newEnquiries: data.enquiries ?? prev.newEnquiries,
+          newWhatsapp: data.whatsapp_contacts ?? prev.newWhatsapp,
+          totalEnquiries: s.total_enquiries ?? prev.totalEnquiries,
+          enquiries_trend: s.enquiries_trend ?? prev.enquiries_trend
+        }));
+      }
+      setEnquiryLoading(false);
     });
     return () => { cancelled = true; };
-  }, [enquiryFilter]);
+  }, [enquiryFilter, enquiryMonth]);
 
   // Orders row's own filter — updates only the Orders cards.
   useEffect(() => {
     let cancelled = false;
-    fetchNotifications(orderFilter).then((data) => {
-      if (cancelled || !data) return;
-      const s = data.stats || {};
-      setStats((prev) => ({
-        ...prev,
-        orders: s.total_confirmed ?? prev.orders,
-        order_trend: s.order_trend ?? prev.order_trend,
-        delivered: s.total_delivered ?? prev.delivered,
-        delivery_trend: s.delivery_trend ?? prev.delivery_trend,
-        cancelled: (s.sales_pipeline && s.sales_pipeline.cancelled) ?? prev.cancelled,
-        notStarted: (s.sales_pipeline && s.sales_pipeline.packed) ?? prev.notStarted,
-        inProduction: (s.sales_pipeline && s.sales_pipeline.shipped) ?? prev.inProduction
-      }));
+    setOrderLoading(true);
+    fetchNotifications(orderFilter, orderMonth).then((data) => {
+      if (cancelled) return;
+      if (data) {
+        const s = data.stats || {};
+        setStats((prev) => ({
+          ...prev,
+          orders: s.total_confirmed ?? prev.orders,
+          order_trend: s.order_trend ?? prev.order_trend,
+          delivered: s.total_delivered ?? prev.delivered,
+          delivery_trend: s.delivery_trend ?? prev.delivery_trend,
+          cancelled: (s.sales_pipeline && s.sales_pipeline.cancelled) ?? prev.cancelled,
+          notStarted: (s.sales_pipeline && s.sales_pipeline.packed) ?? prev.notStarted,
+          inProduction: (s.sales_pipeline && s.sales_pipeline.shipped) ?? prev.inProduction
+        }));
+      }
+      setOrderLoading(false);
     });
     return () => { cancelled = true; };
-  }, [orderFilter]);
+  }, [orderFilter, orderMonth]);
 
   const handleSort = () => {
     const newOrder = sortOrder === 'desc' ? 'asc' : 'desc';
@@ -277,6 +402,17 @@ const Dashboard = () => {
   // the dashboard reads top-to-bottom as: the business at a glance, who's
   // reaching out, then what's actually being sold/fulfilled.
   const generalCards = [
+    {
+      title: 'Total Visitors',
+      // Distinct visitors (by hashed IP) who loaded the public storefront
+      // in this period — logged by App.js on app mount, counted server-
+      // side in NotificationAPIView. Doesn't include admin panel use.
+      value: stats.totalVisitors,
+      trend: `${stats.visitor_trend > 0 ? '+' : ''}${stats.visitor_trend}%`,
+      isUp: stats.visitor_trend >= 0,
+      icon: <Eye size={20} />,
+      color: '#0891b2'
+    },
     {
       title: 'Total Products',
       value: stats.products,
@@ -327,6 +463,17 @@ const Dashboard = () => {
       isUp: stats.customer_trend >= 0,
       icon: <Users size={20} />,
       color: '#3b82f6'
+    },
+    {
+      title: 'Total Enquiry',
+      // Web Enquiry records for the period on their own — unlike Total
+      // Customers (which also folds in WhatsApp) and New Enquiries (which
+      // is only the unread subset), this is every enquiry received.
+      value: stats.totalEnquiries,
+      trend: `${stats.enquiries_trend > 0 ? '+' : ''}${stats.enquiries_trend}%`,
+      isUp: stats.enquiries_trend >= 0,
+      icon: <ClipboardList size={20} />,
+      color: '#6366f1'
     },
     {
       title: 'New Enquiries',
@@ -462,25 +609,22 @@ const Dashboard = () => {
     </>
   );
 
-  const renderStatCard = (card, i) => (
-    <div className="stat-card" key={i}>
-      <div className="card-top">
-        <div
-          className="card-icon-wrapper"
-          style={{ backgroundColor: `${card.color}15`, color: card.color }}
-        >
-          {card.icon}
-        </div>
-        <div className={`trend-badge ${card.isUp ? 'up' : 'down'}`}>
-          {card.isUp ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-          {card.trend}
-        </div>
-      </div>
-      <div className="card-content">
-        <span className="card-title">{card.title}</span>
-        <div className="card-value">{card.value.toLocaleString()}{card.suffix || ''}</div>
-      </div>
-    </div>
+  const MONTH_NAMES = [
+    'January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'
+  ];
+
+  // A second, independent dropdown per row — pick any specific month of
+  // the current year. When set, it overrides that row's period filter
+  // above (see fetchNotifications/the row effects); "All Months" clears
+  // it back to whatever the period filter says.
+  const MonthFilterOptions = () => (
+    <>
+      <option value="">All Months</option>
+      {MONTH_NAMES.map((name, i) => (
+        <option key={i} value={i + 1}>{name}</option>
+      ))}
+    </>
   );
 
   if (loading) return (
@@ -515,9 +659,16 @@ const Dashboard = () => {
           >
             <PeriodFilterOptions />
           </select>
+          <select
+            value={generalMonth}
+            onChange={(e) => setGeneralMonth(e.target.value)}
+            style={{ ...filterSelectStyle('#7c3aed'), marginLeft: '8px' }}
+          >
+            <MonthFilterOptions />
+          </select>
         </div>
         <div className="stats-grid">
-          {generalCards.map(renderStatCard)}
+          {generalCards.map((card, i) => <StatCard key={i} card={card} isLoading={generalLoading} index={i} />)}
         </div>
       </section>
 
@@ -532,9 +683,16 @@ const Dashboard = () => {
           >
             <PeriodFilterOptions />
           </select>
+          <select
+            value={enquiryMonth}
+            onChange={(e) => setEnquiryMonth(e.target.value)}
+            style={{ ...filterSelectStyle('#10b981'), marginLeft: '8px' }}
+          >
+            <MonthFilterOptions />
+          </select>
         </div>
         <div className="stats-grid">
-          {enquiryCards.map(renderStatCard)}
+          {enquiryCards.map((card, i) => <StatCard key={i} card={card} isLoading={enquiryLoading} index={i} />)}
         </div>
       </section>
 
@@ -549,9 +707,16 @@ const Dashboard = () => {
           >
             <PeriodFilterOptions />
           </select>
+          <select
+            value={orderMonth}
+            onChange={(e) => setOrderMonth(e.target.value)}
+            style={{ ...filterSelectStyle('#f59e0b'), marginLeft: '8px' }}
+          >
+            <MonthFilterOptions />
+          </select>
         </div>
         <div className="stats-grid">
-          {orderCards.map(renderStatCard)}
+          {orderCards.map((card, i) => <StatCard key={i} card={card} isLoading={orderLoading} index={i} />)}
         </div>
       </section>
 

@@ -27,25 +27,11 @@ import UserManager from './Components/Admin/UserManager/UserManager';
 
 import Dashboard from './Components/Admin/Dashboard/Dashboard';
 import AdminLayout from './Components/Admin/Layout/AdminLayout';
-import Loader from './Components/Loader/Loader';
-
-// Helper to check if the network/internet connection is slow
-const isConnectionSlow = () => {
-  const conn = navigator.connection || navigator.mozConnection || navigator.webkitConnection;
-  if (!conn) return false; // Assume fast connection by default if API is unsupported
-  
-  const isSlowType = ['slow-2g', '2g', '3g'].includes(conn.effectiveType);
-  const isLowDownlink = typeof conn.downlink === 'number' && conn.downlink < 2.0; // Less than 2 Mbps
-  const isHighRtt = typeof conn.rtt === 'number' && conn.rtt > 150; // Latency more than 150ms
-  
-  return isSlowType || isLowDownlink || isHighRtt;
-};
 
 function AppContent() {
   const location = useLocation();
   const isLoginPage = location.pathname === '/login';
   const [isAdmin, setIsAdmin] = useState(!!sessionStorage.getItem('token'));
-  const [pageLoading, setPageLoading] = useState(isConnectionSlow());
   const isInitialLoad = useRef(true);
   
   // Check if we are in "Preview Mode"
@@ -56,20 +42,14 @@ function AppContent() {
     setIsAdmin(!!sessionStorage.getItem('token'));
   }, [location]);
 
-  // Handle page transitions with loader
+  // Scroll to top on route change (not on the very first mount, where the
+  // browser's own scroll restoration should win).
   useEffect(() => {
     if (isInitialLoad.current) {
       isInitialLoad.current = false;
       return;
     }
-    // Only trigger transition loader for non-admin pages if network is slow
-    if (!location.pathname.startsWith('/admin') && isConnectionSlow()) {
-      setPageLoading(true);
-      window.scrollTo(0, 0);
-    } else {
-      // Still scroll to top on fast connection route changes
-      window.scrollTo(0, 0);
-    }
+    window.scrollTo(0, 0);
   }, [location.pathname]);
 
   // Wake up Render free-tier backend immediately on app load
@@ -80,11 +60,32 @@ function AppContent() {
     fetch(API_BASE, { method: 'HEAD' }).catch(() => {});
   }, []);
 
+  // Log one visit per app load, for the admin dashboard's "Total Visitors"
+  // card. Runs once on mount (not on every client-side route change, since
+  // that's still the same visit) and skips anything admin-related, so
+  // staff never inflate the visitor count:
+  //  - /admin/* — the panel itself
+  //  - /login — nobody but staff ever needs this page
+  //  - isAdmin — an already-authenticated session (e.g. browsing the
+  //    public site in the same tab while still logged in)
+  //  - isPreview — admin previewing the storefront
+  useEffect(() => {
+    if (isAdmin || isPreview || location.pathname.startsWith('/admin') || location.pathname === '/login') return;
+    const API_BASE = window.location.hostname === 'localhost'
+      ? 'http://localhost:8000'
+      : 'https://api.woodenhut.in';
+    fetch(`${API_BASE}/api/track-visit/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ path: location.pathname })
+    }).catch(() => {});
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const isAdminRoute = location.pathname.startsWith('/admin');
 
   return (
     <>
-      {pageLoading && <Loader onComplete={() => setPageLoading(false)} />}
       {!isLoginPage && !isAdminRoute && <Header />}
       <Routes>
         {/* If Admin is logged in AND NOT in preview mode, redirect to Admin area */}

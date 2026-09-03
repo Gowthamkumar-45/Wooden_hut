@@ -7,6 +7,14 @@
   align-items: center;
   padding: 0 32px;
   z-index: 10;
+  flex-shrink: 0;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
 }
 
 .header-left h2 {
@@ -14,6 +22,59 @@
   font-weight: 700;
   color: #111827;
   margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Opens the mobile off-canvas drawer (see AdminLayout/AdminSidebar) —
+   only meaningful, and only shown, below the same 900px breakpoint the
+   sidebar itself switches at. */
+.mobile-menu-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  background: #f9fafb;
+  border: 1px solid #f3f4f6;
+  border-radius: 8px;
+  color: #374151;
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .mobile-menu-btn {
+    display: flex;
+  }
+}
+
+@media (max-width: 640px) {
+  .admin-header {
+    padding: 0 16px;
+  }
+
+  .header-left h2 {
+    font-size: 19px;
+  }
+
+  .header-right {
+    gap: 10px;
+  }
+
+  /* Keep the icons, drop the button labels — "Preview Store" / "Logout"
+     next to a hamburger and a shrunk title otherwise overflow a phone
+     screen. */
+  .preview-btn span,
+  .logout-btn span {
+    display: none;
+  }
+
+  .preview-btn,
+  .logout-btn {
+    padding: 8px 10px;
+  }
 }
 
 .header-right {

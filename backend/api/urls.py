@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from api.views import LoginAPIView, NotificationAPIView, AdminUserViewSet
+from api.views import LoginAPIView, NotificationAPIView, AdminUserViewSet, TrackVisitAPIView
 from products.views import (
     ProductViewSet, CategoryViewSet, SubCategoryViewSet, ReviewViewSet,
     MediaItemViewSet, MakingVideoViewSet
@@ -21,6 +21,7 @@ router.register(r'users', AdminUserViewSet, basename='admin-user')
 urlpatterns = [
     path('login/', LoginAPIView.as_view(), name='api-login'),
     path('notifications/', NotificationAPIView.as_view(), name='api-notifications'),
+    path('track-visit/', TrackVisitAPIView.as_view(), name='api-track-visit'),
     path('whatsapp-webhook/', WhatsAppWebhookView.as_view(), name='whatsapp-webhook'),
     path('', include(router.urls)),
 ]

@@ -31,6 +31,23 @@
   transition: all 0.3s ease;
 }
 
+/* Dims/blocks the page behind the mobile drawer; tapping it closes the
+   drawer (see AdminLayout.jsx). Sidebar itself is position:fixed below
+   900px (see AdminSidebar.css), so it no longer takes flex width from
+   admin-main — this overlay is the only extra markup mobile needs. */
+.mobile-sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.45);
+  z-index: 999;
+}
+
+@media (min-width: 901px) {
+  .mobile-sidebar-overlay {
+    display: none;
+  }
+}
+
 
 .admin-content {
   flex: 1;

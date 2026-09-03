@@ -1,8 +1,8 @@
 import { useLocation } from 'react-router-dom';
-import { LogOut, ExternalLink } from 'lucide-react';
+import { LogOut, ExternalLink, Menu } from 'lucide-react';
 import './AdminHeader.css';
 
-const AdminHeader = () => {
+const AdminHeader = ({ onMenuClick }) => {
   const location = useLocation();
   
   const getPageTitle = (pathname) => {
@@ -35,6 +35,9 @@ const AdminHeader = () => {
   return (
     <header className="admin-header">
       <div className="header-left">
+        <button className="mobile-menu-btn" onClick={onMenuClick} aria-label="Open menu">
+          <Menu size={22} />
+        </button>
         <h2>{getPageTitle(location.pathname)}</h2>
       </div>
 

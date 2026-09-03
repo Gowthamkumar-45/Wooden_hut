@@ -11,8 +11,10 @@ from django.db.models import Count
 from django.db.models.functions import ExtractMonth
 from rest_framework.permissions import IsAuthenticated
 from django.utils import timezone
+from django.conf import settings
 from datetime import timedelta
-from .models import UserProfile
+import hashlib
+from .models import UserProfile, SiteVisit
 from .serializers import AdminUserSerializer, AdminUserCreateSerializer
 
 
@@ -86,6 +88,30 @@ class AdminUserViewSet(viewsets.ModelViewSet):
 from django.utils import timezone
 from datetime import timedelta
 
+
+def _hash_ip(request):
+    """Salted digest of the client IP — enough to de-duplicate visitors
+    without ever storing the raw address."""
+    ip = request.META.get('HTTP_X_FORWARDED_FOR', '').split(',')[0].strip() \
+        or request.META.get('REMOTE_ADDR', '')
+    return hashlib.sha256(f"{settings.SECRET_KEY}:{ip}".encode()).hexdigest()
+
+
+class TrackVisitAPIView(APIView):
+    """Public, write-only endpoint the storefront calls once per app load
+    (see frontend App.js) to log a page visit for the "Total Visitors"
+    dashboard card. No auth — visitors aren't logged in."""
+    authentication_classes = []
+    permission_classes = [permissions.AllowAny]
+
+    def post(self, request):
+        SiteVisit.objects.create(
+            path=(request.data.get('path') or '')[:255],
+            ip_hash=_hash_ip(request)
+        )
+        return Response({'ok': True}, status=status.HTTP_201_CREATED)
+
+
 class NotificationAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -116,6 +142,19 @@ class NotificationAPIView(APIView):
             filter_type = request.query_params.get('filter', 'all')
             now = timezone.now()
 
+            # A specific month (1-12, current year) from the row's month
+            # picker — takes precedence over `filter` entirely when given,
+            # rather than adding a 6th value to that dropdown.
+            month_param = request.query_params.get('month')
+            selected_month = None
+            if month_param:
+                try:
+                    m = int(month_param)
+                    if 1 <= m <= 12:
+                        selected_month = m
+                except (TypeError, ValueError):
+                    pass
+
             # Branch-restricted users only ever see their own branch's
             # Enquiry/WhatsAppContact data on the dashboard, same as Track
             # Orders and Customer Logs. Super Admins (no branch) see all.
@@ -128,8 +167,13 @@ class NotificationAPIView(APIView):
             date_filter_enq = {}
             date_filter_wa = {}
             date_filter_rev = {}
-            
-            if filter_type == 'yearly':
+
+            if selected_month is not None:
+                date_filter_pt = {"created_at__year": now.year, "created_at__month": selected_month}
+                date_filter_enq = {"created_at__year": now.year, "created_at__month": selected_month}
+                date_filter_wa = {"timestamp__year": now.year, "timestamp__month": selected_month}
+                date_filter_rev = {"created_at__year": now.year, "created_at__month": selected_month}
+            elif filter_type == 'yearly':
                 date_filter_pt = {"created_at__year": now.year}
                 date_filter_enq = {"created_at__year": now.year}
                 date_filter_wa = {"timestamp__year": now.year}
@@ -226,6 +270,12 @@ class NotificationAPIView(APIView):
                 traffic_stats[1]['value'] = round((EnquiryQS.filter(**date_filter_enq).count() / total_interactions) * 100)
                 traffic_stats[2]['value'] = round((Review.objects.filter(**date_filter_rev).count() / total_interactions) * 100)
 
+            # Distinct visitors (by hashed IP) for the period — SiteVisit
+            # rows come from the frontend's tracking call, not from any
+            # branch-scoped data, so no branch filter applies here.
+            total_visitors = SiteVisit.objects.filter(**date_filter_pt).values('ip_hash').distinct().count()
+            visitor_trend = self.get_trend(SiteVisit.objects)
+
             # Sales pipeline
             packed = EnquiryQS.filter(is_order_confirmed=True, order_status='Not Started', **date_filter_enq).count() + WaQS.filter(is_order_confirmed=True, order_status='Not Started', **date_filter_wa).count()
             shipped = EnquiryQS.filter(order_status='Processing', **date_filter_enq).count() + WaQS.filter(order_status='Processing', **date_filter_wa).count()
@@ -240,6 +290,8 @@ class NotificationAPIView(APIView):
                     'total_products': total_products,
                     'product_trend': product_trend,
                     'in_stock': in_stock,
+                    'total_visitors': total_visitors,
+                    'visitor_trend': visitor_trend,
                     'total_confirmed': confirmed_enquiries + confirmed_contacts,
                     'order_trend': order_trend,
                     'total_delivered': delivered_enquiries + delivered_contacts,
@@ -248,6 +300,12 @@ class NotificationAPIView(APIView):
                     'review_trend': self.get_trend(Review.objects),
                     'total_customers': EnquiryQS.filter(**date_filter_enq).count() + WaQS.filter(**date_filter_wa).count(),
                     'customer_trend': customer_trend,
+                    # Web Enquiry count on its own, for the period — distinct
+                    # from total_customers (which also folds in WhatsApp) and
+                    # from the top-level "enquiries" field (which is only the
+                    # unread/new subset).
+                    'total_enquiries': EnquiryQS.filter(**date_filter_enq).count(),
+                    'enquiries_trend': self.get_trend(EnquiryQS),
                     'monthly_orders': monthly_orders,
                     'traffic_stats': traffic_stats,
                     'sales_pipeline': {

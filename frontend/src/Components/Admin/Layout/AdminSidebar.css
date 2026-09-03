@@ -255,3 +255,61 @@
   background: #f0f0f0;
   border-radius: 10px;
 }
+
+/* Mobile: the sidebar was a normal 260px flex child with no breakpoint at
+   all, so on a phone it just squeezed admin-main into a sliver and
+   clipped the page instead of ever collapsing. Below 900px it becomes a
+   fixed, off-canvas drawer — hidden by default, slid in over the content
+   (not sharing width with it) when opened via the header's hamburger. */
+@media (max-width: 900px) {
+  .admin-sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1000;
+    width: 260px;
+    transform: translateX(-100%);
+  }
+
+  .admin-sidebar.mobile-open {
+    transform: translateX(0);
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.12);
+  }
+
+  /* The desktop icon-rail collapse doesn't make sense as an off-canvas
+     drawer — force the fully-expanded look regardless of isCollapsed. */
+  .admin-sidebar.collapsed {
+    width: 260px;
+    padding: 24px 16px;
+  }
+
+  .admin-sidebar.collapsed .sidebar-header {
+    flex-direction: row;
+    gap: 0;
+    padding: 0 16px 24px 16px;
+  }
+
+  .admin-sidebar.collapsed .sidebar-logo span,
+  .admin-sidebar.collapsed .group-label,
+  .admin-sidebar.collapsed .nav-item span,
+  .admin-sidebar.collapsed .user-info {
+    opacity: 1;
+    visibility: visible;
+    width: auto;
+    margin: initial;
+    padding: initial;
+    pointer-events: auto;
+    transform: none;
+  }
+
+  .admin-sidebar.collapsed .sidebar-logo,
+  .admin-sidebar.collapsed .nav-item,
+  .admin-sidebar.collapsed .user-profile-sidebar {
+    justify-content: flex-start;
+  }
+
+  /* No point collapsing a drawer that's about to be closed entirely. */
+  .collapse-btn {
+    display: none;
+  }
+}

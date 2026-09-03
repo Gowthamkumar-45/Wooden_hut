@@ -17,7 +17,7 @@ import {
 import './AdminSidebar.css';
 import { SITE_CONTENT } from '../../../constants/content';
 
-const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
+const AdminSidebar = ({ isCollapsed, toggleSidebar, isMobileOpen, onNavigate }) => {
   const currentUser = (() => {
     try { return JSON.parse(sessionStorage.getItem('user') || '{}'); } catch { return {}; }
   })();
@@ -25,7 +25,7 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
   const roleLabel = currentUser.branch ? `${currentUser.branch} Branch` : 'Super Admin';
 
   return (
-    <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''}`}>
+    <aside className={`admin-sidebar ${isCollapsed ? 'collapsed' : ''} ${isMobileOpen ? 'mobile-open' : ''}`}>
       <div className="sidebar-header">
         <Link to="/" className="sidebar-logo">
           <div className="logo-icon">W</div>
@@ -37,7 +37,10 @@ const AdminSidebar = ({ isCollapsed, toggleSidebar }) => {
       </div>
 
 
-      <nav className="sidebar-nav">
+      {/* onClick here (rather than on each NavLink) closes the mobile
+          drawer on any nav tap via event delegation — harmless no-op on
+          desktop, where isMobileOpen never becomes visually relevant. */}
+      <nav className="sidebar-nav" onClick={onNavigate}>
         <div className="nav-group">
           <span className="group-label">Main Menu</span>
           
