@@ -74,6 +74,15 @@ class SubCategoryViewSet(viewsets.ModelViewSet):
 
 class ProductViewSet(viewsets.ModelViewSet):
     parser_classes = [MultiPartParser, FormParser]
+    # Every other viewset in this file disables pagination — this one was
+    # missed, so it silently fell back to the global default (PAGE_SIZE=24).
+    # Callers across the app (dashboard category chart, the admin's own
+    # Products List, the public category/search pages) all treat the
+    # response as the full unpaginated catalog, so once there were more
+    # than 24 products the extra ones just vanished from every one of them
+    # with no error — e.g. the dashboard's "Products by Category" chart
+    # silently dropping 2 of the site's 6 real categories.
+    pagination_class = None
 
     def get_serializer_class(self):
         # Use lightweight serializer for list to avoid loading all reviews

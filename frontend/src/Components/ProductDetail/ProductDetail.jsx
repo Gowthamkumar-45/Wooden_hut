@@ -98,11 +98,8 @@ const ProductDetail = () => {
         .map(img => getImageUrl(img))
     : [], [product, getImageUrl]);
 
-  // Auto-scroll logic — runs on a plain interval independent of hover, but
-  // a not-yet-loaded image swapping in makes the change hard to notice
-  // right when it happens (and slow/no-op on a spotty connection), which
-  // reads as "it stopped" even though the state is genuinely advancing.
-  // Preloading every gallery image up front means each swap is instant.
+  // Preload every gallery image up front so each auto-scroll swap (below)
+  // renders instantly instead of landing on a not-yet-loaded frame.
   useEffect(() => {
     galleryImages.forEach((src) => {
       const img = new Image();
@@ -110,8 +107,14 @@ const ProductDetail = () => {
     });
   }, [galleryImages]);
 
+  // Auto-scroll pauses the moment the customer starts zooming in — cycling
+  // the image out from under them mid-inspection is exactly the confusing
+  // behavior this fixes (confirmed live: it kept advancing every ~3s even
+  // during continuous hovering, so the zoomed view never held still long
+  // enough to actually look at). Resumes, with a fresh 3s countdown, the
+  // instant the mouse leaves.
   useEffect(() => {
-    if (galleryImages.length <= 1) return;
+    if (galleryImages.length <= 1 || isZooming) return;
 
     const interval = setInterval(() => {
       setActiveImg((prev) => {
@@ -122,7 +125,7 @@ const ProductDetail = () => {
     }, 3000);
 
     return () => clearInterval(interval);
-  }, [galleryImages]);
+  }, [galleryImages, isZooming]);
 
   // Throttled to once per animation frame via rAF — handleMouseMove was
   // firing (and re-rendering the whole page) on every raw mousemove event,
