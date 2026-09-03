@@ -138,12 +138,17 @@ const Dashboard = () => {
     visitor_trend: 0,
     enquiries_trend: 0
   });
-  const [timeFilter, setTimeFilter] = useState('all');
   // Each card row gets its own independent period filter — changing one
   // only re-fetches and updates that row's cards, not the others.
   const [generalFilter, setGeneralFilter] = useState('all');
   const [enquiryFilter, setEnquiryFilter] = useState('all');
   const [orderFilter, setOrderFilter] = useState('all');
+  // Enquiry Channels' Week/Month toggle and Product Status's own dropdown
+  // used to share one "timeFilter" state, so touching either one silently
+  // moved the other too. Each chart now gets its own filter, exactly like
+  // the card rows above — touching one never affects anything else.
+  const [trafficFilter, setTrafficFilter] = useState('all');
+  const [productStatusFilter, setProductStatusFilter] = useState('all');
   // A specific month (1-12, current year) picked from that row's own month
   // dropdown — '' means "not using it", so the period filter above applies
   // instead. When set, it takes precedence over generalFilter/etc.
@@ -211,13 +216,19 @@ const Dashboard = () => {
     return `${base}${imgPath}`;
   };
 
+  // Runs once on mount — products list (Top Selling + category bar chart)
+  // and the monthly order trend (Order Analytics) don't vary by any filter
+  // on the backend, so they don't need to be tied to one or re-fetched
+  // every time some other filter changes. Every stat card field is fully
+  // covered by the three row effects below; this no longer touches `stats`
+  // at all, so nothing here can silently overwrite a row's own numbers.
   useEffect(() => {
-    const fetchDashboardData = async () => {
+    const fetchInitialData = async () => {
       try {
         const token = sessionStorage.getItem('token');
         const headers = token ? { 'Authorization': `Token ${token}` } : {};
 
-        const notifyData = await fetchNotifications(timeFilter);
+        const notifyData = await fetchNotifications('all');
         const productsRes = await fetch(`${SITE_CONTENT.api.base}/api/products/`, { headers });
 
         if (productsRes.status === 401) {
@@ -233,7 +244,6 @@ const Dashboard = () => {
 
           // Handle paginated or non-paginated product data
           const productItems = Array.isArray(productsData) ? productsData : (productsData.results || []);
-          const totalProductsCount = Array.isArray(productsData) ? productsData.length : (productsData.count || 0);
 
           setProducts(productItems.slice(0, 5));
 
@@ -251,47 +261,7 @@ const Dashboard = () => {
               .sort((a, b) => b.count - a.count)
           );
 
-          // Use real stats from the enhanced NotificationAPIView
-          const backendStats = notifyData.stats || {};
-          setAnalyticsData(backendStats.monthly_orders || []);
-          if (backendStats.traffic_stats) {
-            setTrafficData(backendStats.traffic_stats);
-          }
-          if (backendStats.sales_pipeline) {
-            setProductSalesData([
-              { name: 'Not Started', value: backendStats.sales_pipeline.packed || 0, trend: '+0%' },
-              { name: 'In Production', value: backendStats.sales_pipeline.shipped || 0, trend: '+0%' },
-              { name: 'Delivered', value: backendStats.sales_pipeline.delivered || 0, trend: '+0%' },
-              { name: 'Cancelled', value: backendStats.sales_pipeline.cancelled || 0, trend: '+0%', isNegative: true },
-            ]);
-          }
-
-          setStats({
-            products: backendStats.total_products || totalProductsCount,
-            orders: backendStats.total_confirmed || 0,
-            delivered: backendStats.total_delivered || 0,
-            reviews: backendStats.total_reviews || 0,
-            // total_customers (real enquiry+WhatsApp count for the period) is
-            // what this card is meant to show — total_notifications is the
-            // *unread* count, which was being shown here by mistake.
-            contacts: backendStats.total_customers ?? notifyData.total_notifications ?? 0,
-            inStock: backendStats.in_stock || 0,
-            totalVisitors: backendStats.total_visitors || 0,
-            cancelled: (backendStats.sales_pipeline && backendStats.sales_pipeline.cancelled) || 0,
-            notStarted: (backendStats.sales_pipeline && backendStats.sales_pipeline.packed) || 0,
-            inProduction: (backendStats.sales_pipeline && backendStats.sales_pipeline.shipped) || 0,
-            newEnquiries: notifyData.enquiries || 0,
-            newWhatsapp: notifyData.whatsapp_contacts || 0,
-            totalEnquiries: backendStats.total_enquiries || 0,
-            pendingReviews: notifyData.reviews || 0,
-            product_trend: backendStats.product_trend || 0,
-            order_trend: backendStats.order_trend || 0,
-            delivery_trend: backendStats.delivery_trend || 0,
-            customer_trend: backendStats.customer_trend || 0,
-            review_trend: backendStats.review_trend || 0,
-            enquiries_trend: backendStats.enquiries_trend || 0,
-            visitor_trend: backendStats.visitor_trend || 0
-          });
+          setAnalyticsData((notifyData.stats || {}).monthly_orders || []);
         }
       } catch (err) {
         console.error("Dashboard fetch error:", err);
@@ -300,8 +270,37 @@ const Dashboard = () => {
       }
     };
 
-    fetchDashboardData();
-  }, [timeFilter]);
+    fetchInitialData();
+  }, []);
+
+  // Enquiry Channels' own Week/Month toggle — updates only its traffic bars.
+  useEffect(() => {
+    let cancelled = false;
+    fetchNotifications(trafficFilter).then((data) => {
+      if (cancelled || !data) return;
+      const s = data.stats || {};
+      if (s.traffic_stats) setTrafficData(s.traffic_stats);
+    });
+    return () => { cancelled = true; };
+  }, [trafficFilter]);
+
+  // Product Status's own dropdown — updates only its pipeline bars.
+  useEffect(() => {
+    let cancelled = false;
+    fetchNotifications(productStatusFilter).then((data) => {
+      if (cancelled || !data) return;
+      const s = data.stats || {};
+      if (s.sales_pipeline) {
+        setProductSalesData([
+          { name: 'Not Started', value: s.sales_pipeline.packed || 0, trend: '+0%' },
+          { name: 'In Production', value: s.sales_pipeline.shipped || 0, trend: '+0%' },
+          { name: 'Delivered', value: s.sales_pipeline.delivered || 0, trend: '+0%' },
+          { name: 'Cancelled', value: s.sales_pipeline.cancelled || 0, trend: '+0%', isNegative: true },
+        ]);
+      }
+    });
+    return () => { cancelled = true; };
+  }, [productStatusFilter]);
 
   // General row's own filter — updates only the General cards.
   useEffect(() => {
@@ -640,10 +639,10 @@ const Dashboard = () => {
     <div className="dashboard-container">
       {/* The old standalone "All Time" control here was removed — it sat
           directly above the General row's own filter and duplicated it
-          visually. timeFilter (for the Analytics charts below) is still
-          adjustable from the Enquiry Channels Week/Month toggle and the
-          Product Status select, which already existed as their own
-          controls. */}
+          visually. Enquiry Channels' Week/Month toggle and Product
+          Status's own select each have their own independent filter now
+          (trafficFilter / productStatusFilter) — neither affects the
+          other, or anything else on the page. */}
 
       {/* CARD ROWS — General, then Enquiries, then Orders, all as plain
           stat-card rows, one after another. Charts/tables come after all
@@ -733,12 +732,12 @@ const Dashboard = () => {
               <h3>Enquiry Channels</h3>
               <div className="time-toggle">
                 <button
-                  className={timeFilter === 'weekly' ? 'active' : ''}
-                  onClick={() => setTimeFilter('weekly')}
+                  className={trafficFilter === 'weekly' ? 'active' : ''}
+                  onClick={() => setTrafficFilter('weekly')}
                 >Week</button>
                 <button
-                  className={timeFilter === 'monthly' ? 'active' : ''}
-                  onClick={() => setTimeFilter('monthly')}
+                  className={trafficFilter === 'monthly' ? 'active' : ''}
+                  onClick={() => setTrafficFilter('monthly')}
                 >Month</button>
               </div>
             </div>
@@ -878,7 +877,6 @@ const Dashboard = () => {
                   <th>Id</th>
                   <th>Product info</th>
                   <th>Category</th>
-                  <th>Status</th>
                   <th>Stock Since</th>
                 </tr>
               </thead>
@@ -899,11 +897,6 @@ const Dashboard = () => {
                       <span>{p.name}</span>
                     </td>
                     <td>{p.category_name}</td>
-                    <td>
-                      <span className={`status-tag ${p.in_stock ? 'in' : 'out'}`}>
-                        {p.in_stock ? 'In Stock' : 'Out of Stock'}
-                      </span>
-                    </td>
                     <td>{new Date(p.created_at).toLocaleDateString()}</td>
                   </tr>
                 ))}
@@ -916,8 +909,8 @@ const Dashboard = () => {
               <h3>Product Status</h3>
               <select
                 className="date-select"
-                value={timeFilter}
-                onChange={(e) => setTimeFilter(e.target.value)}
+                value={productStatusFilter}
+                onChange={(e) => setProductStatusFilter(e.target.value)}
                 style={{
                   padding: '6px 28px 6px 12px',
                   border: '1px solid #e5e7eb',
