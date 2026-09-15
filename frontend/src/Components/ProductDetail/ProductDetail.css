@@ -284,114 +284,135 @@
     gap: 20px;
 }
 
-/* Same full-bleed image + gradient-overlay treatment as the home page's
-   "Our Collections" cards (Home.css .service-card), so related products
-   look consistent with the rest of the site instead of a plain bordered
-   thumbnail box. */
+/* Same card treatment as the category/search listing pages (CategoryPage.css
+   .product-card) — image + stock badge, material label, name, description
+   snippet, then a "View Details" + "Contact Us" button pair — so related
+   products look like the rest of the catalog instead of a one-off style.
+   Namespaced under "related-" so it doesn't collide with this page's own
+   .whatsapp-btn (the main "Message Us" action above). */
 .related-card {
-    position: relative;
+    background: var(--white);
     overflow: hidden;
-    cursor: pointer;
-    height: 300px;
-    text-decoration: none;
-    color: inherit;
-    display: block;
+    display: flex;
+    flex-direction: column;
+    transition: transform 0.4s ease;
 }
 
-.related-card img {
-    position: absolute;
-    inset: 0;
+.related-image-container {
+    display: block;
+    height: 220px;
+    position: relative;
+    overflow: hidden;
+}
+
+.related-image-container img {
     width: 100%;
     height: 100%;
     object-fit: cover;
-    object-position: center;
-    transition: transform 0.65s ease;
+    transition: transform 0.8s ease;
 }
 
-.related-card:hover img {
+.related-card:hover .related-image-container img {
     transform: scale(1.08);
 }
 
-.related-card-overlay {
+.related-badge {
     position: absolute;
-    inset: 0;
-    background: linear-gradient(to top,
-        rgba(17, 10, 6, 0.95) 0%,
-        rgba(17, 10, 6, 0.4) 55%,
-        transparent 100%);
-    transition: background 0.4s;
+    top: 16px;
+    left: 16px;
+    background: rgba(44, 26, 14, 0.85);
+    color: var(--gold-light);
+    padding: 5px 12px;
+    font-size: 10px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
 }
 
-.related-card:hover .related-card-overlay {
-    background: linear-gradient(to top,
-        rgba(44, 26, 14, 0.97) 0%,
-        rgba(44, 26, 14, 0.5) 60%,
-        rgba(44, 26, 14, 0.12) 100%);
-}
-
-.related-card-body {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    padding: 26px 24px;
-}
-
-.related-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 12px;
+.related-badge.out-of-stock {
+    background: #d9363e;
     color: white;
-    letter-spacing: 0.1em;
-    margin-bottom: 8px;
-    font-weight: 600;
 }
 
-.related-line {
-    width: 30px;
-    height: 1px;
-    background: white;
-    margin-bottom: 12px;
-    opacity: 0.7;
+.related-details {
+    padding: 22px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--white);
+}
+
+.related-mat {
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
 }
 
 .related-name {
     font-family: 'Cormorant Garamond', serif;
-    font-size: 23px;
-    font-weight: 500;
-    font-style: italic;
-    color: var(--gold-light);
-    margin: 0;
-    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+    font-size: 21px;
+    font-weight: 400;
+    color: var(--brown-deep);
+    margin: 0 0 12px;
+    text-transform: uppercase;
 }
 
-.related-action {
-    margin-top: 16px;
-    max-height: 0;
-    opacity: 0;
-    overflow: hidden;
-    transition: all 0.5s ease;
+.related-brief {
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--text-muted);
+    margin: 0 0 20px;
+    flex: 1;
 }
 
-.related-card:hover .related-action {
-    max-height: 50px;
-    opacity: 1;
+.related-card-footer {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-top: 18px;
+    border-top: 1px solid rgba(196, 149, 58, 0.12);
+}
+
+.related-btn {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 10px !important;
+    text-decoration: none !important;
+    font-family: "Jost", sans-serif !important;
+    font-size: 10px !important;
+    font-weight: 500 !important;
+    letter-spacing: 0.14em !important;
+    text-transform: uppercase !important;
+    padding: 13px !important;
+    transition: all 0.3s ease !important;
+    width: 100% !important;
+    cursor: pointer !important;
+    box-sizing: border-box !important;
 }
 
 .related-view-btn {
-    display: inline-block;
-    background: var(--gold);
     color: var(--brown-deep);
-    padding: 9px 20px;
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    font-weight: 600;
-    font-family: 'Jost', sans-serif;
-    transition: all 0.3s ease;
+    border: 1px solid var(--gold);
+    background: transparent;
 }
 
-.related-card:hover .related-view-btn {
-    background: var(--gold-light);
+.related-view-btn:hover {
+    background: var(--brown-deep);
+    color: var(--gold-light);
+}
+
+.related-whatsapp-btn {
+    color: var(--brown-deep) !important;
+    border: 1px solid #25d366 !important;
+    background: transparent !important;
+}
+
+.related-whatsapp-btn:hover {
+    background: #25d366 !important;
+    border-color: #25d366 !important;
+    color: var(--white) !important;
 }
 
 /* PRODUCT REVIEWS LIST */

@@ -4,6 +4,7 @@ import { useForm, Controller } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Form, Input, Button, Rate, message as antMessage, Spin } from 'antd';
+import { WhatsAppOutlined } from '@ant-design/icons';
 import { SITE_CONTENT } from '../../constants/content';
 import WhatsAppEnquiryButton from '../WhatsAppEnquiryButton/WhatsAppEnquiryButton';
 import './ProductDetail.css';
@@ -352,23 +353,37 @@ const ProductDetail = () => {
         <section className="related-section">
           <h3 className="related-title">You May Also Like</h3>
           <div className="related-grid">
-            {relatedProducts.map((rp, idx) => (
-              <Link key={rp.id} to={`/product/${rp.slug}`} className="related-card">
-                <img
-                  src={getImageUrl(rp.main_image)}
-                  alt={rp.name}
-                  onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=Masterpiece'; }}
-                />
-                <div className="related-card-overlay"></div>
-                <div className="related-card-body">
-                  <div className="related-num">{(idx + 1).toString().padStart(2, '0')}</div>
-                  <div className="related-line"></div>
+            {relatedProducts.map((rp) => (
+              <div key={rp.id} className="related-card">
+                <Link to={`/product/${rp.slug}`} className="related-image-container">
+                  <img
+                    src={getImageUrl(rp.main_image)}
+                    alt={rp.name}
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/600x400?text=Masterpiece'; }}
+                  />
+                  <div className={`related-badge ${!rp.in_stock ? 'out-of-stock' : ''}`}>
+                    {rp.in_stock ? (rp.sub_category_name || 'Premium') : 'Out of Stock'}
+                  </div>
+                </Link>
+                <div className="related-details">
+                  <div className="related-mat">{rp.material}</div>
                   <h4 className="related-name">{rp.name}</h4>
-                  <div className="related-action">
-                    <span className="related-view-btn">View Details →</span>
+                  <p className="related-brief">{rp.description?.substring(0, 85)}...</p>
+                  <div className="related-card-footer">
+                    <Link to={`/product/${rp.slug}`} className="related-btn related-view-btn">
+                      View Details <span>→</span>
+                    </Link>
+                    <WhatsAppEnquiryButton
+                      productName={rp.name}
+                      className="related-btn related-whatsapp-btn"
+                      onContact={logWhatsAppContact}
+                    >
+                      <WhatsAppOutlined />
+                      Contact Us
+                    </WhatsAppEnquiryButton>
                   </div>
                 </div>
-              </Link>
+              </div>
             ))}
           </div>
         </section>
