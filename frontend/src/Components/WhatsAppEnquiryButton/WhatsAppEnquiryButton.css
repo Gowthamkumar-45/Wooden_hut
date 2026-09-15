@@ -1,0 +1,55 @@
+.wa-enquiry-menu {
+  position: fixed;
+  z-index: 100000;
+  background: white;
+  padding: 16px;
+  border-radius: 16px;
+  box-shadow: 0 15px 50px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  animation: wa-menu-in 0.15s ease-out;
+}
+
+/* Position (top/left) and placement flip (above/below the button) are set
+   inline per-instance via getBoundingClientRect, including the translateY
+   that anchors "above" placement — so this only animates opacity, not
+   transform, to avoid clobbering that inline placement transform. */
+@keyframes wa-menu-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.wa-enquiry-menu-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  margin: 0 0 12px;
+  text-align: center;
+  line-height: 1.4;
+}
+
+.wa-enquiry-branch-options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.wa-enquiry-branch-btn {
+  background: #f8f9fa;
+  border: 1px solid #eee;
+  padding: 10px;
+  border-radius: 10px;
+  font-family: 'Inter', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #333;
+  text-align: center;
+}
+
+.wa-enquiry-branch-btn:hover {
+  background: #25d366;
+  color: white;
+  border-color: #25d366;
+}

@@ -24,6 +24,7 @@ const { Option } = Select;
 const Home = () => {
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
+    const [categories, setCategories] = useState([]);
     const [loading, setLoading] = useState(true);
     const [currentHeroIndex, setCurrentHeroIndex] = useState(0);
 
@@ -50,15 +51,28 @@ const Home = () => {
             } catch (e) { /* ignore corrupt cache */ }
         }
 
+        // Load cached categories instantly too, same as products above
+        const cachedCategories = localStorage.getItem('wh_categories');
+        if (cachedCategories) {
+            try { setCategories(JSON.parse(cachedCategories)); } catch (e) { /* ignore corrupt cache */ }
+        }
+
         const fetchProducts = async () => {
             try {
-                const response = await fetch(`${SITE_CONTENT.api.base}/api/products/`);
-                const data = await response.json();
+                const [productsRes, categoriesRes] = await Promise.all([
+                    fetch(`${SITE_CONTENT.api.base}/api/products/`),
+                    fetch(`${SITE_CONTENT.api.base}/api/categories/`),
+                ]);
+                const data = await productsRes.json();
                 // DRF pagination wraps results in { count, next, previous, results }
                 const items = Array.isArray(data) ? data : (data.results || []);
                 setProducts(items);
-                // Cache for instant load on next visit
                 localStorage.setItem('wh_products', JSON.stringify(items));
+
+                const catData = await categoriesRes.json();
+                const cats = Array.isArray(catData) ? catData : [];
+                setCategories(cats);
+                localStorage.setItem('wh_categories', JSON.stringify(cats));
             } catch (error) {
                 console.error("Error fetching products:", error);
             } finally {
@@ -67,6 +81,45 @@ const Home = () => {
         };
         fetchProducts();
     }, []);
+
+    // The homepage used to list every single product — with the catalog
+    // growing that became a wall of near-duplicate cards. Instead, show one
+    // card per sub-category (or per category, for the ones with none),
+    // each represented by one of its products, linking through to the full
+    // listing for that category/sub-category.
+    const collectionCards = React.useMemo(() => {
+        const cards = [];
+        categories.forEach((cat) => {
+            if (cat.subcategories && cat.subcategories.length > 0) {
+                cat.subcategories.forEach((sub) => {
+                    const rep = products.find(
+                        (p) => p.sub_category_name === sub.name && p.category_name === cat.name
+                    );
+                    if (!rep) return; // skip empty sub-categories — nothing to show yet
+                    cards.push({
+                        key: `sub-${sub.id}`,
+                        slug: sub.slug,
+                        name: sub.name,
+                        parentName: cat.name,
+                        image: rep.main_image,
+                        description: rep.description,
+                    });
+                });
+            } else {
+                const rep = products.find((p) => p.category_name === cat.name);
+                if (!rep) return; // skip empty categories — nothing to show yet
+                cards.push({
+                    key: `cat-${cat.id}`,
+                    slug: cat.slug,
+                    name: cat.name,
+                    parentName: null,
+                    image: rep.main_image,
+                    description: rep.description,
+                });
+            }
+        });
+        return cards;
+    }, [categories, products]);
 
     const {
         handleSubmit,
@@ -214,15 +267,15 @@ const Home = () => {
                     ) : (
                         <div className="services-grid-scroll">
                             <div className="services-grid products-scrollable">
-                                {products.map((product, index) => (
+                                {collectionCards.map((card, index) => (
                                     <div
-                                        key={product.id}
+                                        key={card.key}
                                         className="service-card product-item fade-up"
-                                        onClick={() => navigate(`/product/${product.slug || product.id}`)}
+                                        onClick={() => navigate(`/category/${card.slug}`)}
                                     >
                                         <img
-                                            src={getImageUrl(product.main_image)}
-                                            alt={product.name}
+                                            src={getImageUrl(card.image)}
+                                            alt={card.name}
                                             onError={(e) => {
                                                 if (e.target.src !== 'https://via.placeholder.com/600x400?text=Masterpiece') {
                                                     e.target.src = 'https://via.placeholder.com/600x400?text=Masterpiece';
@@ -233,10 +286,10 @@ const Home = () => {
                                         <div className="service-card-body">
                                             <div className="service-num">{(index + 1).toString().padStart(2, '0')}</div>
                                             <div className="service-line"></div>
-                                            <div className="service-name">{product.name}</div>
-                                            <div className="service-desc">{product.description}</div>
+                                            <div className="service-name">{card.name}</div>
+                                            <div className="service-desc">{card.parentName ? `${card.parentName} · ${card.description}` : card.description}</div>
                                             <div className="service-action">
-                                                <button className="view-details-btn">View Details →</button>
+                                                <button className="view-details-btn">View Collection →</button>
                                             </div>
                                         </div>
                                     </div>

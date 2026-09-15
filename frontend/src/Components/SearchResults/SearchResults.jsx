@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { WhatsAppOutlined, ArrowLeftOutlined } from '@ant-design/icons';
 import { SITE_CONTENT } from '../../constants/content';
+import WhatsAppEnquiryButton from '../WhatsAppEnquiryButton/WhatsAppEnquiryButton';
 import './SearchResults.css';
 
 const SearchResults = () => {
@@ -12,12 +13,12 @@ const SearchResults = () => {
   // Get search query from URL params
   const query = new URLSearchParams(location.search).get('q') || '';
 
-  const logWhatsAppContact = async (productName) => {
+  const logWhatsAppContact = async (productName, branch) => {
     try {
       await fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_name: productName })
+        body: JSON.stringify({ product_name: productName, branch })
       });
     } catch (err) {
       console.error("Failed to log contact:", err);
@@ -105,16 +106,14 @@ const SearchResults = () => {
                       <Link to={`/product/${product.slug}`} className="product-btn view-details-btn">
                         View Details <span>→</span>
                       </Link>
-                       <a 
-                        href={`https://wa.me/${SITE_CONTENT.contact.whatsapp}?text=I'm interested in ${product.name}`}
-                        target="_blank"
-                        rel="noreferrer"
+                       <WhatsAppEnquiryButton
+                        productName={product.name}
                         className="product-btn whatsapp-btn"
-                        onClick={() => logWhatsAppContact(product.name)}
+                        onContact={logWhatsAppContact}
                       >
                         <WhatsAppOutlined />
                         Contact Us
-                      </a>
+                      </WhatsAppEnquiryButton>
                     </div>
                   </div>
                 </div>

@@ -5,6 +5,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import { Form, Input, Button, Rate, message as antMessage, Spin } from 'antd';
 import { SITE_CONTENT } from '../../constants/content';
+import WhatsAppEnquiryButton from '../WhatsAppEnquiryButton/WhatsAppEnquiryButton';
 import './ProductDetail.css';
 
 const reviewSchema = yup.object().shape({
@@ -19,6 +20,7 @@ const ProductDetail = () => {
   const { productSlug } = useParams();
   const [product, setProduct] = useState(null);
   // const [reviews, setReviews] = useState([]);
+  const [relatedProducts, setRelatedProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState('');
   const [retryMessage, setRetryMessage] = useState('');
@@ -90,6 +92,29 @@ const ProductDetail = () => {
     window.scrollTo(0, 0);
     fetchProductAndReviews();
   }, [fetchProductAndReviews]);
+
+  // Related products: same sub-category when the product has one, otherwise
+  // same category — same filter params CategoryPage already uses server-side.
+  useEffect(() => {
+    if (!product) { setRelatedProducts([]); return; }
+    const filterParam = product.sub_category_slug
+      ? `subcategory=${product.sub_category_slug}`
+      : product.category_slug
+        ? `category=${product.category_slug}`
+        : null;
+    if (!filterParam) { setRelatedProducts([]); return; }
+
+    let cancelled = false;
+    fetch(`${SITE_CONTENT.api.base}/api/products/?${filterParam}`)
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data) => {
+        if (cancelled) return;
+        const items = Array.isArray(data) ? data : (data.results || []);
+        setRelatedProducts(items.filter((p) => p.id !== product.id).slice(0, 8));
+      })
+      .catch(() => { if (!cancelled) setRelatedProducts([]); });
+    return () => { cancelled = true; };
+  }, [product]);
 
   // Gallery Images definition moved up
   const galleryImages = React.useMemo(() => product 
@@ -172,12 +197,12 @@ const ProductDetail = () => {
     }
   };
 
-  const logWhatsAppContact = async () => {
+  const logWhatsAppContact = async (productName, branch) => {
     try {
       await fetch(`${SITE_CONTENT.api.base}/api/whatsapp-contacts/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_name: product.name })
+        body: JSON.stringify({ product_name: productName, branch })
       });
     } catch (err) {
       console.error("Failed to log contact:", err);
@@ -292,16 +317,14 @@ const ProductDetail = () => {
           </div>
 
           <div className="product-actions-row">
-            <a
-              href={`https://wa.me/${SITE_CONTENT.contact.whatsapp}?text=I'm interested in ${product.name}`}
-              target="_blank"
-              rel="noreferrer"
+            <WhatsAppEnquiryButton
+              productName={product.name}
               className="whatsapp-btn"
-              onClick={logWhatsAppContact}
+              onContact={logWhatsAppContact}
             >
               <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
               Message Us
-            </a>
+            </WhatsAppEnquiryButton>
             <div className="feature-item">
               <div className="icon-wrap">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -325,6 +348,26 @@ const ProductDetail = () => {
         </div>
       </div>
 
+      {relatedProducts.length > 0 && (
+        <section className="related-section">
+          <h3 className="related-title">You May Also Like</h3>
+          <div className="related-grid">
+            {relatedProducts.map((rp) => (
+              <Link key={rp.id} to={`/product/${rp.slug}`} className="related-card">
+                <div className="related-img-wrap">
+                  <img
+                    src={getImageUrl(rp.main_image)}
+                    alt={rp.name}
+                    onError={(e) => { e.target.src = 'https://via.placeholder.com/400x300?text=Masterpiece'; }}
+                  />
+                  <div className="read-more-overlay">View Details</div>
+                </div>
+                <div className="related-name">{rp.name}</div>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       <section className="reviews-section-minimal">
         <div className="review-form-wrap centered">

@@ -46,7 +46,9 @@ class ProductListSerializer(serializers.ModelSerializer):
 # Full serializer for detail view — includes reviews
 class ProductSerializer(serializers.ModelSerializer):
     category_name = serializers.ReadOnlyField(source='category.name')
+    category_slug = serializers.ReadOnlyField(source='category.slug')
     sub_category_name = serializers.ReadOnlyField(source='sub_category.name')
+    sub_category_slug = serializers.ReadOnlyField(source='sub_category.slug')
     reviews = ReviewSerializer(many=True, read_only=True)
 
     class Meta:
