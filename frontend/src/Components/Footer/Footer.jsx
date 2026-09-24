@@ -84,6 +84,10 @@ const Footer = () => {
           <div className="footer-bottom-left">
             <span>© {new Date().getFullYear()} {SITE_CONTENT.brand.fullName}. All rights reserved.</span>
           </div>
+          <div className="footer-bottom-links">
+            <a href="/privacy-policy">Privacy Policy</a>
+            <a href="/terms-and-conditions">Terms &amp; Conditions</a>
+          </div>
           <div className="footer-bottom-right">
             <span>Crafted with pride in Tamil Nadu, India</span>
           </div>

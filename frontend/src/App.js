@@ -13,6 +13,8 @@ import Footer from './Components/Footer/Footer';
 import FloatingContact from './Components/FloatingContact/FloatingContact';
 
 import About from './Components/About/About';
+import PrivacyPolicy from './Components/Legal/PrivacyPolicy';
+import TermsConditions from './Components/Legal/TermsConditions';
 import Login from './Components/Login/Login';
 import AddProduct from './Components/Admin/AddProducts/AddProduct';
 import ProductList from './Components/Admin/ProductList/ProductList';
@@ -99,6 +101,8 @@ function AppContent() {
         <Route path="/reviews" element={<Reviews />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/search" element={<SearchResults />} />
+        <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+        <Route path="/terms-and-conditions" element={<TermsConditions />} />
         <Route path="/login" element={<Login />} />
         
         {/* Admin Routes wrapped in AdminLayout with Auth Protection */}

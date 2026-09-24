@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { SITE_CONTENT } from '../../constants/content';
+import { openWhatsAppAndLogOnReturn } from '../../utils/whatsappTracking';
 import './WhatsAppEnquiryButton.css';
 
 const MENU_WIDTH = 230;
@@ -70,9 +71,10 @@ const WhatsAppEnquiryButton = ({ productName, className, children, onContact }) 
   };
 
   const handleBranchSelect = (loc) => {
-    if (onContact) onContact(productName, loc.name);
     const text = encodeURIComponent(randomMessage(productName));
-    window.open(`https://wa.me/${loc.whatsapp}?text=${text}`, '_blank', 'noopener,noreferrer');
+    openWhatsAppAndLogOnReturn(`https://wa.me/${loc.whatsapp}?text=${text}`, () => {
+      if (onContact) onContact(productName, loc.name);
+    });
     setOpen(false);
   };
 

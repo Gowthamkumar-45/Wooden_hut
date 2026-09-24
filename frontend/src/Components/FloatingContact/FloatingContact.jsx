@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { SITE_CONTENT } from '../../constants/content';
+import { openWhatsAppAndLogOnReturn } from '../../utils/whatsappTracking';
 import './FloatingContact.css';
 
 const FloatingContact = () => {
@@ -33,10 +34,15 @@ const FloatingContact = () => {
   };
 
   const handleBranchSelect = (location) => {
-    logContact(location, activeAction);
     if (activeAction === 'whatsapp') {
-      window.open(`https://wa.me/${location.whatsapp}`, '_blank');
+      // Only log once the customer actually goes through the WhatsApp flow
+      // and comes back — logging on click counted everyone who opened
+      // WhatsApp and changed their mind, not just people who messaged us.
+      openWhatsAppAndLogOnReturn(`https://wa.me/${location.whatsapp}`, () => {
+        logContact(location, activeAction);
+      });
     } else {
+      logContact(location, activeAction);
       window.location.href = `tel:${location.phone.replace(/\s/g, '')}`;
     }
     setShowBranches(false);

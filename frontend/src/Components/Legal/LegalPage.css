@@ -1,0 +1,186 @@
+.legal-page {
+    --gold: #C4953A;
+    --gold-light: #E2B96A;
+    --brown-deep: #2C1A0E;
+    --text-muted: #7A5C42;
+    --cream: #F5F0E8;
+    --white: #FDFAF5;
+    background: var(--white);
+    min-height: 100vh;
+}
+
+.legal-hero {
+    background: var(--brown-deep);
+    padding: 160px 24px 60px;
+    text-align: center;
+}
+
+.legal-eyebrow {
+    display: inline-block;
+    font-size: 12px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--gold-light);
+    margin-bottom: 18px;
+    font-weight: 600;
+}
+
+.legal-hero h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    font-weight: 500;
+    color: var(--white);
+    margin: 0 0 14px;
+}
+
+.legal-updated {
+    font-size: 13px;
+    color: rgba(253, 250, 245, 0.65);
+    margin: 0;
+}
+
+.legal-body {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 60px 24px 100px;
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 60px;
+    align-items: start;
+}
+
+.legal-toc {
+    position: sticky;
+    top: 110px;
+    border-left: 2px solid rgba(196, 149, 58, 0.25);
+    padding-left: 20px;
+}
+
+.legal-toc h4 {
+    font-size: 11px;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin: 0 0 16px;
+}
+
+.legal-toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.legal-toc a {
+    font-size: 13.5px;
+    color: var(--text-muted);
+    text-decoration: none;
+    line-height: 1.4;
+    transition: color 0.2s ease;
+}
+
+.legal-toc a:hover {
+    color: var(--brown-deep);
+}
+
+.legal-content {
+    max-width: 780px;
+}
+
+.legal-intro {
+    font-size: 15.5px;
+    line-height: 1.85;
+    color: var(--text-muted);
+    margin-bottom: 44px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(44, 26, 14, 0.08);
+}
+
+.legal-section {
+    margin-bottom: 40px;
+    scroll-margin-top: 110px;
+}
+
+.legal-section h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 600;
+    color: var(--brown-deep);
+    margin: 0 0 16px;
+}
+
+.legal-section h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--brown-deep);
+    margin: 22px 0 10px;
+}
+
+.legal-section p {
+    font-size: 15px;
+    line-height: 1.85;
+    color: var(--text-muted);
+    margin: 0 0 14px;
+}
+
+.legal-section ul {
+    margin: 0 0 14px;
+    padding-left: 20px;
+}
+
+.legal-section li {
+    font-size: 15px;
+    line-height: 1.8;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+}
+
+.legal-section strong {
+    color: var(--brown-deep);
+}
+
+.legal-section a {
+    color: var(--gold);
+    text-decoration: underline;
+}
+
+.legal-contact-box {
+    background: var(--cream);
+    border: 1px solid rgba(196, 149, 58, 0.2);
+    padding: 24px 28px;
+    margin-top: 12px;
+}
+
+.legal-contact-box p {
+    margin: 0 0 6px;
+}
+
+.legal-contact-box p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 900px) {
+    .legal-hero {
+        padding: 130px 20px 44px;
+    }
+
+    .legal-hero h1 {
+        font-size: 34px;
+    }
+
+    .legal-body {
+        grid-template-columns: 1fr;
+        padding: 44px 20px 70px;
+        gap: 0;
+    }
+
+    .legal-toc {
+        display: none;
+    }
+
+    .legal-content {
+        max-width: 100%;
+    }
+}
