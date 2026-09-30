@@ -82,7 +82,7 @@ const Footer = () => {
 
         <div className="footer-bottom">
           <div className="footer-bottom-left">
-            <span>© {new Date().getFullYear()} {SITE_CONTENT.brand.fullName}. All rights reserved.</span>
+            <span>© {new Date().getFullYear()} Marutham Timbers and Furnitures. All rights reserved.</span>
           </div>
           <div className="footer-bottom-links">
             <a href="/privacy-policy">Privacy Policy</a>
