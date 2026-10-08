@@ -1,4 +1,4 @@
-const WHATSAPP_NUMBER = "9259000300";
+const WHATSAPP_NUMBER = "919600913011";
 
 export const SITE_CONTENT = {
     brand: {
@@ -44,7 +44,7 @@ export const SITE_CONTENT = {
             name: "Coimbatore",
             branchName: "Chettipalayam (Coimbatore)",
             phone: "+91 92590 00300",
-            whatsapp: "9259000300",
+            whatsapp: "919600913011",
             type: "Factory & Retail Showroom",
             address1: "9W2GM+RRX,",
             address2: "Chettipalayam,",
