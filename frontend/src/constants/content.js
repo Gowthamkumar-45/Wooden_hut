@@ -45,6 +45,13 @@ export const SITE_CONTENT = {
             branchName: "Chettipalayam (Coimbatore)",
             phone: "+91 92590 00300",
             whatsapp: "919600913011",
+            // This number is wired to the ASKEVA WhatsApp Business webhook,
+            // which captures the customer's real name/phone the moment they
+            // actually send a message — so the site no longer needs to guess
+            // via the "did they come back to the tab" heuristic, which was
+            // creating a blank-name/blank-phone row for every click, sent or
+            // not.
+            whatsappCapturedByWebhook: true,
             type: "Factory & Retail Showroom",
             address1: "9W2GM+RRX,",
             address2: "Chettipalayam,",

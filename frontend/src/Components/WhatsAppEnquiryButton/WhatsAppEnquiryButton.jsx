@@ -72,9 +72,17 @@ const WhatsAppEnquiryButton = ({ productName, className, children, onContact }) 
 
   const handleBranchSelect = (loc) => {
     const text = encodeURIComponent(randomMessage(productName));
-    openWhatsAppAndLogOnReturn(`https://wa.me/${loc.whatsapp}?text=${text}`, () => {
-      if (onContact) onContact(productName, loc.name);
-    });
+    const url = `https://wa.me/${loc.whatsapp}?text=${text}`;
+    // Branches wired to the ASKEVA webhook get the real customer name/phone
+    // the moment a message actually arrives — logging here too would just
+    // add a second, blank-data row for the same conversation.
+    if (loc.whatsappCapturedByWebhook) {
+      window.open(url, '_blank', 'noopener,noreferrer');
+    } else {
+      openWhatsAppAndLogOnReturn(url, () => {
+        if (onContact) onContact(productName, loc.name);
+      });
+    }
     setOpen(false);
   };
 

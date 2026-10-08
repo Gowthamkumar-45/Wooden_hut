@@ -35,12 +35,20 @@ const FloatingContact = () => {
 
   const handleBranchSelect = (location) => {
     if (activeAction === 'whatsapp') {
-      // Only log once the customer actually goes through the WhatsApp flow
-      // and comes back — logging on click counted everyone who opened
-      // WhatsApp and changed their mind, not just people who messaged us.
-      openWhatsAppAndLogOnReturn(`https://wa.me/${location.whatsapp}`, () => {
-        logContact(location, activeAction);
-      });
+      const url = `https://wa.me/${location.whatsapp}`;
+      // Branches wired to the ASKEVA webhook get the real customer name/
+      // phone the moment a message actually arrives — logging here too
+      // would just add a second, blank-data row for the same conversation.
+      if (location.whatsappCapturedByWebhook) {
+        window.open(url, '_blank', 'noopener,noreferrer');
+      } else {
+        // Only log once the customer actually goes through the WhatsApp flow
+        // and comes back — logging on click counted everyone who opened
+        // WhatsApp and changed their mind, not just people who messaged us.
+        openWhatsAppAndLogOnReturn(url, () => {
+          logContact(location, activeAction);
+        });
+      }
     } else {
       logContact(location, activeAction);
       window.location.href = `tel:${location.phone.replace(/\s/g, '')}`;
