@@ -50,12 +50,26 @@ WHATSAPP_NUMBER_BRANCH_MAP = json.loads(os.environ.get('WHATSAPP_NUMBER_BRANCH_M
 @method_decorator(csrf_exempt, name='dispatch')
 class WhatsAppWebhookView(APIView):
     """
-    Receives WhatsApp Business Cloud API webhook events so real
-    customer name/phone number get captured when someone actually messages
-    the business, instead of relying on a plain wa.me click (which tells the
-    site nothing about who clicked it).
+    Receives WhatsApp Business Cloud API webhook events (forwarded by a BSP
+    such as ASKEVA, or sent directly by Meta) so real customer name/phone
+    number get captured when someone actually messages the business, instead
+    of relying on a plain wa.me click (which tells the site nothing about
+    who clicked it). The payload shape is identical either way — Meta's
+    native "whatsapp_business_account" format — a BSP just proxies it.
 
-    Setup (done in Meta's dashboard, not here):
+    Setup when going through a BSP like ASKEVA (no Meta dashboard needed —
+    ASKEVA already completed their own Meta app verification):
+      1. In ASKEVA's dashboard → Integration → Webhook Message Configurations,
+         set the Webhook URL to this endpoint's live URL.
+      2. Add a header parameter there (any header name) whose value matches
+         WHATSAPP_WEBHOOK_SECRET below — this is what authenticates incoming
+         requests, since a BSP's own POST isn't signed with Meta's
+         X-Hub-Signature-256 the way a direct Meta webhook would be.
+      3. Set WHATSAPP_WEBHOOK_SECRET_HEADER to that same header name (defaults
+         to "X-Webhook-Secret" if not set) and WHATSAPP_WEBHOOK_SECRET to the
+         shared value.
+
+    Setup when registering directly with Meta instead (no BSP):
       1. Add a WhatsApp Business phone number to a Meta app on the Cloud API.
       2. Configure this endpoint's URL as the webhook callback, subscribed to
          the "messages" field.
@@ -78,6 +92,13 @@ class WhatsAppWebhookView(APIView):
         return HttpResponse(status=403)
 
     def post(self, request):
+        webhook_secret = os.environ.get('WHATSAPP_WEBHOOK_SECRET')
+        if webhook_secret:
+            header_name = os.environ.get('WHATSAPP_WEBHOOK_SECRET_HEADER', 'X-Webhook-Secret')
+            received = request.headers.get(header_name, '')
+            if not hmac.compare_digest(received, webhook_secret):
+                return HttpResponse(status=403)
+
         app_secret = os.environ.get('WHATSAPP_APP_SECRET')
         if app_secret:
             signature = request.headers.get('X-Hub-Signature-256', '')
