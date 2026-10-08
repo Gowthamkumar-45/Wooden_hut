@@ -149,8 +149,11 @@ const ContactLogs = () => {
       const matchSearch = (i.customer_name || i.name || '').toLowerCase().includes(search) || (i.phone_number || i.phone || '').includes(search);
       const matchStatus = statusFilter === 'all' || i.status === statusFilter;
       
-      // BRANCH FILTER
-      const matchBranch = !i.branch || i.branch === selectedBranch;
+      // BRANCH FILTER — strict: a blank/unknown branch previously fell
+      // through to match *either* tab (`!i.branch`), leaking into both
+      // Coimbatore's and Tanjavur's logs at once. Only an exact branch
+      // match belongs on that branch's tab now.
+      const matchBranch = i.branch === selectedBranch;
       
       return matchSearch && matchStatus && matchBranch;
     });
