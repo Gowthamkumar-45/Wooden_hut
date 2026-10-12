@@ -42,9 +42,25 @@ class WhatsAppContactViewSet(viewsets.ModelViewSet):
 
 # Maps a WhatsApp Business phone_number_id (from Meta's webhook payload) to a
 # branch name, for setups with more than one Cloud API number. Configure as
-# JSON, e.g. {"1234567890":"Coimbatore","2345678901":"Tanjavur"}. Numbers not
-# listed here (or when unset) fall back to no branch (Super Admin only).
+# JSON, e.g. {"1234567890":"Coimbatore","2345678901":"Tanjavur"}.
 WHATSAPP_NUMBER_BRANCH_MAP = json.loads(os.environ.get('WHATSAPP_NUMBER_BRANCH_MAP', '{}'))
+
+
+def _resolve_branch(phone_number_id):
+    branch = WHATSAPP_NUMBER_BRANCH_MAP.get(phone_number_id)
+    if branch is not None:
+        return branch
+    if not WHATSAPP_NUMBER_BRANCH_MAP:
+        # No mapping has been configured at all, and right now exactly one
+        # WhatsApp Business number (Coimbatore) is wired to any BSP/webhook
+        # — so an unmapped phone_number_id can only be that one. This was
+        # silently leaving branch blank, which made real captured contacts
+        # invisible in Customer Log once branch filtering went strict.
+        # Once a second branch gets its own number, set
+        # WHATSAPP_NUMBER_BRANCH_MAP explicitly and this fallback stops
+        # applying (falls through to None/unknown for anything unmapped).
+        return 'Coimbatore'
+    return None
 
 
 @method_decorator(csrf_exempt, name='dispatch')
@@ -134,7 +150,7 @@ class WhatsAppWebhookView(APIView):
             return  # status updates (delivered/read) also arrive here — ignore
 
         phone_number_id = value.get('metadata', {}).get('phone_number_id', '')
-        branch = WHATSAPP_NUMBER_BRANCH_MAP.get(phone_number_id)
+        branch = _resolve_branch(phone_number_id)
 
         names_by_wa_id = {
             c.get('wa_id'): c.get('profile', {}).get('name')
@@ -166,7 +182,7 @@ class WhatsAppWebhookView(APIView):
             return
 
         phone_number_id = value.get('metadata', {}).get('phone_number_id', '')
-        branch = WHATSAPP_NUMBER_BRANCH_MAP.get(phone_number_id)
+        branch = _resolve_branch(phone_number_id)
 
         names_by_wa_id = {
             c.get('wa_id'): c.get('profile', {}).get('name')
