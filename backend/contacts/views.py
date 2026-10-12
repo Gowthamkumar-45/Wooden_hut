@@ -52,10 +52,17 @@ class WhatsAppWebhookView(APIView):
     """
     Receives WhatsApp Business Cloud API webhook events (forwarded by a BSP
     such as ASKEVA, or sent directly by Meta) so real customer name/phone
-    number get captured when someone actually messages the business, instead
-    of relying on a plain wa.me click (which tells the site nothing about
-    who clicked it). The payload shape is identical either way — Meta's
-    native "whatsapp_business_account" format — a BSP just proxies it.
+    number get captured when someone actually messages — or calls — the
+    business, instead of relying on a plain wa.me click (which tells the
+    site nothing about who clicked it). The payload shape is identical
+    either way — Meta's native "whatsapp_business_account" format — a BSP
+    just proxies it. Handles two webhook fields:
+      - "messages": a text (or other) message was sent to the business.
+      - "calls": a WhatsApp voice/video call was placed to the business —
+        this requires Calling to be enabled on the WhatsApp Business number,
+        and a BSP to support/forward "calls" field events in the first
+        place (check ASKEVA's dashboard for a call-related webhook option;
+        it wasn't present alongside Message/Report webhooks as of writing).
 
     Setup when going through a BSP like ASKEVA (no Meta dashboard needed —
     ASKEVA already completed their own Meta app verification):
@@ -109,9 +116,11 @@ class WhatsAppWebhookView(APIView):
         try:
             for entry in request.data.get('entry', []):
                 for change in entry.get('changes', []):
-                    if change.get('field') != 'messages':
-                        continue
-                    self._handle_messages_change(change.get('value', {}))
+                    field = change.get('field')
+                    if field == 'messages':
+                        self._handle_messages_change(change.get('value', {}))
+                    elif field == 'calls':
+                        self._handle_calls_change(change.get('value', {}))
         except Exception as e:
             # Always return 200 so Meta doesn't retry/disable the webhook over
             # a parsing hiccup — log it and move on.
@@ -142,6 +151,41 @@ class WhatsAppWebhookView(APIView):
                 customer_name=names_by_wa_id.get(wa_id) or 'Unknown',
                 phone_number=wa_id,
                 message=text,
+                status='New',
+                branch=branch,
+            )
+
+    def _handle_calls_change(self, value):
+        """Captures the caller's name/phone number from WhatsApp's own
+        voice/video calling (the Business Calling API), same idea as
+        _handle_messages_change but for calls instead of texts. Only the
+        "connect" event is logged — "terminate" fires for the same call
+        ending and would otherwise create a second row for one call."""
+        calls = value.get('calls')
+        if not calls:
+            return
+
+        phone_number_id = value.get('metadata', {}).get('phone_number_id', '')
+        branch = WHATSAPP_NUMBER_BRANCH_MAP.get(phone_number_id)
+
+        names_by_wa_id = {
+            c.get('wa_id'): c.get('profile', {}).get('name')
+            for c in value.get('contacts', [])
+        }
+
+        for call in calls:
+            if call.get('event') != 'connect':
+                continue  # ignore terminate/other call events
+
+            wa_id = call.get('from', 'Unknown')
+            direction = call.get('direction', 'USER_INITIATED')
+            label = 'Incoming WhatsApp call' if direction == 'USER_INITIATED' else 'Outgoing WhatsApp call'
+
+            WhatsAppContact.objects.create(
+                product_name='WhatsApp Call',
+                customer_name=names_by_wa_id.get(wa_id) or 'Unknown',
+                phone_number=wa_id,
+                message=label,
                 status='New',
                 branch=branch,
             )
