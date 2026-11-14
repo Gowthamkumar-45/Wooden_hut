@@ -137,6 +137,11 @@ class WhatsAppWebhookView(APIView):
                         self._handle_messages_change(change.get('value', {}))
                     elif field == 'calls':
                         self._handle_calls_change(change.get('value', {}))
+                    else:
+                        # Surfaces any event type the BSP starts forwarding
+                        # that isn't handled yet (e.g. call events in a shape
+                        # other than Meta's), instead of dropping it silently.
+                        print(f"WhatsApp webhook: ignored unhandled field {field!r}")
         except Exception as e:
             # Always return 200 so Meta doesn't retry/disable the webhook over
             # a parsing hiccup — log it and move on.
